@@ -1,12 +1,11 @@
 package Test;
 
-import SimulationApplication.Food;
-import SimulationApplication.GridContent;
+import SimulationApplication.GridContent.Entity.Human.Behaviour;
+import SimulationApplication.GridContent.Entity.Human.Human;
+import SimulationApplication.GridContent.Food;
 import SimulationApplication.GridPosition;
 import SimulationApplication.GridWorld;
 
-import SimulationApplication.Human.Behaviour;
-import SimulationApplication.Human.Human;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

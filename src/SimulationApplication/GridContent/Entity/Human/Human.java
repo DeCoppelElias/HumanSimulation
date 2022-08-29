@@ -1,10 +1,13 @@
-package SimulationApplication.Human;
+package SimulationApplication.GridContent.Entity.Human;
 
 import SimulationApplication.*;
+import SimulationApplication.GridContent.*;
+import SimulationApplication.GridContent.Entity.*;
 
 import java.util.Random;
 
 public class Human extends Entity {
+    private int viewRange;
     private int days;
     private int foodAmount;
 
@@ -15,7 +18,13 @@ public class Human extends Entity {
 
         this.behaviour = new Behaviour(gridWorld, this);
         this.foodAmount = 0;
+        this.viewRange = 5;
         this.days = 1;
+    }
+
+    @Override
+    public Boolean checkDisplayability() {
+        return this.foodAmount >= 0;
     }
 
     public Human(GridWorld gridWorld, GridPosition gridPosition, Behaviour behaviour) throws Exception {
@@ -25,6 +34,10 @@ public class Human extends Entity {
         behaviour.entity = this;
         this.foodAmount = 0;
         this.days = 0;
+    }
+
+    public int getViewRange(){
+        return viewRange;
     }
 
     @Override

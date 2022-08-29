@@ -1,5 +1,8 @@
 package SimulationApplication;
 
+import SimulationApplication.GridContent.Food;
+import SimulationApplication.GridContent.GridContent;
+
 import java.util.ArrayList;
 
 public class GridTile {
@@ -13,6 +16,14 @@ public class GridTile {
     public GridTile(int x, int y){
         this.gridPosition = new GridPosition(x,y);
         this.contents = new ArrayList<>();
+    }
+
+    public ArrayList<Integer> getGridContentIds(){
+        ArrayList<Integer> result = new ArrayList<>();
+        for(GridContent content : contents){
+            result.add(content.getId());
+        }
+        return result;
     }
 
     public GridPosition getGridPosition(){

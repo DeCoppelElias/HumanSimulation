@@ -2,10 +2,13 @@ package GuiPackage;
 
 import DataAnalytics.DataAnalytics;
 import SimulationApplication.*;
-import SimulationApplication.Human.Human;
+import SimulationApplication.GridContent.Entity.Human.Human;
+import SimulationApplication.GridContent.Food;
+import SimulationApplication.GridContent.GridContent;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.concurrent.Executors;
@@ -16,7 +19,9 @@ import java.util.concurrent.TimeUnit;
 public class GuiController {
     private Gui gui;
     private GridWorld gridWorld;
-    private GridContent selectedGridContent;
+    private int selectedGridContentId;
+    private Boolean select = false;
+
     private Boolean automatic = false;
 
     private ArrayList<GuiShutdownListener> shutdownListeners = new ArrayList<>();
@@ -50,6 +55,10 @@ public class GuiController {
         refreshGrid();
     }
 
+    public String getInfoString(int id){
+        return this.gridWorld.getInfoString(id);
+    }
+
     public void spawnFood() throws Exception {
         Food.spawnRandomClones(gridWorld,1);
         refreshGrid();
@@ -58,8 +67,8 @@ public class GuiController {
     public void advanceTime() throws Exception {
         gridWorld.advanceTime();
         refreshGrid();
-        if(this.selectedGridContent == null) return;
-        displayInfo(selectedGridContent.getGridPosition());
+        if(!select) return;
+        displaySelectedGridContentInfo();
     }
 
     public void refreshGrid() throws Exception {
@@ -70,7 +79,7 @@ public class GuiController {
             GridPosition gridPosition = e.nextElement();
             String s = info.get(gridPosition);
 
-            // Color
+            gui.setTileColor(gridPosition, Color.white);
             if(s.contains("HUMAN")){
                 gui.setTileImage(gridPosition, "Human");
             }
@@ -85,23 +94,45 @@ public class GuiController {
         }
     }
 
-    public void displayInfo(GridPosition gridPosition){
+    public void displayInfo(GridPosition gridPosition) throws Exception {
         this.gui.resetInfo();
+        this.select = false;
+        refreshGrid();
 
-        ArrayList<String> info = this.gridWorld.getInfo(gridPosition);
+        ArrayList<Integer> gridContentIds = gridWorld.getEntityIds(gridPosition);
 
-        Boolean found = false;
-        ArrayList<GridContent> gridContents = this.gridWorld.getGridTile(gridPosition).getContents();
-        for (GridContent gridContent : gridContents){
-            if(gridContent instanceof Human human){
-                this.selectedGridContent = human;
-                found = true;
-                break;
+        this.gui.displayInfo(gridContentIds);
+    }
+
+    public void displaySelectedGridContentInfo() throws Exception {
+        if(!select) return;
+        Boolean displayability = gridWorld.checkDisplayability(this.selectedGridContentId);
+        if(displayability){
+            this.gui.resetInfo();
+            this.gui.displayInfo(new ArrayList<>(Arrays.asList(this.selectedGridContentId)));
+
+            if(gridWorld.isHuman(this.selectedGridContentId)){
+                int range = gridWorld.getRange(this.selectedGridContentId);
+                GridPosition gridPosition = gridWorld.getGridPosition(this.selectedGridContentId);
+
+                for(int x = gridPosition.getX() - range; x <= gridPosition.getX() + range; x++){
+                    for(int y = gridPosition.getY() - range; y <= gridPosition.getY() + range; y++){
+                        GridPosition currentGridPosition = new GridPosition(x,y);
+                        if(gridWorld.isWithinBounds(currentGridPosition)) this.gui.setTileColor(currentGridPosition, Color.gray);
+                    }
+                }
             }
         }
-        if(!found) this.selectedGridContent = null;
+        else{
+            this.select = false;
+            this.gui.resetInfo();
+        }
+    }
 
-        this.gui.displayInfo(info);
+    public void selectGridContent(int id) throws Exception {
+        this.selectedGridContentId = id;
+        this.select = true;
+        displaySelectedGridContentInfo();
     }
 
     public void toggleAutomatic(){

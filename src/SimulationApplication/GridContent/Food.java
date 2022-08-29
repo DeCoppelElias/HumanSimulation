@@ -1,4 +1,7 @@
-package SimulationApplication;
+package SimulationApplication.GridContent;
+
+import SimulationApplication.GridPosition;
+import SimulationApplication.GridWorld;
 
 import java.util.Random;
 
@@ -16,6 +19,11 @@ public class Food extends GridContent {
 
             Food food = new Food(gridWorld, gridPosition);
         }
+    }
+
+    @Override
+    public Boolean checkDisplayability() {
+        return true;
     }
 
     @Override

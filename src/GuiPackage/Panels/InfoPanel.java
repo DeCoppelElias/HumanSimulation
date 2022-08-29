@@ -1,6 +1,7 @@
 package GuiPackage.Panels;
 
 import GuiPackage.GuiController;
+import SimulationApplication.GridPosition;
 import SimulationApplication.GridWorld;
 
 import javax.swing.*;
@@ -28,11 +29,22 @@ public class InfoPanel extends Panel {
         this.add(scrollPane);
     }
 
-    public void displayInfo(ArrayList<String> info){
-        for (String infoString : info){
-            JLabel label = new JLabel();
-            label.setText("<html>" + infoString.replaceAll("<","&lt;").replaceAll(">", "&gt;").replaceAll("\n", "<br/>") + "</html>");
-            contentPanel.add(label);
+    public void displayInfo(ArrayList<Integer> gridContentIds){
+        for (Integer id : gridContentIds){
+            String infoString = guiController.getInfoString(id);
+
+            JButton button = new JButton();
+            button.addActionListener(e -> {
+                try {
+                    guiController.selectGridContent(id);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            });
+
+            button.setText("<html>" + infoString.replaceAll("<","&lt;").replaceAll(">", "&gt;").replaceAll("\n", "<br/>") + "</html>");
+
+            contentPanel.add(button);
         }
 
         contentPanel.repaint();
@@ -51,7 +63,6 @@ public class InfoPanel extends Panel {
         frame.setSize(new Dimension(500,100));
 
         InfoPanel infoPanel = new InfoPanel(new GuiController(new GridWorld(5,5)));
-        for(int i = 0; i < 1000; i++) infoPanel.displayInfo(new ArrayList<>(Arrays.asList("lol")));
         infoPanel.setPreferredSize(new Dimension(100,500));
 
         frame.add(infoPanel);

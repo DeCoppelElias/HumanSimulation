@@ -1,8 +1,11 @@
 package SimulationApplication;
 
 import DataAnalytics.DataAnalytics;
+import SimulationApplication.GridContent.Entity.Entity;
+import SimulationApplication.GridContent.Entity.Human.Human;
+import SimulationApplication.GridContent.Food;
+import SimulationApplication.GridContent.GridContent;
 
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.Hashtable;
@@ -11,6 +14,10 @@ import java.util.Random;
 public class GridWorld {
     private int width;
     private int height;
+
+    private int idCounter = 0;
+    private Dictionary<Integer, GridContent> ids;
+
     private GridTile[][] gridWorld;
 
     private int day = 0;
@@ -25,6 +32,8 @@ public class GridWorld {
     public GridWorld(int width, int height){
         this.width = width;
         this.height = height;
+
+        this.ids = new Hashtable<>();
 
         gridWorld = new GridTile[height][width];
         for(int x = 0; x < width; x++){
@@ -45,6 +54,32 @@ public class GridWorld {
 
     public int getHeight() {
         return height;
+    }
+
+    public ArrayList<Integer> getEntityIds(GridPosition gridPosition){
+        return getGridTile(gridPosition).getGridContentIds();
+    }
+
+    public Boolean isHuman(int gridContentId){
+        return ids.get(gridContentId) instanceof Human;
+    }
+
+    public Boolean checkDisplayability(int gridContentId){
+        return ids.get(gridContentId).checkDisplayability();
+    }
+
+    public int getRange(int gridContentId) throws Exception {
+        if(!(ids.get(gridContentId) instanceof Human)) throw new Exception("GridContent linked to id doesn't have a range");
+        return ((Human)ids.get(gridContentId)).getViewRange();
+    }
+
+    public GridPosition getGridPosition(int gridContentId){
+        return ids.get(gridContentId).getGridPosition();
+    }
+
+    public String getInfoString(int id){
+        GridContent content = ids.get(id);
+        return content.toString();
     }
 
     public DataAnalytics getDataAnalytics(){
@@ -82,7 +117,7 @@ public class GridWorld {
         return this.day;
     }
 
-    public void addContent(GridContent content) throws Exception {
+    public int addContent(GridContent content) throws Exception {
         if(!isWithinBounds(content.getGridPosition())) throw new Exception("Content is out of bounds");
 
         GridTile gridTile = getGridTile(content.getGridPosition());
@@ -90,6 +125,11 @@ public class GridWorld {
 
         if(content instanceof Entity e) entities.add(e);
         if(content instanceof Food f) food.add(f);
+
+        int id = idCounter;
+        ids.put(id, content);
+        idCounter++;
+        return id;
     }
 
     public void removeContent(GridContent content) throws Exception {

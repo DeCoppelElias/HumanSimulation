@@ -1,8 +1,8 @@
-package SimulationApplication.Human;
+package SimulationApplication.GridContent.Entity.Human;
 
 import SimulationApplication.*;
+import SimulationApplication.GridContent.Entity.Entity;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 

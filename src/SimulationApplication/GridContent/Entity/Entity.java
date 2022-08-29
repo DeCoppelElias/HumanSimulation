@@ -1,4 +1,8 @@
-package SimulationApplication;
+package SimulationApplication.GridContent.Entity;
+
+import SimulationApplication.GridContent.GridContent;
+import SimulationApplication.GridPosition;
+import SimulationApplication.GridWorld;
 
 public abstract class Entity extends GridContent {
     protected Boolean alive;

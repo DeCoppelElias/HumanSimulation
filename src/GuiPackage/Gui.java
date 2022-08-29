@@ -73,8 +73,8 @@ public class Gui {
         gridPanel.setTileImage(gridPosition, imageName);
     }
 
-    public void displayInfo(ArrayList<String> info){
-        infoPanel.displayInfo(info);
+    public void displayInfo(ArrayList<Integer> gridContentIds){
+        infoPanel.displayInfo(gridContentIds);
     }
 
     public void resetInfo(){

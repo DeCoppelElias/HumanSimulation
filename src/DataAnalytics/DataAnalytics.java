@@ -1,16 +1,9 @@
 package DataAnalytics;
 
-import SimulationApplication.GridContent;
 import SimulationApplication.GridPosition;
 import SimulationApplication.GridWorld;
-import org.jfree.data.time.TimeSeries;
-import org.jfree.data.time.TimeSeriesCollection;
-import org.jfree.data.xy.XYDataset;
 
-import java.awt.*;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
