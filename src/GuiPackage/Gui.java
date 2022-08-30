@@ -10,6 +10,8 @@ import java.awt.*;
 import java.util.ArrayList;
 
 public class Gui {
+    private JFrame mainFrame;
+
     private GuiController guiController;
 
     private InfoPanel infoPanel;
@@ -21,12 +23,14 @@ public class Gui {
         this.guiController = guiController;
     }
 
+    private Toolkit toolkit = Toolkit.getDefaultToolkit();
+
     public void initialize(int width, int height) throws Exception {
         this.initialized = true;
 
-        JFrame frame = new JFrame("App");
-        frame.setSize(900,500);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        mainFrame = new JFrame("App");
+        mainFrame.setSize(900,500);
+        mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         // Main Panel
         JPanel mainPanel = new JPanel(new BorderLayout());
@@ -34,20 +38,20 @@ public class Gui {
         // Button Panel
         ButtonPanel buttonPanel = new ButtonPanel(this.guiController);
         mainPanel.add(buttonPanel, BorderLayout.LINE_START);
-        buttonPanel.setPreferredSize(new Dimension(200,500));
+        //buttonPanel.setPreferredSize(new Dimension(200,500));
 
         // Grid Panel
         gridPanel = new GridPanel(guiController, width, height);
         mainPanel.add(gridPanel, BorderLayout.CENTER);
-        gridPanel.setPreferredSize(new Dimension(500,500));
+        //gridPanel.setPreferredSize(new Dimension(500,500));
 
         // Info Panel
         infoPanel = new InfoPanel(this.guiController);
         mainPanel.add(infoPanel, BorderLayout.LINE_END);
-        infoPanel.setPreferredSize(new Dimension(200,500));
+        //infoPanel.setPreferredSize(new Dimension(200,500));
 
-        frame.add(mainPanel);
-        frame.setVisible(true);
+        mainFrame.add(mainPanel);
+        mainFrame.setVisible(true);
 
         guiController.refreshGrid();
 
@@ -79,5 +83,13 @@ public class Gui {
 
     public void resetInfo(){
         infoPanel.resetInfo();
+    }
+
+    public void setCursor(Image image){
+        if(image == null) mainFrame.setCursor(null);
+        else{
+            Cursor c = toolkit.createCustomCursor(image , new Point(0, 0), "customCursor");
+            mainFrame.setCursor(c);
+        }
     }
 }

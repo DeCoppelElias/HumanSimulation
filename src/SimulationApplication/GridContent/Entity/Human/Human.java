@@ -45,8 +45,8 @@ public class Human extends Entity {
     }
 
     private void breed() {
-        if(this.foodAmount <= 1) return;
-        this.foodAmount -= 2;
+        if(this.foodAmount <= 3) return;
+        this.foodAmount -= 4;
         this.bred = true;
     }
 

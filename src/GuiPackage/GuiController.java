@@ -6,6 +6,7 @@ import SimulationApplication.GridContent.Entity.Human.Human;
 import SimulationApplication.GridContent.Food;
 import SimulationApplication.GridContent.GridContent;
 
+import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,9 +30,9 @@ public class GuiController {
 
     private ArrayList<GuiShutdownListener> shutdownListeners = new ArrayList<>();
 
-    ScheduledFuture<?> t = null;
-    ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-    Runnable automaticAdvance = new Runnable() {
+    private ScheduledFuture<?> t = null;
+    private ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+    private Runnable automaticAdvance = new Runnable() {
         public void run() {
             try {
                 automaticAdvance();
@@ -42,23 +43,36 @@ public class GuiController {
             }
         }
     };
-    long rate = 500;
+    private long rate = 500;
+
+    private Toolkit toolkit = Toolkit.getDefaultToolkit();
+    private Image humanCursorImage;
+    private Image foodCursorImage;
 
     public GuiController(GridWorld gridWorld) throws Exception {
         this.gui = new Gui(this);
         this.gridWorld = gridWorld;
+
+        humanCursorImage = toolkit.getImage("Images/Human.png");
+        foodCursorImage = toolkit.getImage("Images/Food.jpg");
     }
 
-    public void toSpawingHumanState(){
+    public void toSpawningHumanState(){
         this.guiState = GuiState.SpawningHuman;
+
+        this.gui.setCursor(humanCursorImage);
     }
 
-    public void toSpawingFoodState(){
+    public void toSpawningFoodState(){
         this.guiState = GuiState.SpawningFood;
+
+        this.gui.setCursor(foodCursorImage);
     }
 
     public void toNormalState(){
         this.guiState = GuiState.Normal;
+
+        this.gui.setCursor(null);
     }
 
     public void startGui() throws Exception {

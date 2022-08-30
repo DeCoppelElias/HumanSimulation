@@ -10,11 +10,17 @@ public class GridPanel extends JPanel {
     private GuiController guiController;
     private JButton[][] grid;
 
+    private JPanel gridPanel;
+
     private int width;
     private int height;
 
-    private Icon humanIcon;
-    private Icon foodIcon;
+    private ImageIcon humanIcon;
+    private ImageIcon foodIcon;
+    private boolean resizedHumanIconCheck = false;
+    private boolean resizedFoodIconCheck = false;
+    private Icon resizedHumanIcon;
+    private Icon resizedFoodIcon;
 
     public GridPanel(GuiController guiController, int width, int height) {
         this.guiController = guiController;
@@ -22,20 +28,13 @@ public class GridPanel extends JPanel {
         this.height = height;
         this.grid = new JButton[height][width];
 
-        ImageIcon originalHumanIcon = new ImageIcon("Images/Human.png");
-        this.humanIcon = resizeIcon(originalHumanIcon, 500 / width, 500 / height);
-
-        ImageIcon originalFoodIcon = new ImageIcon("Images/Food.jpg");
-        this.foodIcon = resizeIcon(originalFoodIcon, 500 / width, 500 / height);
-
         this.setLayout(new BorderLayout());
 
-        JPanel gridPanel = new JPanel(new GridLayout(height,width,50 / width,50 / height));
-        gridPanel.setPreferredSize(new Dimension(500,500));
+        gridPanel = new JPanel(new GridLayout(height,width,50 / width,50 / height));
         for(int y = 0; y < height; y++){
             for(int x = 0; x < width; x++){
                 JButton button = new JButton();
-                button.setPreferredSize(new Dimension(500 / width, 500 / height));
+                button.setPreferredSize(new Dimension(gridPanel.getSize().width / width, gridPanel.getSize().height / height));
                 gridPanel.add(button);
                 grid[height - 1 - y][x] = button;
 
@@ -51,6 +50,9 @@ public class GridPanel extends JPanel {
             }
         }
         this.add(gridPanel);
+
+        this.humanIcon = new ImageIcon("Images/Human.png");
+        this.foodIcon = new ImageIcon("Images/Food.jpg");
     }
 
     public void setTileColor(GridPosition gridPosition, Color color) {
@@ -62,10 +64,22 @@ public class GridPanel extends JPanel {
         JButton button = grid[gridPosition.getY()][gridPosition.getX()];
         if(imageName == null) button.setIcon(null);
         else if(imageName.equals("Human")){
-            button.setIcon(humanIcon);
+            if(!resizedHumanIconCheck){
+                resizedHumanIcon = resizeIcon(humanIcon,
+                        gridPanel.getSize().width / width,
+                        gridPanel.getSize().height / height);
+                resizedHumanIconCheck = true;
+            }
+            button.setIcon(resizedHumanIcon);
         }
         else if(imageName.equals("Food")){
-            button.setIcon(foodIcon);
+            if(!resizedFoodIconCheck){
+                resizedFoodIcon = resizeIcon(foodIcon,
+                        gridPanel.getSize().width / width,
+                        gridPanel.getSize().height / height);
+                resizedFoodIconCheck = true;
+            }
+            button.setIcon(resizedFoodIcon);
         }
     }
 

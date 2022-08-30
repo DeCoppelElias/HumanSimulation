@@ -154,7 +154,7 @@ public class ButtonPanel extends Panel {
         JButton addHumanPositionButton = new JButton("Add Human Position");
         addHumanPositionButton.addActionListener(e -> {
             try {
-                guiController.toSpawingHumanState();
+                guiController.toSpawningHumanState();
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
@@ -166,7 +166,7 @@ public class ButtonPanel extends Panel {
         JButton addFoodPositionButton = new JButton("Add Food Position");
         addFoodPositionButton.addActionListener(e -> {
             try {
-                guiController.toSpawingFoodState();
+                guiController.toSpawningFoodState();
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
@@ -183,6 +183,7 @@ public class ButtonPanel extends Panel {
         returnButton.setAlignmentX(0);
         addEntitiesPanel.add(returnButton);
 
+        // Glue
         Box.Filler glue = (Box.Filler) Box.createVerticalGlue();
         glue.changeShape(glue.getMinimumSize(),
                 new Dimension(0, Short.MAX_VALUE), // make glue greedy
