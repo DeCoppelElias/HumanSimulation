@@ -1,7 +1,9 @@
 package Test;
 
-import SimulationApplication.GridContent.Entity.Human.Behaviour;
+import SimulationApplication.GridContent.Entity.Human.FindFoodBehaviour;
+import SimulationApplication.GridContent.Entity.Human.HumanBehaviour;
 import SimulationApplication.GridContent.Entity.Human.Human;
+import SimulationApplication.GridContent.Entity.Human.MovementBehaviour;
 import SimulationApplication.GridContent.Food;
 import SimulationApplication.GridPosition;
 import SimulationApplication.GridWorld;
@@ -22,8 +24,10 @@ class GridWorldTest {
                         "Empty Empty Empty \n" +
                         "Empty Empty Empty \n");
 
-        Behaviour behaviour = new Behaviour(gridWorld, null, 0,new float[]{1});
-        Human human = new Human(gridWorld, new GridPosition(2,2), behaviour);
+        FindFoodBehaviour findFoodBehaviour = new FindFoodBehaviour(gridWorld, null, 1,0,0,0);
+        MovementBehaviour movementBehaviour = new MovementBehaviour(gridWorld, null, 0,1, new double[]{1}, findFoodBehaviour);
+        HumanBehaviour humanBehaviour = new HumanBehaviour(gridWorld, null,5, movementBehaviour);
+        Human human = new Human(gridWorld, new GridPosition(2,2), humanBehaviour);
         Assertions.assertEquals(gridWorld.toString(),
                 "Empty Empty Empty \n" +
                         "Empty Empty Empty \n" +

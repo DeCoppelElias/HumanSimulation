@@ -25,7 +25,7 @@ public class Gui {
         this.initialized = true;
 
         JFrame frame = new JFrame("App");
-        frame.setSize(850,500);
+        frame.setSize(900,500);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         // Main Panel
@@ -34,7 +34,7 @@ public class Gui {
         // Button Panel
         ButtonPanel buttonPanel = new ButtonPanel(this.guiController);
         mainPanel.add(buttonPanel, BorderLayout.LINE_START);
-        buttonPanel.setPreferredSize(new Dimension(150,500));
+        buttonPanel.setPreferredSize(new Dimension(200,500));
 
         // Grid Panel
         gridPanel = new GridPanel(guiController, width, height);

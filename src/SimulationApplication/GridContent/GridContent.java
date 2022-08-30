@@ -6,11 +6,21 @@ import SimulationApplication.GridWorld;
 import java.util.Random;
 
 public abstract class GridContent {
+    private Boolean active = true;
+
     protected int id;
 
     protected GridWorld gridWorld;
 
     private GridPosition gridPosition;
+
+    public void setActive(Boolean active){
+        this.active = active;
+    }
+
+    public Boolean getActive(){
+        return active;
+    }
 
     protected Random random = new Random();
 

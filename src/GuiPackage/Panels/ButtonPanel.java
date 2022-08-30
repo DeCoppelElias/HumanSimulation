@@ -2,9 +2,12 @@ package GuiPackage.Panels;
 
 import GuiPackage.GuiController;
 import SimulationApplication.GridWorld;
+import org.jfree.chart.axis.Axis;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 public class ButtonPanel extends Panel {
     private GuiController guiController;
@@ -70,42 +73,121 @@ public class ButtonPanel extends Panel {
         });
         mainPanel.add(statisticsButton);
 
+        JButton resetGridButton = new JButton("Reset GridWorld");
+        resetGridButton.addActionListener(e -> {
+            try {
+                this.guiController.resetGridWorld();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        });
+        mainPanel.add(resetGridButton);
+
         return mainPanel;
     }
 
     private JPanel createAddEntitiesPanel(){
         JPanel addEntitiesPanel = new JPanel();
         addEntitiesPanel.setLayout(new BoxLayout(addEntitiesPanel, BoxLayout.Y_AXIS));
-        addEntitiesPanel.setPreferredSize(new Dimension(100,500));
 
-        // Add Humans
-        JButton addHumanButton = new JButton("Add Human");
-        addHumanButton.addActionListener(e -> {
+        // Add Humans Random
+        JPanel addHumanAmountPanel = new JPanel();
+        addHumanAmountPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        addHumanAmountPanel.setAlignmentX(0);
+
+        JTextArea amountHumansTextArea = new JTextArea("1",1,1);
+        amountHumansTextArea.addKeyListener(new KeyAdapter() {
+            public void keyTyped(KeyEvent e) {
+                char c = e.getKeyChar();
+                if ( ((c < '0') || (c > '9')) && (c != KeyEvent.VK_BACK_SPACE)) {
+                    e.consume();  // if it's not a number, ignore the event
+                }
+            }
+        });
+
+        JButton addHumanRandomButton = new JButton("Add Human Random");
+        addHumanRandomButton.addActionListener(e -> {
             try {
-                guiController.spawnHuman();
+                int amount = Integer.parseInt(amountHumansTextArea.getText());
+                guiController.spawnHuman(amount);
+                guiController.toNormalState();
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
         });
-        addEntitiesPanel.add(addHumanButton);
+        addHumanAmountPanel.add(addHumanRandomButton);
+        addHumanAmountPanel.add(amountHumansTextArea);
 
-        // Add Food
-        JButton addFoodButton = new JButton("Add Food");
-        addFoodButton.addActionListener(e -> {
+        addEntitiesPanel.add(addHumanAmountPanel);
+
+        // Add Food Random
+        JPanel addFoodAmountPanel = new JPanel();
+        addFoodAmountPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+        addFoodAmountPanel.setAlignmentX(0);
+
+        JTextArea amountFoodTextArea = new JTextArea("1",1,1);
+        amountFoodTextArea.addKeyListener(new KeyAdapter() {
+            public void keyTyped(KeyEvent e) {
+                char c = e.getKeyChar();
+                if ( ((c < '0') || (c > '9')) && (c != KeyEvent.VK_BACK_SPACE)) {
+                    e.consume();  // if it's not a number, ignore the event
+                }
+            }
+        });
+
+        JButton addFoodRandomButton = new JButton("Add Food Random");
+        addFoodRandomButton.addActionListener(e -> {
             try {
-                guiController.spawnFood();
+                int amount = Integer.parseInt(amountFoodTextArea.getText());
+                guiController.spawnFood(amount);
+                guiController.toNormalState();
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
         });
-        addEntitiesPanel.add(addFoodButton);
+        addFoodAmountPanel.add(addFoodRandomButton);
+        addFoodAmountPanel.add(amountFoodTextArea);
+
+        addEntitiesPanel.add(addFoodAmountPanel);
+
+        // Add Humans Position
+        JButton addHumanPositionButton = new JButton("Add Human Position");
+        addHumanPositionButton.addActionListener(e -> {
+            try {
+                guiController.toSpawingHumanState();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        });
+        addHumanPositionButton.setAlignmentX(0);
+        addEntitiesPanel.add(addHumanPositionButton);
+
+        // Add Food Position
+        JButton addFoodPositionButton = new JButton("Add Food Position");
+        addFoodPositionButton.addActionListener(e -> {
+            try {
+                guiController.toSpawingFoodState();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        });
+        addFoodPositionButton.setAlignmentX(0);
+        addEntitiesPanel.add(addFoodPositionButton);
 
         // Back to main panel
         JButton returnButton = new JButton("Return");
         returnButton.addActionListener(e -> {
             toMainLayout();
+            this.guiController.toNormalState();
         });
+        returnButton.setAlignmentX(0);
         addEntitiesPanel.add(returnButton);
+
+        Box.Filler glue = (Box.Filler) Box.createVerticalGlue();
+        glue.changeShape(glue.getMinimumSize(),
+                new Dimension(0, Short.MAX_VALUE), // make glue greedy
+                glue.getMaximumSize());
+        addEntitiesPanel.add(glue);
 
         return addEntitiesPanel;
     }

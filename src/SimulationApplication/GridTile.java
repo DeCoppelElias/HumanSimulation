@@ -40,6 +40,7 @@ public class GridTile {
 
     public void removeContent(GridContent content){
         this.contents.remove(content);
+        content.setActive(false);
     }
 
     public Boolean contains(GridContent content){
@@ -64,7 +65,6 @@ public class GridTile {
         }
         if(food == null) return null;
 
-        contents.remove(food);
         return food;
     }
 

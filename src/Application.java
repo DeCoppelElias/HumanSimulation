@@ -11,7 +11,7 @@ public class Application implements GuiShutdownListener {
     private GridWorld gridWorld;
 
     public Application() throws Exception {
-        this.gridWorld = new GridWorld(20,20);
+        this.gridWorld = new GridWorld(30,30);
         this.guiController = new GuiController(gridWorld);
         this.guiController.subscribe(this);
     }

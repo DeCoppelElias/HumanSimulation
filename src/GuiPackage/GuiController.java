@@ -17,6 +17,9 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 public class GuiController {
+    private enum GuiState{ Normal, SpawningHuman, SpawningFood}
+    private GuiState guiState = GuiState.Normal;
+
     private Gui gui;
     private GridWorld gridWorld;
     private int selectedGridContentId;
@@ -46,12 +49,29 @@ public class GuiController {
         this.gridWorld = gridWorld;
     }
 
+    public void toSpawingHumanState(){
+        this.guiState = GuiState.SpawningHuman;
+    }
+
+    public void toSpawingFoodState(){
+        this.guiState = GuiState.SpawningFood;
+    }
+
+    public void toNormalState(){
+        this.guiState = GuiState.Normal;
+    }
+
     public void startGui() throws Exception {
         this.gui.initialize(gridWorld.getWidth(), gridWorld.getHeight());
     }
 
-    public void spawnHuman() throws Exception {
-        Human.spawnRandomClones(gridWorld,1);
+    public void spawnHuman(int amount) throws Exception {
+        Human.spawnRandomClones(gridWorld,amount);
+        refreshGrid();
+    }
+
+    public void spawnHuman(GridPosition gridPosition) throws Exception {
+        Human human = new Human(gridWorld, gridPosition);
         refreshGrid();
     }
 
@@ -59,8 +79,12 @@ public class GuiController {
         return this.gridWorld.getInfoString(id);
     }
 
-    public void spawnFood() throws Exception {
-        Food.spawnRandomClones(gridWorld,1);
+    public void spawnFood(int amount) throws Exception {
+        Food.spawnRandomClones(gridWorld,amount);
+        refreshGrid();
+    }
+    public void spawnFood(GridPosition gridPosition) throws Exception {
+        Food food = new Food(gridWorld, gridPosition);
         refreshGrid();
     }
 
@@ -110,7 +134,6 @@ public class GuiController {
         if(displayability){
             this.gui.resetInfo();
             this.gui.displayInfo(new ArrayList<>(Arrays.asList(this.selectedGridContentId)));
-
             if(gridWorld.isHuman(this.selectedGridContentId)){
                 int range = gridWorld.getRange(this.selectedGridContentId);
                 GridPosition gridPosition = gridWorld.getGridPosition(this.selectedGridContentId);
@@ -204,5 +227,16 @@ public class GuiController {
     public void displayHumanGraph(){
         DataAnalytics dataAnalytics = this.gridWorld.getDataAnalytics();
         dataAnalytics.drawHumanGraph();
+    }
+
+    public void gridAction(GridPosition gridPosition) throws Exception {
+        if(guiState.equals(GuiState.Normal)) this.displayInfo(gridPosition);
+        else if(guiState.equals(GuiState.SpawningHuman)) this.spawnHuman(gridPosition);
+        else if(guiState.equals(GuiState.SpawningFood)) this.spawnFood(gridPosition);
+    }
+
+    public void resetGridWorld() throws Exception {
+        this.gridWorld = new GridWorld(this.gridWorld.getWidth(), this.gridWorld.getHeight());
+        refreshGrid();
     }
 }

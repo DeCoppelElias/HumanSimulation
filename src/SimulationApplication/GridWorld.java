@@ -24,7 +24,7 @@ public class GridWorld {
 
     private DataAnalytics dataAnalytics;
 
-    private ArrayList<Entity> entities;
+    private ArrayList<Human> humans;
     private ArrayList<Food> food;
 
     private Random random  = new Random();
@@ -42,7 +42,7 @@ public class GridWorld {
             }
         }
 
-        entities = new ArrayList<>();
+        humans = new ArrayList<>();
         food = new ArrayList<>();
 
         this.dataAnalytics = new DataAnalytics(this);
@@ -110,7 +110,7 @@ public class GridWorld {
     }
 
     public int getEntityAmount(){
-        return this.entities.size();
+        return this.humans.size();
     }
 
     public int getDay(){
@@ -123,7 +123,7 @@ public class GridWorld {
         GridTile gridTile = getGridTile(content.getGridPosition());
         gridTile.addContent(content);
 
-        if(content instanceof Entity e) entities.add(e);
+        if(content instanceof Human h) humans.add(h);
         if(content instanceof Food f) food.add(f);
 
         int id = idCounter;
@@ -140,7 +140,7 @@ public class GridWorld {
 
         gridTile.removeContent(content);
 
-        if(content instanceof Entity e) entities.remove(e);
+        if(content instanceof Human h) humans.remove(h);
         if(content instanceof Food f) food.remove(f);
     }
 
@@ -153,7 +153,7 @@ public class GridWorld {
         ArrayList<Entity> bredEntities = new ArrayList<>();
 
         // Entity action, check alive and check breeding
-        for(Entity entity : this.entities){
+        for(Entity entity : this.humans){
             entity.action();
             if (!entity.checkAlive()){
                 diedEntities.add(entity);
@@ -185,21 +185,6 @@ public class GridWorld {
         oldGridTile.removeContent(content);
     }
 
-    public GridPosition getClosestFoodPosition(Entity entity){
-        if(this.food.size() == 0) return entity.getGridPosition();
-
-        GridPosition closestGridPosition = new GridPosition(0,0);
-        double shortestDistance = Integer.MAX_VALUE;
-        for(Food food : this.food){
-            double distance = GridPosition.distance(food.getGridPosition(), entity.getGridPosition());
-            if (distance < shortestDistance){
-                shortestDistance = distance;
-                closestGridPosition = food.getGridPosition();
-            }
-        }
-        return closestGridPosition;
-    }
-
     public Boolean isWithinBounds(GridPosition gridPosition){
         return gridPosition.getX() >= 0 && gridPosition.getY() >= 0 && gridPosition.getX() < width && gridPosition.getY() < height;
     }
@@ -210,11 +195,11 @@ public class GridWorld {
         return gridTile.containsFood();
     }
 
-    public Food collectFood(GridPosition gridPosition){
+    public Food collectFood(GridPosition gridPosition) throws Exception {
         if(!containsFood(gridPosition)) return null;
         GridTile gridTile = getGridTile(gridPosition);
         Food food = gridTile.collectFood();
-        this.food.remove(food);
+        this.removeContent(food);
         return food;
     }
 
@@ -224,6 +209,14 @@ public class GridWorld {
 
     public void resetStatistics(){
         this.dataAnalytics.resetStatistics();
+    }
+
+    public ArrayList<Food> getAllFood(){
+        return (ArrayList<Food>)this.food.clone();
+    }
+
+    public ArrayList<Human> getAllHumans(){
+        return (ArrayList<Human>)this.humans.clone();
     }
 
     @Override

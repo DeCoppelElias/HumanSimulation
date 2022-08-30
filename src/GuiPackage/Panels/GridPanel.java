@@ -43,7 +43,7 @@ public class GridPanel extends JPanel {
                 final int finalY = height - 1 - y;
                 button.addActionListener(e -> {
                     try {
-                        guiController.displayInfo(new GridPosition(finalX, finalY));
+                        guiController.gridAction(new GridPosition(finalX, finalY));
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }

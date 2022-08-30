@@ -28,7 +28,7 @@ public class Food extends GridContent {
 
     @Override
     public String toString() {
-        return "Food";
+        return "Food: " + this.getActive();
     }
 
     @Override

@@ -7,37 +7,27 @@ import SimulationApplication.GridContent.Entity.*;
 import java.util.Random;
 
 public class Human extends Entity {
-    private int viewRange;
     private int days;
     private int foodAmount;
 
-    private Behaviour behaviour;
+    private HumanBehaviour humanBehaviour;
 
     public Human(GridWorld gridWorld, GridPosition gridPosition) throws Exception {
         super(gridWorld, gridPosition);
 
-        this.behaviour = new Behaviour(gridWorld, this);
+        this.humanBehaviour = new HumanBehaviour(gridWorld, this);
         this.foodAmount = 0;
-        this.viewRange = 5;
         this.days = 1;
     }
 
-    @Override
-    public Boolean checkDisplayability() {
-        return this.foodAmount >= 0;
-    }
-
-    public Human(GridWorld gridWorld, GridPosition gridPosition, Behaviour behaviour) throws Exception {
+    public Human(GridWorld gridWorld, GridPosition gridPosition, HumanBehaviour humanBehaviour) throws Exception {
         super(gridWorld, gridPosition);
 
-        this.behaviour = behaviour;
-        behaviour.entity = this;
+        this.humanBehaviour = humanBehaviour;
+        humanBehaviour.setHuman(this);
+
         this.foodAmount = 0;
         this.days = 0;
-    }
-
-    public int getViewRange(){
-        return viewRange;
     }
 
     @Override
@@ -48,15 +38,15 @@ public class Human extends Entity {
         collectFoodAction();
         movementAction();
 
-        if(days % 7 == 0){
+        if(days % 15 == 0){
             eat();
             breed();
         }
     }
 
     private void breed() {
-        if(this.foodAmount <= 0) return;
-        this.foodAmount--;
+        if(this.foodAmount <= 1) return;
+        this.foodAmount -= 2;
         this.bred = true;
     }
 
@@ -68,13 +58,13 @@ public class Human extends Entity {
     }
 
     private void movementAction() throws Exception {
-        Action action = behaviour.getNextAction();
-        GridPosition newGridPosition = new GridPosition(this.getGridPosition().getX() + action.getAddition_X(), this.getGridPosition().getY() + action.getAddition_Y());
+        MovementAction movementAction = humanBehaviour.getNextAction();
+        GridPosition newGridPosition = new GridPosition(this.getGridPosition().getX() + movementAction.getAddition_X(), this.getGridPosition().getY() + movementAction.getAddition_Y());
 
         int counter = 0;
         while(!this.gridWorld.isWithinBounds(newGridPosition) && counter < 10){
-            action = behaviour.getNextAction();
-            newGridPosition = new GridPosition(this.getGridPosition().getX() + action.getAddition_X(), this.getGridPosition().getY() + action.getAddition_Y());
+            movementAction = humanBehaviour.getNextAction();
+            newGridPosition = new GridPosition(this.getGridPosition().getX() + movementAction.getAddition_X(), this.getGridPosition().getY() + movementAction.getAddition_Y());
 
             counter++;
         }
@@ -103,15 +93,20 @@ public class Human extends Entity {
     }
 
     @Override
+    public Boolean checkDisplayability() {
+        return this.foodAmount >= 0;
+    }
+
+    @Override
     public void createChild() throws Exception {
-        Behaviour behaviour = this.behaviour.createVariation();
-        Human human = new Human(this.gridWorld, this.getGridPosition(), behaviour);
+        HumanBehaviour humanBehaviour = this.humanBehaviour.createVariation();
+        Human human = new Human(this.gridWorld, this.getGridPosition(), humanBehaviour);
     }
 
     @Override
     public String toString() {
         return "Human{" + "\n" +
-                "behaviour=" + behaviour + "\n" +
+                "behaviour=" + humanBehaviour + "\n" +
                 "food=" + foodAmount + "\n" +
                 "days=" + days + "\n" +
                 '}';
@@ -125,10 +120,14 @@ public class Human extends Entity {
     @Override
     public Object clone() {
         try {
-            return new Human(this.gridWorld, this.getGridPosition(), this.behaviour);
+            return new Human(this.gridWorld, this.getGridPosition(), this.humanBehaviour);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public int getViewRange() {
+        return this.humanBehaviour.getViewRange();
     }
 }
