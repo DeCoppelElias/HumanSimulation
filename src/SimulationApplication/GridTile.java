@@ -4,25 +4,28 @@ import SimulationApplication.GridContent.Food;
 import SimulationApplication.GridContent.GridContent;
 
 import java.util.ArrayList;
+import java.util.Dictionary;
+import java.util.Enumeration;
+import java.util.Hashtable;
 
 public class GridTile {
     private GridPosition gridPosition;
-    private ArrayList<GridContent> contents;
+    private Dictionary<Integer, GridContent> contents;
 
-    public GridTile(int x, int y, ArrayList<GridContent> contents){
-        this.gridPosition = new GridPosition(x,y);
-        this.contents = contents;
-    }
     public GridTile(int x, int y){
         this.gridPosition = new GridPosition(x,y);
-        this.contents = new ArrayList<>();
+        this.contents = new Hashtable<>();
     }
 
     public ArrayList<Integer> getGridContentIds(){
         ArrayList<Integer> result = new ArrayList<>();
-        for(GridContent content : contents){
-            result.add(content.getId());
+
+        Enumeration<Integer> enumeration = contents.keys();
+        while(enumeration.hasMoreElements()){
+            int id = enumeration.nextElement();
+            result.add(id);
         }
+
         return result;
     }
 
@@ -30,25 +33,27 @@ public class GridTile {
         return (GridPosition)this.gridPosition.clone();
     }
 
-    public ArrayList<GridContent> getContents() {
-        return (ArrayList<GridContent>)contents.clone();
+    public void addContent(GridContent content, int id){
+        this.contents.put(id, content);
     }
 
-    public void addContent(GridContent content){
-        this.contents.add(content);
+    public void removeContent(int id){
+        contents.remove(id);
     }
 
-    public void removeContent(GridContent content){
-        this.contents.remove(content);
-        content.setActive(false);
-    }
-
-    public Boolean contains(GridContent content){
-        return this.contents.contains(content);
+    public Boolean contains(int id){
+        GridContent gridContent = this.contents.get(id);
+        if(gridContent == null){
+            System.out.println("lol");
+        }
+        return gridContent != null;
     }
 
     public Boolean containsFood(){
-        for(GridContent content : contents){
+        Enumeration<Integer> enumeration = contents.keys();
+        while(enumeration.hasMoreElements()){
+            int id = enumeration.nextElement();
+            GridContent content = contents.get(id);
             if(content instanceof Food){
                 return true;
             }
@@ -58,24 +63,30 @@ public class GridTile {
 
     public Food collectFood(){
         Food food = null;
-        for(GridContent content : contents){
+        Enumeration<Integer> enumeration = contents.keys();
+        while(enumeration.hasMoreElements()){
+            int id = enumeration.nextElement();
+            GridContent content = contents.get(id);
             if(content instanceof Food){
                 food = (Food) content;
             }
         }
-        if(food == null) return null;
 
         return food;
     }
 
     public ArrayList<String> getInfo(){
         ArrayList<String> result = new ArrayList<>();
-        if(contents.size() == 0) result.add("Empty");
-        else{
-            for(GridContent content : this.contents){
-                result.add(content.toString());
-            }
+
+        Enumeration<Integer> enumeration = contents.keys();
+        while(enumeration.hasMoreElements()){
+            int id = enumeration.nextElement();
+            GridContent content = contents.get(id);
+
+            result.add(content.toString());
         }
+
+        if(result.size() == 0) result.add("Empty");
         return result;
     }
 
@@ -83,7 +94,11 @@ public class GridTile {
     public String toString() {
         if(contents.size() == 0) return "Empty";
         String contentString = "";
-        for(GridContent content : this.contents){
+        Enumeration<Integer> enumeration = contents.keys();
+        while(enumeration.hasMoreElements()){
+            int id = enumeration.nextElement();
+            GridContent content = contents.get(id);
+
             contentString += content.gridString() + "|";
         }
         return contentString.substring(0, contentString.length()-1);

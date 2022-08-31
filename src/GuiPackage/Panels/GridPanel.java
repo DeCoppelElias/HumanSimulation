@@ -26,15 +26,23 @@ public class GridPanel extends JPanel {
         this.guiController = guiController;
         this.width = width;
         this.height = height;
-        this.grid = new JButton[height][width];
 
         this.setLayout(new BorderLayout());
 
-        gridPanel = new JPanel(new GridLayout(height,width,50 / width,50 / height));
+        gridPanel = createGridPanel(width, height);
+        this.add(gridPanel);
+
+        this.humanIcon = new ImageIcon("Images/Human.png");
+        this.foodIcon = new ImageIcon("Images/Food.jpg");
+    }
+
+    public JPanel createGridPanel(int width, int height){
+        this.grid = new JButton[height][width];
+        JPanel gridPanel = new JPanel(new GridLayout(height,width,50 / width,50 / height));
         for(int y = 0; y < height; y++){
             for(int x = 0; x < width; x++){
                 JButton button = new JButton();
-                button.setPreferredSize(new Dimension(gridPanel.getSize().width / width, gridPanel.getSize().height / height));
+                button.setPreferredSize(new Dimension(gridPanel.getPreferredSize().width / width, gridPanel.getPreferredSize().height / height));
                 gridPanel.add(button);
                 grid[height - 1 - y][x] = button;
 
@@ -49,10 +57,8 @@ public class GridPanel extends JPanel {
                 });
             }
         }
-        this.add(gridPanel);
 
-        this.humanIcon = new ImageIcon("Images/Human.png");
-        this.foodIcon = new ImageIcon("Images/Food.jpg");
+        return gridPanel;
     }
 
     public void setTileColor(GridPosition gridPosition, Color color) {
@@ -87,5 +93,17 @@ public class GridPanel extends JPanel {
         Image img = icon.getImage();
         Image resizedImage = img.getScaledInstance(resizedWidth, resizedHeight,  java.awt.Image.SCALE_SMOOTH);
         return new ImageIcon(resizedImage);
+    }
+
+    public void increaseGridSize(){
+        this.width++;
+        this.height++;
+
+        this.remove(gridPanel);
+        gridPanel = createGridPanel(width, height);
+        this.add(gridPanel);
+
+        this.revalidate();
+        this.repaint();
     }
 }

@@ -10,17 +10,20 @@ public class Human extends Entity {
     private int days;
     private int foodAmount;
 
+    private HumanParameters humanParameters;
+
     private HumanBehaviour humanBehaviour;
 
-    public Human(GridWorld gridWorld, GridPosition gridPosition) throws Exception {
+    public Human(GridWorld gridWorld, GridPosition gridPosition, HumanParameters humanParameters) {
         super(gridWorld, gridPosition);
 
         this.humanBehaviour = new HumanBehaviour(gridWorld, this);
         this.foodAmount = 0;
         this.days = 1;
+        this.humanParameters = humanParameters;
     }
 
-    public Human(GridWorld gridWorld, GridPosition gridPosition, HumanBehaviour humanBehaviour) throws Exception {
+    public Human(GridWorld gridWorld, GridPosition gridPosition, HumanParameters humanParameters, HumanBehaviour humanBehaviour) throws Exception {
         super(gridWorld, gridPosition);
 
         this.humanBehaviour = humanBehaviour;
@@ -28,6 +31,7 @@ public class Human extends Entity {
 
         this.foodAmount = 0;
         this.days = 0;
+        this.humanParameters = humanParameters;
     }
 
     @Override
@@ -38,20 +42,22 @@ public class Human extends Entity {
         collectFoodAction();
         movementAction();
 
-        if(days % 15 == 0){
+        if(days % humanParameters.getEatInterval() == 0){
             eat();
+        }
+        if(days % humanParameters.getBreedInterval() == 0){
             breed();
         }
     }
 
     private void breed() {
-        if(this.foodAmount <= 3) return;
-        this.foodAmount -= 4;
+        if(this.foodAmount < humanParameters.getBreedCost()) return;
+        this.foodAmount -= humanParameters.getBreedCost();
         this.bred = true;
     }
 
     private void eat() {
-        this.foodAmount--;
+        this.foodAmount -= humanParameters.getEatCost();
         if(this.foodAmount < 0){
             this.alive = false;
         }
@@ -81,26 +87,15 @@ public class Human extends Entity {
         }
     }
 
-    public static void spawnRandomClones(GridWorld gridWorld, int amount) throws Exception {
-        Random random = new Random();
-        for(int i = 0; i < amount; i++){
-            int randomX = random.nextInt(0,gridWorld.getWidth());
-            int randomY = random.nextInt(0, gridWorld.getHeight());
-            GridPosition gridPosition = new GridPosition(randomX,randomY);
-
-            Human human = new Human(gridWorld, gridPosition);
-        }
-    }
-
     @Override
     public Boolean checkDisplayability() {
         return this.foodAmount >= 0;
     }
 
     @Override
-    public void createChild() throws Exception {
+    public void createChildSpecific() throws Exception {
         HumanBehaviour humanBehaviour = this.humanBehaviour.createVariation();
-        Human human = new Human(this.gridWorld, this.getGridPosition(), humanBehaviour);
+        Human human = new Human(this.gridWorld, this.getGridPosition(), this.humanParameters, humanBehaviour);
     }
 
     @Override
@@ -120,7 +115,7 @@ public class Human extends Entity {
     @Override
     public Object clone() {
         try {
-            return new Human(this.gridWorld, this.getGridPosition(), this.humanBehaviour);
+            return new Human(this.gridWorld, this.getGridPosition(), this.humanParameters, this.humanBehaviour);
         } catch (Exception e) {
             e.printStackTrace();
             return null;

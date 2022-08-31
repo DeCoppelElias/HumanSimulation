@@ -10,7 +10,7 @@ public abstract class Entity extends GridContent {
 
     public abstract void action() throws Exception;
 
-    public Entity(GridWorld gridWorld, GridPosition gridPosition) throws Exception {
+    public Entity(GridWorld gridWorld, GridPosition gridPosition) {
         super(gridWorld, gridPosition);
         this.alive = true;
         this.bred = false;
@@ -24,7 +24,12 @@ public abstract class Entity extends GridContent {
         return bred;
     }
 
-    public abstract void createChild() throws Exception ;
+    public void createChild() throws Exception {
+        this.bred = false;
+        createChildSpecific();
+    }
+
+    protected abstract void createChildSpecific() throws Exception;
 
     @Override
     public abstract Object clone();

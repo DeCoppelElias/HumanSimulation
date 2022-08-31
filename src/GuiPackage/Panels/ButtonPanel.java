@@ -2,6 +2,7 @@ package GuiPackage.Panels;
 
 import GuiPackage.GuiController;
 import SimulationApplication.GridWorld;
+import SimulationApplication.GridWorldManager;
 import org.jfree.chart.axis.Axis;
 
 import javax.swing.*;
@@ -24,11 +25,13 @@ public class ButtonPanel extends Panel {
         JPanel mainPanel = createMainPanel();
         JPanel addEntitiesPanel = createAddEntitiesPanel();
         JPanel advancePanel = createAdvancePanel();
+        JPanel gridWorldPanel = createGridWorldPanel();
         JPanel statisticsPanel = createStatisticsPanel();
 
         this.add("mainPanel", mainPanel);
         this.add("addEntitiesPanel", addEntitiesPanel);
         this.add("advancePanel", advancePanel);
+        this.add("gridWorldPanel", gridWorldPanel);
         this.add("statisticsPanel", statisticsPanel);
 
         this.contentPane = this;
@@ -50,6 +53,10 @@ public class ButtonPanel extends Panel {
         cardLayout.show(contentPane, "statisticsPanel");
     }
 
+    private void toGridWorldLayout(){
+        cardLayout.show(contentPane, "gridWorldPanel");
+    }
+
     private JPanel createMainPanel(){
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
@@ -67,21 +74,17 @@ public class ButtonPanel extends Panel {
         });
         mainPanel.add(advanceButton);
 
+        JButton gridWorldButton = new JButton("Grid World");
+        gridWorldButton.addActionListener(e -> {
+            toGridWorldLayout();
+        });
+        mainPanel.add(gridWorldButton);
+
         JButton statisticsButton = new JButton("Statistics");
         statisticsButton.addActionListener(e -> {
             toStatisticsLayout();
         });
         mainPanel.add(statisticsButton);
-
-        JButton resetGridButton = new JButton("Reset GridWorld");
-        resetGridButton.addActionListener(e -> {
-            try {
-                this.guiController.resetGridWorld();
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        });
-        mainPanel.add(resetGridButton);
 
         return mainPanel;
     }
@@ -108,8 +111,13 @@ public class ButtonPanel extends Panel {
         JButton addHumanRandomButton = new JButton("Add Human Random");
         addHumanRandomButton.addActionListener(e -> {
             try {
-                int amount = Integer.parseInt(amountHumansTextArea.getText());
-                guiController.spawnHuman(amount);
+                if(amountHumansTextArea.getText().equals("")) guiController.spawnHuman(1);
+                else{
+                    int amount = Integer.parseInt(amountHumansTextArea.getText());
+                    if(amount < 1000){
+                        guiController.spawnHuman(amount);
+                    }
+                }
                 guiController.toNormalState();
             } catch (Exception ex) {
                 ex.printStackTrace();
@@ -138,8 +146,13 @@ public class ButtonPanel extends Panel {
         JButton addFoodRandomButton = new JButton("Add Food Random");
         addFoodRandomButton.addActionListener(e -> {
             try {
-                int amount = Integer.parseInt(amountFoodTextArea.getText());
-                guiController.spawnFood(amount);
+                if(amountHumansTextArea.getText().equals("")) guiController.spawnFood(1);
+                else{
+                    int amount = Integer.parseInt(amountHumansTextArea.getText());
+                    if(amount < 1000){
+                        guiController.spawnFood(amount);
+                    }
+                }
                 guiController.toNormalState();
             } catch (Exception ex) {
                 ex.printStackTrace();
@@ -196,7 +209,6 @@ public class ButtonPanel extends Panel {
     private JPanel createAdvancePanel(){
         JPanel advancePanel = new JPanel();
         advancePanel.setLayout(new BoxLayout(advancePanel, BoxLayout.Y_AXIS));
-        advancePanel.setPreferredSize(new Dimension(100,500));
 
         // Advance Time Button
         JButton advanceTimeButton = new JButton("Advance Time");
@@ -252,9 +264,8 @@ public class ButtonPanel extends Panel {
     private JPanel createStatisticsPanel(){
         JPanel statisticsPanel = new JPanel();
         statisticsPanel.setLayout(new BoxLayout(statisticsPanel, BoxLayout.Y_AXIS));
-        statisticsPanel.setPreferredSize(new Dimension(100,500));
 
-        JButton displayGraphButton = new JButton("Display Graph");
+        JButton displayGraphButton = new JButton("Display Human Population Graph");
         displayGraphButton.addActionListener(e -> {
             try {
                 guiController.displayHumanGraph();
@@ -284,12 +295,59 @@ public class ButtonPanel extends Panel {
         return statisticsPanel;
     }
 
+    private JPanel createGridWorldPanel(){
+        JPanel gridWorldPanel = new JPanel();
+        gridWorldPanel.setLayout(new BoxLayout(gridWorldPanel, BoxLayout.Y_AXIS));
+        gridWorldPanel.setAlignmentX(0);
+
+        JPanel gridWorldParametersPanel = new GridWorldParametersPanel(this.guiController);
+
+        gridWorldPanel.add(gridWorldParametersPanel);
+
+        JButton resetGridButton = new JButton("Reset GridWorld");
+        resetGridButton.addActionListener(e -> {
+            try {
+                this.guiController.resetGridWorld();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        });
+        gridWorldPanel.add(resetGridButton);
+
+        JButton increaseSizeButton = new JButton("Increase Grid Size");
+        increaseSizeButton.addActionListener(e -> {
+            try {
+                this.guiController.increaseGridSize();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        });
+        //gridWorldPanel.add(increaseSizeButton);
+
+
+        // Back to main panel
+        JButton returnButton = new JButton("Return");
+        returnButton.addActionListener(e -> {
+            toMainLayout();
+        });
+        gridWorldPanel.add(returnButton);
+
+        // Glue
+        Box.Filler glue = (Box.Filler) Box.createVerticalGlue();
+        glue.changeShape(glue.getMinimumSize(),
+                new Dimension(0, Short.MAX_VALUE), // make glue greedy
+                glue.getMaximumSize());
+        gridWorldPanel.add(glue);
+
+        return gridWorldPanel;
+    }
+
     public static void main(String[] args) throws Exception {
         JFrame frame = new JFrame("App");
         frame.setSize(800,500);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        ButtonPanel buttonPanel = new ButtonPanel(new GuiController(new GridWorld(5,5)));
+        ButtonPanel buttonPanel = new ButtonPanel(new GuiController(new GridWorldManager(new GridWorld(5,5))));
 
         frame.add(buttonPanel);
         frame.setVisible(true);

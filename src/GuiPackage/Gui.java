@@ -65,31 +65,41 @@ public class Gui {
         });
     }
 
-    public void setTileColor(GridPosition gridPosition, Color color) throws Exception {
-        if(!initialized) throw  new Exception("Gui is not yet initialized");
+    public void setTileColor(GridPosition gridPosition, Color color) {
+        if(!initialized) return;
 
         gridPanel.setTileColor(gridPosition, color);
     }
 
-    public void setTileImage(GridPosition gridPosition, String imageName) throws Exception {
-        if(!initialized) throw  new Exception("Gui is not yet initialized");
+    public void setTileImage(GridPosition gridPosition, String imageName) {
+        if(!initialized) return;
 
         gridPanel.setTileImage(gridPosition, imageName);
     }
 
     public void displayInfo(ArrayList<Integer> gridContentIds){
+        if(!initialized) return;
+
         infoPanel.displayInfo(gridContentIds);
     }
 
     public void resetInfo(){
+        if(!initialized) return;
+
         infoPanel.resetInfo();
     }
 
     public void setCursor(Image image){
+        if(!initialized) return;
+
         if(image == null) mainFrame.setCursor(null);
         else{
             Cursor c = toolkit.createCustomCursor(image , new Point(0, 0), "customCursor");
             mainFrame.setCursor(c);
         }
+    }
+
+    public void increaseGridSize(){
+        this.gridPanel.increaseGridSize();
     }
 }

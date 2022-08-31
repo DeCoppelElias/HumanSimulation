@@ -3,6 +3,7 @@ package GuiPackage.Panels;
 import GuiPackage.GuiController;
 import SimulationApplication.GridPosition;
 import SimulationApplication.GridWorld;
+import SimulationApplication.GridWorldManager;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -72,7 +73,7 @@ public class InfoPanel extends Panel {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(new Dimension(500,100));
 
-        InfoPanel infoPanel = new InfoPanel(new GuiController(new GridWorld(5,5)));
+        InfoPanel infoPanel = new InfoPanel(new GuiController(new GridWorldManager(new GridWorld(5,5))));
         infoPanel.setPreferredSize(new Dimension(100,500));
 
         frame.add(infoPanel);
