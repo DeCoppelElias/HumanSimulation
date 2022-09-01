@@ -3,6 +3,7 @@ package SimulationApplication.GridContent;
 import SimulationApplication.GridPosition;
 import SimulationApplication.GridWorld;
 
+import java.util.Hashtable;
 import java.util.Random;
 
 public class Food extends GridContent {
@@ -13,6 +14,11 @@ public class Food extends GridContent {
     @Override
     public Boolean checkDisplayability() {
         return true;
+    }
+
+    @Override
+    public Hashtable<String, Integer> getInfo() {
+        return new Hashtable<>();
     }
 
     @Override

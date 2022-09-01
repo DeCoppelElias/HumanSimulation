@@ -1,6 +1,5 @@
 package SimulationApplication.GridContent.Entity.Human;
 
-import SimulationApplication.GridContent.Entity.Entity;
 import SimulationApplication.GridContent.Food;
 import SimulationApplication.GridPosition;
 import SimulationApplication.GridWorld;
@@ -65,8 +64,8 @@ public class FindFoodBehaviour {
             return findRandomFood(allFood);
         }
         else if(chance < closestFood + randomFood + farthestFromOtherHumansFood){
-            ArrayList<Human> humans = gridWorld.getAllHumans();
-            return findFarthestFromOtherHumansFood(allFood, humans);
+            ArrayList<GridPosition> humanPositions = gridWorld.getAllHumanPositions();
+            return findFarthestFromOtherHumansFood(allFood, humanPositions);
         }
         else{
             return findMostFoodInVicinityFood(allFood);
@@ -126,7 +125,7 @@ public class FindFoodBehaviour {
         return visibleFood.get(r);
     }
 
-    public Food findFarthestFromOtherHumansFood(ArrayList<Food> allFood, ArrayList<Human> humans){
+    public Food findFarthestFromOtherHumansFood(ArrayList<Food> allFood, ArrayList<GridPosition> humanPositions){
         Food farthestFromOtherPlayersFood = null;
         int smallestDistance = Integer.MAX_VALUE;
 
@@ -134,8 +133,8 @@ public class FindFoodBehaviour {
             double distance = GridPosition.distance(food.getGridPosition(), human.getGridPosition());
             if (distance <= human.getViewRange()){
                 int distanceFromOtherPlayers = 0;
-                for(Human human : humans){
-                    distanceFromOtherPlayers += GridPosition.distance(food.getGridPosition(), human.getGridPosition());
+                for(GridPosition humanPosition : humanPositions){
+                    distanceFromOtherPlayers += GridPosition.distance(food.getGridPosition(), humanPosition);
                 }
                 if(distanceFromOtherPlayers < smallestDistance){
                     farthestFromOtherPlayersFood = food;

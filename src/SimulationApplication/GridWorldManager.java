@@ -2,8 +2,7 @@ package SimulationApplication;
 
 import DataAnalytics.DataAnalytics;
 
-import java.util.ArrayList;
-import java.util.Hashtable;
+import java.util.*;
 
 public class GridWorldManager {
     private GridWorld gridWorld;
@@ -109,30 +108,6 @@ public class GridWorldManager {
         this.gridWorld = new GridWorld(this.getWidth(), this.getHeight());
     }
 
-    public void setSpawnFoodInterval(int spawnFoodInterval) {
-        this.spawnFoodInterval = spawnFoodInterval;
-    }
-
-    public void setSpawnFoodAmount(int spawnFoodAmount) {
-        this.spawnFoodAmount = spawnFoodAmount;
-    }
-
-    public void setEatInterval(int eatInterval) {
-        this.gridWorld.setEatInterval(eatInterval);
-    }
-
-    public void setEatCost(int eatCost) {
-        this.gridWorld.setEatCost(eatCost);
-    }
-
-    public void setBreedInterval(int breedInterval) {
-        this.gridWorld.setBreedInterval(breedInterval);
-    }
-
-    public void setBreedCost(int breedCost) {
-        this.gridWorld.setBreedCost(breedCost);
-    }
-
     public Hashtable<String, Integer> getHumanParameterInfo(){
         Hashtable<String, Integer> params = new Hashtable<>();
 
@@ -155,5 +130,55 @@ public class GridWorldManager {
         }
 
         gridWorld.applyParameters(parameters);
+    }
+
+    public ArrayList<Integer> getAllHumans(){
+        return gridWorld.getAllHumans();
+    }
+
+    public ArrayList<Integer> sortOnSurvival(ArrayList<Integer> ids){
+        Comparator<Integer> comparator = (o1, o2) -> {
+            Hashtable<String, Integer> info1 = gridWorld.getInfo(o1);
+            Hashtable<String, Integer> info2 = gridWorld.getInfo(o2);
+
+            if(info1.containsKey("Days") && info2.containsKey("Days")){
+                return Integer.compare(info1.get("Days"), info2.get("Days"));
+            }
+            else if(info1.containsKey("Days")){
+                return 1;
+            }
+            else if(info2.containsKey("Days")){
+                return -1;
+            }
+            else return 0;
+        };
+
+        ids.sort(comparator);
+        Collections.reverse(ids);
+
+        return ids;
+    }
+
+    public ArrayList<Integer> sortOnFood(ArrayList<Integer> ids){
+        Comparator<Integer> comparator = (o1, o2) -> {
+            Hashtable<String, Integer> info1 = gridWorld.getInfo(o1);
+            Hashtable<String, Integer> info2 = gridWorld.getInfo(o2);
+
+            if(info1.containsKey("Food") && info2.containsKey("Food")){
+                return Integer.compare(info1.get("Food"), info2.get("Food"));
+            }
+            else if(info1.containsKey("Food")){
+                return 1;
+            }
+            else if(info2.containsKey("Food")){
+                return -1;
+            }
+            else return 0;
+        };
+
+        ids.sort(comparator);
+        Collections.reverse(ids);
+
+        return ids;
     }
 }

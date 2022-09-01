@@ -42,7 +42,7 @@ public class GridWorldParametersPanel extends JPanel {
             parameterTextArea.addKeyListener(new KeyAdapter() {
                 public void keyTyped(KeyEvent e) {
                     char c = e.getKeyChar();
-                    if ( ((c < '1') || (c > '9')) && (c != KeyEvent.VK_BACK_SPACE)) {
+                    if ( ((c < '0') || (c > '9')) && (c != KeyEvent.VK_BACK_SPACE)) {
                         e.consume();  // if it's not a number, ignore the event
                     }
                 }
@@ -80,11 +80,11 @@ public class GridWorldParametersPanel extends JPanel {
             String name = e.nextElement();
             JTextArea textArea = textAreas.get(name);
 
-            if(textArea.getText().equals(""))
+            if(textArea.getText().equals("") || textArea.getText().equals("0"))
                 newParameters.put(name, 1);
             else{
                 Integer value = Integer.parseInt(textArea.getText());
-                newParameters.put(name, 1);
+                newParameters.put(name, value);
             }
         }
 

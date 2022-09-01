@@ -324,6 +324,13 @@ public class ButtonPanel extends Panel {
         });
         //gridWorldPanel.add(increaseSizeButton);
 
+        JButton displayAllHumansButton = new JButton("Display All Humans");
+        displayAllHumansButton.addActionListener(e -> {
+            this.guiController.resetInfo();
+            this.guiController.displayAllHumans();
+        });
+        gridWorldPanel.add(displayAllHumansButton);
+
 
         // Back to main panel
         JButton returnButton = new JButton("Return");

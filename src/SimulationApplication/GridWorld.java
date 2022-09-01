@@ -8,7 +8,6 @@ import SimulationApplication.GridContent.Food;
 import SimulationApplication.GridContent.GridContent;
 
 import java.util.ArrayList;
-import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.Random;
 
@@ -82,6 +81,12 @@ public class GridWorld {
         return content.toString();
     }
 
+    public Hashtable<String, Integer> getInfo(int id){
+        GridContent content = ids.get(id);
+        if(content == null) return new Hashtable<>();
+        return content.getInfo();
+    }
+
     public DataAnalytics getDataAnalytics(){
         return this.dataAnalytics;
     }
@@ -99,18 +104,6 @@ public class GridWorld {
         }
 
         return result;
-    }
-
-    public ArrayList<String> getInfo(GridPosition gridPosition){
-        return getGridTile(gridPosition).getInfo();
-    }
-
-    public int getFoodAmount(){
-        return this.food.size();
-    }
-
-    public int getEntityAmount(){
-        return this.humans.size();
     }
 
     public int getDay(){
@@ -223,8 +216,24 @@ public class GridWorld {
         return (ArrayList<Food>)this.food.clone();
     }
 
-    public ArrayList<Human> getAllHumans(){
-        return (ArrayList<Human>)this.humans.clone();
+    public ArrayList<GridPosition> getAllHumanPositions(){
+        ArrayList<GridPosition> result = new ArrayList<>();
+
+        for(Human human : humans){
+            result.add(human.getGridPosition());
+        }
+
+        return result;
+    }
+
+    public ArrayList<Integer> getAllHumans(){
+        ArrayList<Integer> result = new ArrayList<>();
+
+        for(Human human : humans){
+            result.add(gridContents.get(human));
+        }
+
+        return result;
     }
 
     public void setEatInterval(int eatInterval) {

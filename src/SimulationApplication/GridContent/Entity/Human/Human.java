@@ -4,6 +4,7 @@ import SimulationApplication.*;
 import SimulationApplication.GridContent.*;
 import SimulationApplication.GridContent.Entity.*;
 
+import java.util.Hashtable;
 import java.util.Random;
 
 public class Human extends Entity {
@@ -90,6 +91,16 @@ public class Human extends Entity {
     @Override
     public Boolean checkDisplayability() {
         return this.foodAmount >= 0;
+    }
+
+    @Override
+    public Hashtable<String, Integer> getInfo() {
+        Hashtable<String, Integer> info = new Hashtable<>();
+
+        info.put("Days", this.days);
+        info.put("Food", this.foodAmount);
+
+        return info;
     }
 
     @Override

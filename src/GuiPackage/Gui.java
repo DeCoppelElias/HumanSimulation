@@ -29,7 +29,7 @@ public class Gui {
         this.initialized = true;
 
         mainFrame = new JFrame("App");
-        mainFrame.setSize(900,500);
+        mainFrame.setSize(1000,500);
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         // Main Panel

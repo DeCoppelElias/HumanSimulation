@@ -3,10 +3,8 @@ package GuiPackage;
 import SimulationApplication.*;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.Hashtable;
+import java.util.*;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -145,7 +143,7 @@ public class GuiController {
         Boolean displayability = gridWorldManager.checkDisplayability(this.selectedGridContentId);
         if(displayability){
             this.gui.resetInfo();
-            this.gui.displayInfo(new ArrayList<>(Arrays.asList(this.selectedGridContentId)));
+            this.gui.displayInfo(new ArrayList<>(List.of(this.selectedGridContentId)));
             if(gridWorldManager.isHuman(this.selectedGridContentId)){
                 int range = gridWorldManager.getRange(this.selectedGridContentId);
                 GridPosition gridPosition = gridWorldManager.getGridPosition(this.selectedGridContentId);
@@ -162,6 +160,12 @@ public class GuiController {
             this.select = false;
             this.gui.resetInfo();
         }
+    }
+
+    public void displayAllHumans(){
+        ArrayList<Integer> humanIds = this.gridWorldManager.getAllHumans();
+
+        this.gui.displayInfo(humanIds);
     }
 
     public void selectGridContent(int id) {
@@ -201,7 +205,14 @@ public class GuiController {
 
     public void decreaseAutomaticSpeed(){
         if(!automatic) return;
-        rate += 100;
+        if(rate > 100){
+            rate += 100;
+
+            if(rate > 1000) rate = 1000;
+        }
+        else {
+            rate += 10;
+        }
         if (t != null)
         {
             t.cancel(true);
@@ -252,5 +263,17 @@ public class GuiController {
 
     public void increaseGridSize(){
         this.gui.increaseGridSize();
+    }
+
+    public ArrayList<Integer> sortOnSurvival(ArrayList<Integer> ids){
+        return this.gridWorldManager.sortOnSurvival(ids);
+    }
+
+    public ArrayList<Integer> sortOnFood(ArrayList<Integer> ids){
+        return this.gridWorldManager.sortOnFood(ids);
+    }
+
+    public void resetInfo(){
+        this.gui.resetInfo();
     }
 }

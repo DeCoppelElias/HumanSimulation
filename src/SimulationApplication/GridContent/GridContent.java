@@ -3,6 +3,7 @@ package SimulationApplication.GridContent;
 import SimulationApplication.GridPosition;
 import SimulationApplication.GridWorld;
 
+import java.util.Hashtable;
 import java.util.Random;
 
 public abstract class GridContent {
@@ -40,6 +41,8 @@ public abstract class GridContent {
     }
 
     public abstract Boolean checkDisplayability();
+
+    public abstract Hashtable<String, Integer> getInfo();
 
     @Override
     public abstract String toString();
