@@ -5,8 +5,6 @@ import GuiPackage.GuiShutdownListener;
 import SimulationApplication.GridWorld;
 import SimulationApplication.GridWorldManager;
 
-import java.io.IOException;
-
 public class Application implements GuiShutdownListener {
     private GuiController guiController;
     private GridWorld gridWorld;
