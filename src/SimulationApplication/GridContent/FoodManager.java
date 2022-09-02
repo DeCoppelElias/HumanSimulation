@@ -40,6 +40,7 @@ public class FoodManager implements Manager {
         for(Food food : foods){
             if(food.getTryingToCollectSize() > 0){
                 Hashtable<String, ArrayList<Human>> info = food.decideWinner();
+                food.resetTryingToCollect();
 
                 ArrayList<Human> wonFood = info.get("Won Food");
                 ArrayList<Human> died = info.get("Died");

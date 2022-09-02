@@ -3,8 +3,12 @@ package GuiPackage.Panels;
 import GuiPackage.GuiController;
 import SimulationApplication.GridPosition;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Objects;
 
 public class GridPanel extends JPanel {
     private GuiController guiController;
@@ -22,7 +26,7 @@ public class GridPanel extends JPanel {
     private Icon resizedHumanIcon;
     private Icon resizedFoodIcon;
 
-    public GridPanel(GuiController guiController, int width, int height) {
+    public GridPanel(GuiController guiController, int width, int height) throws IOException {
         this.guiController = guiController;
         this.width = width;
         this.height = height;
@@ -32,8 +36,8 @@ public class GridPanel extends JPanel {
         gridPanel = createGridPanel(width, height);
         this.add(gridPanel);
 
-        this.humanIcon = new ImageIcon("Images/Human.png");
-        this.foodIcon = new ImageIcon("Images/Food.jpg");
+        this.humanIcon = new ImageIcon(ImageIO.read(getClass().getResource("/Human.png")));
+        this.foodIcon = new ImageIcon(ImageIO.read(getClass().getResource("/Food.jpg")));
     }
 
     public JPanel createGridPanel(int width, int height){

@@ -45,7 +45,7 @@ public class DataAnalytics {
     public String getDataString(){
         String result = "-----------------------------------\n";
 
-        int counter = 1;
+        int counter = 0;
         Enumeration<Integer> e1 = this.data.keys();
         while (e1.hasMoreElements()) {
             e1.nextElement();
@@ -55,7 +55,7 @@ public class DataAnalytics {
             Integer day = counter;
             counter++;
             Hashtable<String, Integer> dayData = this.data.get(day);
-
+            if(dayData == null) continue;
             Enumeration<String> e2 = dayData.keys();
             while (e2.hasMoreElements()) {
 

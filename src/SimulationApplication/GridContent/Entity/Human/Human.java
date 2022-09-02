@@ -85,7 +85,7 @@ public class Human extends Entity {
 
         // Check if breed
         if(days % humanParameters.getBreedInterval() == 0){
-            if(this.foodAmount < humanParameters.getBreedCost()){
+            if(this.foodAmount >= humanParameters.getBreedCost()){
                 this.foodAmount -= humanParameters.getBreedCost();
                 this.bred = true;
             }

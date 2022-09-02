@@ -68,6 +68,10 @@ public class Food extends GridContent {
         return result;
     }
 
+    public void resetTryingToCollect(){
+        this.tryingToCollect = new ArrayList<>();
+    }
+
     public int getTryingToCollectSize(){
         return tryingToCollect.size();
     }

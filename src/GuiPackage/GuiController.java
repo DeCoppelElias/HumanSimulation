@@ -2,6 +2,8 @@ package GuiPackage;
 
 import SimulationApplication.*;
 
+import javax.imageio.ImageIO;
+import javax.swing.*;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
@@ -46,8 +48,8 @@ public class GuiController {
         this.gui = new Gui(this);
         this.gridWorldManager = gridWorldManager;
 
-        humanCursorImage = toolkit.getImage("Images/Human.png");
-        foodCursorImage = toolkit.getImage("Images/Food.jpg");
+        humanCursorImage = ImageIO.read(getClass().getResource("/Human.png"));
+        foodCursorImage = ImageIO.read(getClass().getResource("/Food.jpg"));
     }
 
     public void toSpawningHumanState(){

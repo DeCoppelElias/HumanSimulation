@@ -31,4 +31,9 @@ public class GridPosition {
     public Object clone(){
         return new GridPosition(this.x, this.y);
     }
+
+    @Override
+    public String toString() {
+        return "("+x+","+y+")";
+    }
 }
