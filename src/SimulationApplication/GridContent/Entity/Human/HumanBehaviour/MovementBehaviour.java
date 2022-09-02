@@ -1,6 +1,6 @@
-package SimulationApplication.GridContent.Entity.Human;
+package SimulationApplication.GridContent.Entity.Human.HumanBehaviour;
 
-import SimulationApplication.GridContent.Food;
+import SimulationApplication.GridContent.Entity.Human.Human;
 import SimulationApplication.GridPosition;
 import SimulationApplication.MovementAction;
 import SimulationApplication.GridWorld;
@@ -8,7 +8,7 @@ import SimulationApplication.GridWorld;
 import java.util.Arrays;
 import java.util.Random;
 
-public class MovementBehaviour {
+public class MovementBehaviour extends Behaviour {
     private double[] stepAmount;
 
     private Human human;
@@ -19,7 +19,7 @@ public class MovementBehaviour {
 
     private FindFoodBehaviour findFoodBehaviour;
 
-    private Food selectedFood;
+    private GridPosition selectedFoodPosition;
 
     private double randomMovement;
     private double toFoodMovement;
@@ -120,11 +120,11 @@ public class MovementBehaviour {
     }
 
     private MovementAction generateToFoodAction(){
-        if(selectedFood == null || !selectedFood.getActive()){
-            this.selectedFood = findFoodBehaviour.findFood();
+        if(selectedFoodPosition == null || !gridWorld.containsFood(selectedFoodPosition)){
+            this.selectedFoodPosition = findFoodBehaviour.findFood();
         }
 
-        if(this.selectedFood == null) return generateRandomAction();
+        if(this.selectedFoodPosition == null) return generateRandomAction();
 
         GridPosition entityGridPosition = this.human.getGridPosition();
 
@@ -135,7 +135,7 @@ public class MovementBehaviour {
             distance += 1;
         }
 
-        GridPosition targetGridPosition = this.selectedFood.getGridPosition();
+        GridPosition targetGridPosition = this.selectedFoodPosition;
 
         if(targetGridPosition.getX() > entityGridPosition.getX()){
             return new MovementAction(distance,0);
@@ -219,17 +219,11 @@ public class MovementBehaviour {
         return copy;
     }
 
-    public double clamp(double value, double lowerbound, double upperbound){
-        if(value < lowerbound) return lowerbound;
-        if(value > upperbound) return upperbound;
-        return value;
-    }
-
     @Override
     public String toString() {
         return "MovementBehaviour{" + "\n" +
                 "stepAmount=" + Arrays.toString(stepAmount) + "\n" +
-                "selectedFood=" + selectedFood + "\n" +
+                "selectedFood=" + selectedFoodPosition + "\n" +
                 "randomMovement=" + randomMovement + "\n" +
                 "toFoodMovement=" + toFoodMovement + "\n" +
                 "findFoodBehaviour=" + findFoodBehaviour + "\n" +

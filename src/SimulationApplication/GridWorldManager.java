@@ -133,16 +133,16 @@ public class GridWorldManager {
     }
 
     public ArrayList<Integer> getAllHumans(){
-        return gridWorld.getAllHumans();
+        return gridWorld.getAllHumanIds();
     }
 
     public ArrayList<Integer> sortOnSurvival(ArrayList<Integer> ids){
         Comparator<Integer> comparator = (o1, o2) -> {
-            Hashtable<String, Integer> info1 = gridWorld.getInfo(o1);
-            Hashtable<String, Integer> info2 = gridWorld.getInfo(o2);
+            Hashtable<String, Float> info1 = gridWorld.getInfo(o1);
+            Hashtable<String, Float> info2 = gridWorld.getInfo(o2);
 
             if(info1.containsKey("Days") && info2.containsKey("Days")){
-                return Integer.compare(info1.get("Days"), info2.get("Days"));
+                return Float.compare(info1.get("Days"), info2.get("Days"));
             }
             else if(info1.containsKey("Days")){
                 return 1;
@@ -161,11 +161,11 @@ public class GridWorldManager {
 
     public ArrayList<Integer> sortOnFood(ArrayList<Integer> ids){
         Comparator<Integer> comparator = (o1, o2) -> {
-            Hashtable<String, Integer> info1 = gridWorld.getInfo(o1);
-            Hashtable<String, Integer> info2 = gridWorld.getInfo(o2);
+            Hashtable<String, Float> info1 = gridWorld.getInfo(o1);
+            Hashtable<String, Float> info2 = gridWorld.getInfo(o2);
 
             if(info1.containsKey("Food") && info2.containsKey("Food")){
-                return Integer.compare(info1.get("Food"), info2.get("Food"));
+                return Float.compare(info1.get("Food"), info2.get("Food"));
             }
             else if(info1.containsKey("Food")){
                 return 1;

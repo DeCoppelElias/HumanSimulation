@@ -7,10 +7,9 @@ import org.jfree.chart.axis.Axis;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 
-public class ButtonPanel extends Panel {
+public class ButtonPanel extends JPanel {
     private GuiController guiController;
 
     private CardLayout cardLayout;
@@ -35,6 +34,17 @@ public class ButtonPanel extends Panel {
         this.add("statisticsPanel", statisticsPanel);
 
         this.contentPane = this;
+
+        this.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                super.mouseClicked(e);
+
+                if (InputEvent.BUTTON3_DOWN_MASK != 0) {
+                    guiController.toNormalState();
+                }
+            }
+        });
     }
 
     private void toAddEntitiesLayout(){
@@ -60,7 +70,6 @@ public class ButtonPanel extends Panel {
     private JPanel createMainPanel(){
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
-        mainPanel.setPreferredSize(new Dimension(100,500));
 
         JButton addButton = new JButton("Add");
         addButton.addActionListener(e -> {
@@ -190,8 +199,8 @@ public class ButtonPanel extends Panel {
         // Back to main panel
         JButton returnButton = new JButton("Return");
         returnButton.addActionListener(e -> {
-            toMainLayout();
             this.guiController.toNormalState();
+            toMainLayout();
         });
         returnButton.setAlignmentX(0);
         addEntitiesPanel.add(returnButton);

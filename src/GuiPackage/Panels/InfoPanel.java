@@ -28,7 +28,7 @@ public class InfoPanel extends JPanel {
 
         JLabel headerLabel = new JLabel("Info Panel");
         headerLabel.setAlignmentX(0);
-        headerLabel.setBorder(new EmptyBorder(0,100,10,100));//top,left,bottom,right
+        headerLabel.setBorder(new EmptyBorder(0,120,10,120));//top,left,bottom,right
         this.add(headerLabel);
 
         JButton sortButton = new JButton("Sort");
@@ -38,7 +38,7 @@ public class InfoPanel extends JPanel {
         });
         this.add(sortButton);
 
-        contentPanel = new JPanel(new BorderLayout());
+        contentPanel = new JPanel();
         contentPanel.setAlignmentX(0);
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
 

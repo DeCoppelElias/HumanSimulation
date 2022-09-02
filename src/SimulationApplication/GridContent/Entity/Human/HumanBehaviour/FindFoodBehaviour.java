@@ -1,13 +1,13 @@
-package SimulationApplication.GridContent.Entity.Human;
+package SimulationApplication.GridContent.Entity.Human.HumanBehaviour;
 
-import SimulationApplication.GridContent.Food;
+import SimulationApplication.GridContent.Entity.Human.Human;
 import SimulationApplication.GridPosition;
 import SimulationApplication.GridWorld;
 
 import java.util.ArrayList;
 import java.util.Random;
 
-public class FindFoodBehaviour {
+public class FindFoodBehaviour extends Behaviour {
     private Human human;
 
     private GridWorld gridWorld;
@@ -53,22 +53,22 @@ public class FindFoodBehaviour {
         this.human = human;
     }
 
-    public Food findFood(){
-        ArrayList<Food> allFood = gridWorld.getAllFood();
+    public GridPosition findFood(){
+        ArrayList<GridPosition> allFoodPositions = gridWorld.getAllFoodPositions();
 
         double chance = random.nextDouble();
         if(chance < closestFood){
-            return findClosestFood(allFood);
+            return findClosestFood(allFoodPositions);
         }
         else if(chance < closestFood + randomFood){
-            return findRandomFood(allFood);
+            return findRandomFood(allFoodPositions);
         }
         else if(chance < closestFood + randomFood + farthestFromOtherHumansFood){
             ArrayList<GridPosition> humanPositions = gridWorld.getAllHumanPositions();
-            return findFarthestFromOtherHumansFood(allFood, humanPositions);
+            return findFarthestFromOtherHumansFood(allFoodPositions, humanPositions);
         }
         else{
-            return findMostFoodInVicinityFood(allFood);
+            return findMostFoodInVicinityFood(allFoodPositions);
         }
     }
 
@@ -97,27 +97,27 @@ public class FindFoodBehaviour {
         return chances;
     }
 
-    public Food findClosestFood(ArrayList<Food> allFood){
-        Food closestFood = null;
+    public GridPosition findClosestFood(ArrayList<GridPosition> allFood){
+        GridPosition closestFood = null;
         double shortestDistance = Integer.MAX_VALUE;
 
-        for(Food food : allFood){
-            double distance = GridPosition.distance(food.getGridPosition(), human.getGridPosition());
+        for(GridPosition foodPosition : allFood){
+            double distance = GridPosition.distance(foodPosition, human.getGridPosition());
             if (distance < shortestDistance && distance <= human.getViewRange()){
                 shortestDistance = distance;
-                closestFood = food;
+                closestFood = foodPosition;
             }
         }
         return closestFood;
     }
 
-    public Food findRandomFood(ArrayList<Food> allFood){
-        ArrayList<Food> visibleFood = new ArrayList<>();
+    public GridPosition findRandomFood(ArrayList<GridPosition> allFood){
+        ArrayList<GridPosition> visibleFood = new ArrayList<>();
 
-        for(Food food : allFood){
-            double distance = GridPosition.distance(food.getGridPosition(), human.getGridPosition());
+        for(GridPosition foodPosition : allFood){
+            double distance = GridPosition.distance(foodPosition, human.getGridPosition());
             if (distance <= human.getViewRange()){
-                visibleFood.add(food);
+                visibleFood.add(foodPosition);
             }
         }
         if(visibleFood.size() == 0) return null;
@@ -125,19 +125,19 @@ public class FindFoodBehaviour {
         return visibleFood.get(r);
     }
 
-    public Food findFarthestFromOtherHumansFood(ArrayList<Food> allFood, ArrayList<GridPosition> humanPositions){
-        Food farthestFromOtherPlayersFood = null;
+    public GridPosition findFarthestFromOtherHumansFood(ArrayList<GridPosition> allFood, ArrayList<GridPosition> humanPositions){
+        GridPosition farthestFromOtherPlayersFood = null;
         int smallestDistance = Integer.MAX_VALUE;
 
-        for(Food food : allFood){
-            double distance = GridPosition.distance(food.getGridPosition(), human.getGridPosition());
+        for(GridPosition foodPosition : allFood){
+            double distance = GridPosition.distance(foodPosition, human.getGridPosition());
             if (distance <= human.getViewRange()){
                 int distanceFromOtherPlayers = 0;
                 for(GridPosition humanPosition : humanPositions){
-                    distanceFromOtherPlayers += GridPosition.distance(food.getGridPosition(), humanPosition);
+                    distanceFromOtherPlayers += GridPosition.distance(foodPosition, humanPosition);
                 }
                 if(distanceFromOtherPlayers < smallestDistance){
-                    farthestFromOtherPlayersFood = food;
+                    farthestFromOtherPlayersFood = foodPosition;
                     smallestDistance = distanceFromOtherPlayers;
                 }
             }
@@ -145,19 +145,19 @@ public class FindFoodBehaviour {
         return farthestFromOtherPlayersFood;
     }
 
-    public Food findMostFoodInVicinityFood(ArrayList<Food> allFood){
-        Food mostFoodInVicinityFood = null;
+    public GridPosition findMostFoodInVicinityFood(ArrayList<GridPosition> allFood){
+        GridPosition mostFoodInVicinityFood = null;
         int smallestDistance = Integer.MAX_VALUE;
 
-        for(Food food : allFood){
-            double distance = GridPosition.distance(food.getGridPosition(), human.getGridPosition());
+        for(GridPosition foodPosition : allFood){
+            double distance = GridPosition.distance(foodPosition, human.getGridPosition());
             if (distance <= human.getViewRange()){
                 int distanceToOtherFood = 0;
-                for(Food otherFood : allFood){
-                    distanceToOtherFood += GridPosition.distance(food.getGridPosition(), otherFood.getGridPosition());
+                for(GridPosition otherFoodPosition : allFood){
+                    distanceToOtherFood += GridPosition.distance(foodPosition, otherFoodPosition);
                 }
                 if(distanceToOtherFood < smallestDistance){
-                    mostFoodInVicinityFood = food;
+                    mostFoodInVicinityFood = foodPosition;
                     smallestDistance = distanceToOtherFood;
                 }
             }

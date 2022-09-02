@@ -33,22 +33,20 @@ public class Gui {
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         // Main Panel
-        JPanel mainPanel = new JPanel(new BorderLayout());
+        JPanel mainPanel = new JPanel();
+        mainPanel.setLayout(new BorderLayout());
 
         // Button Panel
         ButtonPanel buttonPanel = new ButtonPanel(this.guiController);
         mainPanel.add(buttonPanel, BorderLayout.LINE_START);
-        //buttonPanel.setPreferredSize(new Dimension(200,500));
 
         // Grid Panel
         gridPanel = new GridPanel(guiController, width, height);
         mainPanel.add(gridPanel, BorderLayout.CENTER);
-        //gridPanel.setPreferredSize(new Dimension(500,500));
 
         // Info Panel
         infoPanel = new InfoPanel(this.guiController);
         mainPanel.add(infoPanel, BorderLayout.LINE_END);
-        //infoPanel.setPreferredSize(new Dimension(200,500));
 
         mainFrame.add(mainPanel);
         mainFrame.setVisible(true);

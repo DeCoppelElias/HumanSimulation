@@ -29,6 +29,10 @@ public abstract class Entity extends GridContent {
         createChildSpecific();
     }
 
+    public void setAlive(Boolean alive){
+        this.alive = alive;
+    }
+
     protected abstract void createChildSpecific() throws Exception;
 
     @Override

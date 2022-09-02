@@ -1,5 +1,6 @@
 package SimulationApplication;
 
+import SimulationApplication.GridContent.Entity.Human.Human;
 import SimulationApplication.GridContent.Food;
 import SimulationApplication.GridContent.GridContent;
 
@@ -61,18 +62,25 @@ public class GridTile {
         return false;
     }
 
-    public Food collectFood(){
-        Food food = null;
+    public void collectFood(Human human){
+        Food collectedFood = null;
         Enumeration<Integer> enumeration = contents.keys();
         while(enumeration.hasMoreElements()){
             int id = enumeration.nextElement();
             GridContent content = contents.get(id);
-            if(content instanceof Food){
-                food = (Food) content;
+            if(content instanceof Food food){
+                if (collectedFood == null){
+                    collectedFood = food;
+                }
+                else{
+                    if(collectedFood.getTryingToCollectSize() > food.getTryingToCollectSize()){
+                        collectedFood = food;
+                    }
+                }
             }
         }
 
-        return food;
+        collectedFood.collectFood(human);
     }
 
     public ArrayList<String> getInfo(){

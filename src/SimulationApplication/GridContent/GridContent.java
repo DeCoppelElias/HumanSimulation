@@ -42,7 +42,7 @@ public abstract class GridContent {
 
     public abstract Boolean checkDisplayability();
 
-    public abstract Hashtable<String, Integer> getInfo();
+    public abstract Hashtable<String, Float> getInfo();
 
     @Override
     public abstract String toString();

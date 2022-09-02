@@ -1,10 +1,11 @@
 package SimulationApplication;
 
 import DataAnalytics.DataAnalytics;
-import SimulationApplication.GridContent.Entity.Entity;
 import SimulationApplication.GridContent.Entity.Human.Human;
+import SimulationApplication.GridContent.Entity.Human.HumanManager;
 import SimulationApplication.GridContent.Entity.Human.HumanParameters;
 import SimulationApplication.GridContent.Food;
+import SimulationApplication.GridContent.FoodManager;
 import SimulationApplication.GridContent.GridContent;
 
 import java.util.ArrayList;
@@ -27,8 +28,8 @@ public class GridWorld {
 
     private DataAnalytics dataAnalytics;
 
-    private ArrayList<Human> humans = new ArrayList<>();;
-    private ArrayList<Food> food = new ArrayList<>();;
+    private HumanManager humanManager;
+    private FoodManager foodManager;
 
     private Random random  = new Random();
 
@@ -44,6 +45,8 @@ public class GridWorld {
         }
 
         this.dataAnalytics = new DataAnalytics(this);
+        this.humanManager = new HumanManager(this);
+        this.foodManager = new FoodManager(this);
     }
 
     public int getWidth() {
@@ -81,7 +84,7 @@ public class GridWorld {
         return content.toString();
     }
 
-    public Hashtable<String, Integer> getInfo(int id){
+    public Hashtable<String, Float> getInfo(int id){
         GridContent content = ids.get(id);
         if(content == null) return new Hashtable<>();
         return content.getInfo();
@@ -121,11 +124,11 @@ public class GridWorld {
         GridTile gridTile = getGridTile(content.getGridPosition());
         gridTile.addContent(content, id);
 
-        if(content instanceof Human h) humans.add(h);
-        if(content instanceof Food f) food.add(f);
+        if(content instanceof Human h) humanManager.addHuman(h);
+        if(content instanceof Food f) foodManager.addFood(f);
     }
 
-    private void removeContent(GridContent content) throws Exception {
+    public void removeContent(GridContent content) throws Exception {
         if(!isWithinBounds(content.getGridPosition())) throw new Exception("Content is out of bounds");
         GridTile gridTile = getGridTile(content.getGridPosition());
 
@@ -137,8 +140,10 @@ public class GridWorld {
 
         gridTile.removeContent(id);
 
-        if(content instanceof Human h) humans.remove(h);
-        if(content instanceof Food f) food.remove(f);
+        if(content instanceof Human h){
+            humanManager.removeHuman(h);
+        }
+        if(content instanceof Food f) foodManager.removeFood(f);
 
         content.setActive(false);
     }
@@ -147,30 +152,11 @@ public class GridWorld {
         // Add day
         day++;
 
-        // Survived, died and bred entities
-        ArrayList<Entity> diedEntities = new ArrayList<>();
-        ArrayList<Entity> bredEntities = new ArrayList<>();
+        // Humans
+        humanManager.advanceTime();
 
-        // Entity action, check alive and check breeding
-        for(Entity entity : this.humans){
-            entity.action();
-            if (!entity.checkAlive()){
-                diedEntities.add(entity);
-            }
-            if (entity.checkBred()){
-                bredEntities.add(entity);
-            }
-        }
-
-        // Remove died entities from grid
-        for(Entity entity : diedEntities){
-            removeContent(entity);
-        }
-
-        // Create babies
-        for(Entity entity : bredEntities){
-            entity.createChild();
-        }
+        // Food
+        foodManager.advanceTime();
 
         // Update data
         dataAnalytics.updateData(day);
@@ -196,12 +182,10 @@ public class GridWorld {
         return gridTile.containsFood();
     }
 
-    public Food collectFood(GridPosition gridPosition) throws Exception {
-        if(!containsFood(gridPosition)) return null;
+    public void collectFood(GridPosition gridPosition, Human human) {
+        if(!containsFood(gridPosition)) return;
         GridTile gridTile = getGridTile(gridPosition);
-        Food food = gridTile.collectFood();
-        this.removeContent(food);
-        return food;
+        gridTile.collectFood(human);
     }
 
     public GridTile getGridTile(GridPosition gridPosition){
@@ -212,28 +196,20 @@ public class GridWorld {
         this.dataAnalytics.resetStatistics();
     }
 
-    public ArrayList<Food> getAllFood(){
-        return (ArrayList<Food>)this.food.clone();
+    public ArrayList<GridPosition> getAllFoodPositions(){
+        return foodManager.getAllFoodPositions();
     }
 
     public ArrayList<GridPosition> getAllHumanPositions(){
-        ArrayList<GridPosition> result = new ArrayList<>();
-
-        for(Human human : humans){
-            result.add(human.getGridPosition());
-        }
-
-        return result;
+        return humanManager.getAllHumanPositions();
     }
 
-    public ArrayList<Integer> getAllHumans(){
-        ArrayList<Integer> result = new ArrayList<>();
+    public ArrayList<Integer> getAllHumanIds(){
+        return this.humanManager.getAllHumanIds();
+    }
 
-        for(Human human : humans){
-            result.add(gridContents.get(human));
-        }
-
-        return result;
+    public Integer getId(GridContent gridContent){
+        return this.gridContents.get(gridContent);
     }
 
     public void setEatInterval(int eatInterval) {
