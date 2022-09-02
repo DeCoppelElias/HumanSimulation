@@ -22,3 +22,7 @@ You can also change the parameters of the grid world and humans. This means that
 Here you can also display all current alive humans if you want.   
    
 Lastly you can create a simple graph of the amount of humans each day by clicking the 'Statistics' button and then clicking the 'Display Human Population Graph' button. You can also reset the statistics whenever you want.  
+
+# What I learned
+- I learned a lot about creating a GUI with java swing.
+- I learned a lot about creating a complex system to simulate behaviours in a changing envoirement.
