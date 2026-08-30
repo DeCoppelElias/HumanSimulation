@@ -9,3 +9,6 @@
 
 # Maven build output
 /target/
+
+# IntelliJ project files, the pom is the source of truth
+/.idea/
