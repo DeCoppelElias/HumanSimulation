@@ -21,6 +21,15 @@ jobs:
           java-version: '21'
           cache: maven
 
+      # The pom carries a -SNAPSHOT version between releases. The tag is the
+      # single source of truth for what a release is called, so derive it from
+      # there rather than relying on someone remembering to bump the pom.
+      - name: Set the version from the tag
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "Releasing $VERSION from tag $GITHUB_REF_NAME"
+          ./mvnw -B versions:set -DnewVersion="$VERSION" -DgenerateBackupPoms=false
+
       - name: Build the runnable jar
         run: ./mvnw -B package
 
