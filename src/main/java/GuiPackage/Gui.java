@@ -4,10 +4,9 @@ import GuiPackage.Panels.ButtonPanel;
 import GuiPackage.Panels.GridPanel;
 import GuiPackage.Panels.InfoPanel;
 import SimulationApplication.GridPosition;
-
-import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
+import javax.swing.*;
 
 public class Gui {
     private JFrame mainFrame;
@@ -29,7 +28,7 @@ public class Gui {
         this.initialized = true;
 
         mainFrame = new JFrame("App");
-        mainFrame.setSize(1000,500);
+        mainFrame.setSize(1000, 500);
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         // Main Panel
@@ -53,51 +52,45 @@ public class Gui {
 
         guiController.refreshGrid();
 
-        Runtime.getRuntime().addShutdownHook(new Thread()
-        {
+        Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
-            public void run()
-            {
+            public void run() {
                 guiController.shutdown();
             }
         });
     }
 
     public void setTileColor(GridPosition gridPosition, Color color) {
-        if(!initialized) return;
+        if (!initialized) return;
 
         gridPanel.setTileColor(gridPosition, color);
     }
 
     public void setTileImage(GridPosition gridPosition, String imageName) {
-        if(!initialized) return;
+        if (!initialized) return;
 
         gridPanel.setTileImage(gridPosition, imageName);
     }
 
-    public void displayInfo(ArrayList<Integer> gridContentIds){
-        if(!initialized) return;
+    public void displayInfo(ArrayList<Integer> gridContentIds) {
+        if (!initialized) return;
 
         infoPanel.displayInfo(gridContentIds);
     }
 
-    public void resetInfo(){
-        if(!initialized) return;
+    public void resetInfo() {
+        if (!initialized) return;
 
         infoPanel.resetInfo();
     }
 
-    public void setCursor(Image image){
-        if(!initialized) return;
+    public void setCursor(Image image) {
+        if (!initialized) return;
 
-        if(image == null) mainFrame.setCursor(null);
-        else{
-            Cursor c = toolkit.createCustomCursor(image , new Point(0, 0), "customCursor");
+        if (image == null) mainFrame.setCursor(null);
+        else {
+            Cursor c = toolkit.createCustomCursor(image, new Point(0, 0), "customCursor");
             mainFrame.setCursor(c);
         }
-    }
-
-    public void increaseGridSize(){
-        this.gridPanel.increaseGridSize();
     }
 }

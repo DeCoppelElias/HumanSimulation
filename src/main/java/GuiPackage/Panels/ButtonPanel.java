@@ -3,11 +3,9 @@ package GuiPackage.Panels;
 import GuiPackage.GuiController;
 import SimulationApplication.GridWorld;
 import SimulationApplication.GridWorldManager;
-import org.jfree.chart.axis.Axis;
-
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import javax.swing.*;
 
 public class ButtonPanel extends JPanel {
     private GuiController guiController;
@@ -15,7 +13,7 @@ public class ButtonPanel extends JPanel {
     private CardLayout cardLayout;
     private Container contentPane;
 
-    public ButtonPanel(GuiController guiController){
+    public ButtonPanel(GuiController guiController) {
         this.guiController = guiController;
 
         cardLayout = new CardLayout();
@@ -47,27 +45,27 @@ public class ButtonPanel extends JPanel {
         });
     }
 
-    private void toAddEntitiesLayout(){
+    private void toAddEntitiesLayout() {
         cardLayout.show(contentPane, "addEntitiesPanel");
     }
 
-    private void toMainLayout(){
+    private void toMainLayout() {
         cardLayout.show(contentPane, "mainPanel");
     }
 
-    private void toAdvanceLayout(){
+    private void toAdvanceLayout() {
         cardLayout.show(contentPane, "advancePanel");
     }
 
-    private void toStatisticsLayout(){
+    private void toStatisticsLayout() {
         cardLayout.show(contentPane, "statisticsPanel");
     }
 
-    private void toGridWorldLayout(){
+    private void toGridWorldLayout() {
         cardLayout.show(contentPane, "gridWorldPanel");
     }
 
-    private JPanel createMainPanel(){
+    private JPanel createMainPanel() {
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 
@@ -98,7 +96,7 @@ public class ButtonPanel extends JPanel {
         return mainPanel;
     }
 
-    private JPanel createAddEntitiesPanel(){
+    private JPanel createAddEntitiesPanel() {
         JPanel addEntitiesPanel = new JPanel();
         addEntitiesPanel.setLayout(new BoxLayout(addEntitiesPanel, BoxLayout.Y_AXIS));
 
@@ -107,12 +105,12 @@ public class ButtonPanel extends JPanel {
         addHumanAmountPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         addHumanAmountPanel.setAlignmentX(0);
 
-        JTextArea amountHumansTextArea = new JTextArea("1",1,1);
+        JTextArea amountHumansTextArea = new JTextArea("1", 1, 1);
         amountHumansTextArea.addKeyListener(new KeyAdapter() {
             public void keyTyped(KeyEvent e) {
                 char c = e.getKeyChar();
-                if ( ((c < '0') || (c > '9')) && (c != KeyEvent.VK_BACK_SPACE)) {
-                    e.consume();  // if it's not a number, ignore the event
+                if (((c < '0') || (c > '9')) && (c != KeyEvent.VK_BACK_SPACE)) {
+                    e.consume(); // if it's not a number, ignore the event
                 }
             }
         });
@@ -120,10 +118,10 @@ public class ButtonPanel extends JPanel {
         JButton addHumanRandomButton = new JButton("Add Human Random");
         addHumanRandomButton.addActionListener(e -> {
             try {
-                if(amountHumansTextArea.getText().equals("")) guiController.spawnHuman(1);
-                else{
+                if (amountHumansTextArea.getText().equals("")) guiController.spawnHuman(1);
+                else {
                     int amount = Integer.parseInt(amountHumansTextArea.getText());
-                    if(amount < 1000){
+                    if (amount < 1000) {
                         guiController.spawnHuman(amount);
                     }
                 }
@@ -142,12 +140,12 @@ public class ButtonPanel extends JPanel {
         addFoodAmountPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
         addFoodAmountPanel.setAlignmentX(0);
 
-        JTextArea amountFoodTextArea = new JTextArea("1",1,1);
+        JTextArea amountFoodTextArea = new JTextArea("1", 1, 1);
         amountFoodTextArea.addKeyListener(new KeyAdapter() {
             public void keyTyped(KeyEvent e) {
                 char c = e.getKeyChar();
-                if ( ((c < '0') || (c > '9')) && (c != KeyEvent.VK_BACK_SPACE)) {
-                    e.consume();  // if it's not a number, ignore the event
+                if (((c < '0') || (c > '9')) && (c != KeyEvent.VK_BACK_SPACE)) {
+                    e.consume(); // if it's not a number, ignore the event
                 }
             }
         });
@@ -155,10 +153,10 @@ public class ButtonPanel extends JPanel {
         JButton addFoodRandomButton = new JButton("Add Food Random");
         addFoodRandomButton.addActionListener(e -> {
             try {
-                if(amountHumansTextArea.getText().equals("")) guiController.spawnFood(1);
-                else{
+                if (amountHumansTextArea.getText().equals("")) guiController.spawnFood(1);
+                else {
                     int amount = Integer.parseInt(amountHumansTextArea.getText());
-                    if(amount < 1000){
+                    if (amount < 1000) {
                         guiController.spawnFood(amount);
                     }
                 }
@@ -207,7 +205,8 @@ public class ButtonPanel extends JPanel {
 
         // Glue
         Box.Filler glue = (Box.Filler) Box.createVerticalGlue();
-        glue.changeShape(glue.getMinimumSize(),
+        glue.changeShape(
+                glue.getMinimumSize(),
                 new Dimension(0, Short.MAX_VALUE), // make glue greedy
                 glue.getMaximumSize());
         addEntitiesPanel.add(glue);
@@ -215,7 +214,7 @@ public class ButtonPanel extends JPanel {
         return addEntitiesPanel;
     }
 
-    private JPanel createAdvancePanel(){
+    private JPanel createAdvancePanel() {
         JPanel advancePanel = new JPanel();
         advancePanel.setLayout(new BoxLayout(advancePanel, BoxLayout.Y_AXIS));
 
@@ -270,7 +269,7 @@ public class ButtonPanel extends JPanel {
         return advancePanel;
     }
 
-    private JPanel createStatisticsPanel(){
+    private JPanel createStatisticsPanel() {
         JPanel statisticsPanel = new JPanel();
         statisticsPanel.setLayout(new BoxLayout(statisticsPanel, BoxLayout.Y_AXIS));
 
@@ -304,7 +303,7 @@ public class ButtonPanel extends JPanel {
         return statisticsPanel;
     }
 
-    private JPanel createGridWorldPanel(){
+    private JPanel createGridWorldPanel() {
         JPanel gridWorldPanel = new JPanel();
         gridWorldPanel.setLayout(new BoxLayout(gridWorldPanel, BoxLayout.Y_AXIS));
         gridWorldPanel.setAlignmentX(0);
@@ -323,23 +322,12 @@ public class ButtonPanel extends JPanel {
         });
         gridWorldPanel.add(resetGridButton);
 
-        JButton increaseSizeButton = new JButton("Increase Grid Size");
-        increaseSizeButton.addActionListener(e -> {
-            try {
-                this.guiController.increaseGridSize();
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-        });
-        //gridWorldPanel.add(increaseSizeButton);
-
         JButton displayAllHumansButton = new JButton("Display All Humans");
         displayAllHumansButton.addActionListener(e -> {
             this.guiController.resetInfo();
             this.guiController.displayAllHumans();
         });
         gridWorldPanel.add(displayAllHumansButton);
-
 
         // Back to main panel
         JButton returnButton = new JButton("Return");
@@ -350,7 +338,8 @@ public class ButtonPanel extends JPanel {
 
         // Glue
         Box.Filler glue = (Box.Filler) Box.createVerticalGlue();
-        glue.changeShape(glue.getMinimumSize(),
+        glue.changeShape(
+                glue.getMinimumSize(),
                 new Dimension(0, Short.MAX_VALUE), // make glue greedy
                 glue.getMaximumSize());
         gridWorldPanel.add(glue);
@@ -360,10 +349,10 @@ public class ButtonPanel extends JPanel {
 
     public static void main(String[] args) throws Exception {
         JFrame frame = new JFrame("App");
-        frame.setSize(800,500);
+        frame.setSize(800, 500);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        ButtonPanel buttonPanel = new ButtonPanel(new GuiController(new GridWorldManager(new GridWorld(5,5))));
+        ButtonPanel buttonPanel = new ButtonPanel(new GuiController(new GridWorldManager(new GridWorld(5, 5))));
 
         frame.add(buttonPanel);
         frame.setVisible(true);

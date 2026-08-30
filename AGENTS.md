@@ -42,8 +42,7 @@ commented-out code, and no long block where a clause would do.
 
 Enable it as a pre-commit hook with `git config core.hooksPath .githooks`, once
 per clone. It checks staged files only, so 2022 comments are left alone until
-you edit that file. `ButtonPanel.java:334` has a commented-out line that is
-deliberately left as it is.
+you edit that file.
 
 ## Formatting
 

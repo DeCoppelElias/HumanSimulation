@@ -1,9 +1,6 @@
 package GuiPackage;
 
 import SimulationApplication.*;
-
-import javax.imageio.ImageIO;
-import javax.swing.*;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
@@ -11,9 +8,16 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import javax.imageio.ImageIO;
+import javax.swing.*;
 
 public class GuiController {
-    private enum GuiState{ Normal, SpawningHuman, SpawningFood}
+    private enum GuiState {
+        Normal,
+        SpawningHuman,
+        SpawningFood
+    }
+
     private GuiState guiState = GuiState.Normal;
 
     private Gui gui;
@@ -52,19 +56,19 @@ public class GuiController {
         foodCursorImage = ImageIO.read(getClass().getResource("/Food.jpg"));
     }
 
-    public void toSpawningHumanState(){
+    public void toSpawningHumanState() {
         this.guiState = GuiState.SpawningHuman;
 
         this.gui.setCursor(humanCursorImage);
     }
 
-    public void toSpawningFoodState(){
+    public void toSpawningFoodState() {
         this.guiState = GuiState.SpawningFood;
 
         this.gui.setCursor(foodCursorImage);
     }
 
-    public void toNormalState(){
+    public void toNormalState() {
         this.guiState = GuiState.Normal;
 
         this.gui.setCursor(null);
@@ -88,12 +92,13 @@ public class GuiController {
         this.gridWorldManager.spawnFood(amount);
         refreshGrid();
     }
+
     public void spawnFood(GridPosition gridPosition) {
         this.gridWorldManager.spawnFood(gridPosition);
         refreshGrid();
     }
 
-    public String getInfoString(int id){
+    public String getInfoString(int id) {
         return this.gridWorldManager.getInfoString(id);
     }
 
@@ -103,7 +108,7 @@ public class GuiController {
         gridWorldManager.advanceTime();
         refreshGrid();
 
-        if(!select) return;
+        if (!select) return;
         displaySelectedGridContentInfo();
     }
 
@@ -116,15 +121,11 @@ public class GuiController {
             String s = info.get(gridPosition);
 
             gui.setTileColor(gridPosition, Color.white);
-            if(s.contains("HUMAN")){
+            if (s.contains("HUMAN")) {
                 gui.setTileImage(gridPosition, "Human");
-            }
-
-            else if(s.contains("FOOD")){
+            } else if (s.contains("FOOD")) {
                 gui.setTileImage(gridPosition, "Food");
-            }
-
-            else{
+            } else {
                 gui.setTileImage(gridPosition, null);
             }
         }
@@ -141,30 +142,30 @@ public class GuiController {
     }
 
     public void displaySelectedGridContentInfo() {
-        if(!select) return;
+        if (!select) return;
         Boolean displayability = gridWorldManager.checkDisplayability(this.selectedGridContentId);
-        if(displayability){
+        if (displayability) {
             this.gui.resetInfo();
             this.gui.displayInfo(new ArrayList<>(List.of(this.selectedGridContentId)));
-            if(gridWorldManager.isHuman(this.selectedGridContentId)){
+            if (gridWorldManager.isHuman(this.selectedGridContentId)) {
                 int range = gridWorldManager.getRange(this.selectedGridContentId);
                 GridPosition gridPosition = gridWorldManager.getGridPosition(this.selectedGridContentId);
 
-                for(int x = gridPosition.getX() - range; x <= gridPosition.getX() + range; x++){
-                    for(int y = gridPosition.getY() - range; y <= gridPosition.getY() + range; y++){
-                        GridPosition currentGridPosition = new GridPosition(x,y);
-                        if(gridWorldManager.isWithinBounds(currentGridPosition)) this.gui.setTileColor(currentGridPosition, Color.gray);
+                for (int x = gridPosition.getX() - range; x <= gridPosition.getX() + range; x++) {
+                    for (int y = gridPosition.getY() - range; y <= gridPosition.getY() + range; y++) {
+                        GridPosition currentGridPosition = new GridPosition(x, y);
+                        if (gridWorldManager.isWithinBounds(currentGridPosition))
+                            this.gui.setTileColor(currentGridPosition, Color.gray);
                     }
                 }
             }
-        }
-        else{
+        } else {
             this.select = false;
             this.gui.resetInfo();
         }
     }
 
-    public void displayAllHumans(){
+    public void displayAllHumans() {
         ArrayList<Integer> humanIds = this.gridWorldManager.getAllHumans();
 
         this.gui.displayInfo(humanIds);
@@ -176,78 +177,73 @@ public class GuiController {
         displaySelectedGridContentInfo();
     }
 
-    public void toggleAutomatic(){
-        if(automatic) this.automatic = false;
+    public void toggleAutomatic() {
+        if (automatic) this.automatic = false;
         else this.automatic = true;
 
-        if(automatic){
+        if (automatic) {
             t = executor.scheduleAtFixedRate(automaticAdvance, 0, rate, TimeUnit.MILLISECONDS);
-        }
-        else{
-            if(t == null) return;
+        } else {
+            if (t == null) return;
             t.cancel(false);
         }
     }
 
-    public void increaseAutomaticSpeed(){
-        if(!automatic) return;
-        if(rate > 100){
+    public void increaseAutomaticSpeed() {
+        if (!automatic) return;
+        if (rate > 100) {
             rate -= 100;
-        }
-        else {
+        } else {
             rate -= 10;
-            if(rate < 10) rate = 10;
+            if (rate < 10) rate = 10;
         }
-        if (t != null)
-        {
+        if (t != null) {
             t.cancel(true);
         }
         t = executor.scheduleAtFixedRate(automaticAdvance, 0, rate, TimeUnit.MILLISECONDS);
     }
 
-    public void decreaseAutomaticSpeed(){
-        if(!automatic) return;
-        if(rate > 100){
+    public void decreaseAutomaticSpeed() {
+        if (!automatic) return;
+        if (rate > 100) {
             rate += 100;
 
-            if(rate > 1000) rate = 1000;
-        }
-        else {
+            if (rate > 1000) rate = 1000;
+        } else {
             rate += 10;
         }
-        if (t != null)
-        {
+        if (t != null) {
             t.cancel(true);
         }
         t = executor.scheduleAtFixedRate(automaticAdvance, 0, rate, TimeUnit.MILLISECONDS);
     }
 
     public void shutdown() {
-        for(GuiShutdownListener guiShutdownListener : this.shutdownListeners){
+        for (GuiShutdownListener guiShutdownListener : this.shutdownListeners) {
             guiShutdownListener.notifyShutdown();
         }
     }
 
-    public void subscribe(GuiShutdownListener guiShutdownListener){
+    public void subscribe(GuiShutdownListener guiShutdownListener) {
         this.shutdownListeners.add(guiShutdownListener);
     }
 
-    public void unsubscribe(GuiShutdownListener guiShutdownListener){
+    public void unsubscribe(GuiShutdownListener guiShutdownListener) {
         this.shutdownListeners.remove(guiShutdownListener);
     }
 
-    public void resetStatistics(){
+    public void resetStatistics() {
         gridWorldManager.resetStatistics();
     }
 
-    public void displayHumanGraph(){
+    public void displayHumanGraph() {
         this.gridWorldManager.displayHumanGraph();
     }
 
     public void gridAction(GridPosition gridPosition) throws Exception {
-        if(guiState.equals(GuiState.Normal)) this.displayInfo(gridPosition);
-        else if(guiState.equals(GuiState.SpawningHuman)) this.spawnHuman(gridPosition);
-        else if(guiState.equals(GuiState.SpawningFood)) this.spawnFood(gridPosition);
+        if (guiState.equals(GuiState.Normal)) this.displayInfo(gridPosition);
+        else if (guiState.equals(GuiState.SpawningHuman)) this.spawnHuman(gridPosition);
+        else if (guiState.equals(GuiState.SpawningFood)) this.spawnFood(gridPosition);
     }
 
     public void resetGridWorld() {
@@ -255,27 +251,23 @@ public class GuiController {
         refreshGrid();
     }
 
-    public Hashtable<String, Integer> getHumanParameterInfo(){
+    public Hashtable<String, Integer> getHumanParameterInfo() {
         return this.gridWorldManager.getHumanParameterInfo();
     }
 
-    public void applyParameters(Hashtable<String, Integer> parameters){
+    public void applyParameters(Hashtable<String, Integer> parameters) {
         this.gridWorldManager.applyParameters(parameters);
     }
 
-    public void increaseGridSize(){
-        this.gui.increaseGridSize();
-    }
-
-    public ArrayList<Integer> sortOnSurvival(ArrayList<Integer> ids){
+    public ArrayList<Integer> sortOnSurvival(ArrayList<Integer> ids) {
         return this.gridWorldManager.sortOnSurvival(ids);
     }
 
-    public ArrayList<Integer> sortOnFood(ArrayList<Integer> ids){
+    public ArrayList<Integer> sortOnFood(ArrayList<Integer> ids) {
         return this.gridWorldManager.sortOnFood(ids);
     }
 
-    public void resetInfo(){
+    public void resetInfo() {
         this.gui.resetInfo();
     }
 }
