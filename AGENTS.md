@@ -29,6 +29,22 @@ pull requests. A `v*` tag builds the jar and attaches it to a GitHub Release,
 taking the version from the tag, so the pom stays on `-SNAPSHOT` between
 releases and never needs a manual bump. The jar is byte-reproducible.
 
+## Comments
+
+Three rules. A comment describes the current state, never how the code got
+there. It exists only if it says something the code does not already say. It
+stays short.
+
+So no changelog in comments, no "used to", no restating the line below, no
+commented-out code, and no long block where a clause would do.
+
+    python tools/comment-check.py --staged
+
+Enable it as a pre-commit hook with `git config core.hooksPath .githooks`, once
+per clone. It checks staged files only, so 2022 comments are left alone until
+you edit that file. `ButtonPanel.java:334` has a commented-out line that is
+deliberately left as it is.
+
 ## Formatting
 
 Spotless with palantir-java-format, ratcheted against `origin/master`, so only

@@ -1,0 +1,11 @@
+#!/bin/sh
+# Checks only staged files, so 2022 comments are left alone until that file is edited.
+# Enable with: git config core.hooksPath .githooks
+# Bypass once with: git commit --no-verify
+
+if ! command -v python >/dev/null 2>&1; then
+    echo "pre-commit: python not found, skipping the comment check" >&2
+    exit 0
+fi
+
+python tools/comment-check.py --staged
