@@ -15,6 +15,13 @@
   <properties>
     <maven.compiler.release>21</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <!--
+      Fixed entry timestamps, so building the same commit twice produces a
+      byte-identical jar. Verified: two clean packages give the same sha256.
+      The release workflow's versions:set rewrites this to the release time, so
+      a released jar carries the date it was cut without anyone editing it.
+    -->
+    <project.build.outputTimestamp>2026-08-30T00:00:00Z</project.build.outputTimestamp>
     <jfreechart.version>1.5.3</jfreechart.version>
     <junit.version>6.1.3</junit.version>
     <spotless.version>3.10.1</spotless.version>
@@ -37,6 +44,23 @@
 
   <build>
     <finalName>HumanSimulation</finalName>
+
+    <pluginManagement>
+      <plugins>
+        <!--
+          Not bound to any phase. The release workflow invokes versions:set to
+          stamp the tag name into the pom. Pinned here so that invocation does
+          not resolve whatever happens to be latest at release time, and so
+          Dependabot can see it.
+        -->
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>versions-maven-plugin</artifactId>
+          <version>2.21.0</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
