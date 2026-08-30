@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(javac:*)",
+      "Bash(java:*)",
+      "Bash(jar:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git branch:*)",
+      "Bash(git tag)",
+      "Bash(find:*)",
+      "Bash(ls:*)"
+    ],
+    "deny": [
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git tag -d:*)",
+      "Bash(git tag -f:*)",
+      "Bash(git filter-branch:*)"
+    ]
+  }
+}
