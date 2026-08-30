@@ -1,10 +1,9 @@
 package SimulationApplication.GridContent;
 
-import SimulationApplication.GridContent.Entity.Human.HumanBehaviour.FoodBehaviour;
 import SimulationApplication.GridContent.Entity.Human.Human;
+import SimulationApplication.GridContent.Entity.Human.HumanBehaviour.FoodBehaviour;
 import SimulationApplication.GridPosition;
 import SimulationApplication.GridWorld;
-
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Random;
@@ -16,11 +15,11 @@ public class Food extends GridContent {
         super(gridWorld, gridPosition);
     }
 
-    public void collectFood(Human human){
+    public void collectFood(Human human) {
         tryingToCollect.add(human);
     }
 
-    public Hashtable<String, ArrayList<Human>> decideWinner(){
+    public Hashtable<String, ArrayList<Human>> decideWinner() {
         // Init result
         Hashtable<String, ArrayList<Human>> result = new Hashtable<>();
         ArrayList<Human> wonFood = new ArrayList<>();
@@ -31,34 +30,33 @@ public class Food extends GridContent {
         ArrayList<Human> aggressiveHumans = new ArrayList<>();
 
         // Check which behaviours will be aggressive and which will not
-        for(Human human : tryingToCollect){
+        for (Human human : tryingToCollect) {
             FoodBehaviour foodBehaviour = human.getFoodBehaviour();
-            if(foodBehaviour.getBehaviour().equals("aggressive")) aggressiveHumans.add(human);
+            if (foodBehaviour.getBehaviour().equals("aggressive")) aggressiveHumans.add(human);
             else peacefulHumans.add(human);
         }
 
         // If only one aggressive behaviour => wins the food
-        if(aggressiveHumans.size() == 1){
+        if (aggressiveHumans.size() == 1) {
             wonFood.add(aggressiveHumans.get(0));
         }
 
         // Aggressive behaviours > 1 => fight
-        else if(aggressiveHumans.size() > 1){
+        else if (aggressiveHumans.size() > 1) {
             Random random = new Random();
-            int r = random.nextInt(0,aggressiveHumans.size() + 1);
-            for(int i = 0; i < aggressiveHumans.size(); i++){
+            int r = random.nextInt(0, aggressiveHumans.size() + 1);
+            for (int i = 0; i < aggressiveHumans.size(); i++) {
                 Human human = aggressiveHumans.get(i);
-                if(i == r){
+                if (i == r) {
                     wonFood.add(human);
-                }
-                else{
+                } else {
                     died.add(human);
                 }
             }
         }
 
         // If all aggressive behaviours died or there are no => split food
-        if(wonFood.size() == 0){
+        if (wonFood.size() == 0) {
             wonFood.addAll(peacefulHumans);
         }
 
@@ -68,11 +66,11 @@ public class Food extends GridContent {
         return result;
     }
 
-    public void resetTryingToCollect(){
+    public void resetTryingToCollect() {
         this.tryingToCollect = new ArrayList<>();
     }
 
-    public int getTryingToCollectSize(){
+    public int getTryingToCollectSize() {
         return tryingToCollect.size();
     }
 
@@ -94,15 +92,5 @@ public class Food extends GridContent {
     @Override
     public String gridString() {
         return "FOOD";
-    }
-
-    @Override
-    public Object clone() {
-        try {
-            return new Food(this.gridWorld, this.getGridPosition());
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
     }
 }

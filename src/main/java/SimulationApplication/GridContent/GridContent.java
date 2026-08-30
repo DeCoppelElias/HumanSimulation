@@ -2,9 +2,7 @@ package SimulationApplication.GridContent;
 
 import SimulationApplication.GridPosition;
 import SimulationApplication.GridWorld;
-
 import java.util.Hashtable;
-import java.util.Random;
 
 public abstract class GridContent {
     private Boolean active = true;
@@ -13,11 +11,11 @@ public abstract class GridContent {
 
     private GridPosition gridPosition;
 
-    public void setActive(Boolean active){
+    public void setActive(Boolean active) {
         this.active = active;
     }
 
-    public Boolean getActive(){
+    public Boolean getActive() {
         return active;
     }
 
@@ -27,16 +25,16 @@ public abstract class GridContent {
         gridWorld.addContent(this);
     }
 
-    public GridPosition getGridPosition(){
+    public GridPosition getGridPosition() {
         return this.gridPosition;
     }
 
-    public void move(GridPosition newGridPosition){
+    public void move(GridPosition newGridPosition) {
         GridPosition oldGridPosition = this.gridPosition;
 
         this.gridPosition = newGridPosition;
 
-        if(this.gridWorld == null) return;
+        if (this.gridWorld == null) return;
         this.gridWorld.refreshContent(this, oldGridPosition);
     }
 
@@ -48,8 +46,4 @@ public abstract class GridContent {
     public abstract String toString();
 
     public abstract String gridString();
-
-
-    @Override
-    public abstract Object clone();
 }

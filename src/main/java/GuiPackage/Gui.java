@@ -51,13 +51,6 @@ public class Gui {
         mainFrame.setVisible(true);
 
         guiController.refreshGrid();
-
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                guiController.shutdown();
-            }
-        });
     }
 
     public void setTileColor(GridPosition gridPosition, Color color) {

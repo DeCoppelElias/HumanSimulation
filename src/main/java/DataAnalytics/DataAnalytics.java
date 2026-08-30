@@ -2,20 +2,19 @@ package DataAnalytics;
 
 import SimulationApplication.GridPosition;
 import SimulationApplication.GridWorld;
-
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
 public class DataAnalytics {
     private GridWorld gridWorld;
-    private Hashtable<Integer, Hashtable<String,Integer>> data = new Hashtable<>();
+    private Hashtable<Integer, Hashtable<String, Integer>> data = new Hashtable<>();
 
-    public DataAnalytics(GridWorld gridWorld){
+    public DataAnalytics(GridWorld gridWorld) {
         this.gridWorld = gridWorld;
     }
 
-    public Hashtable<String, Integer> getEntityInfo(){
+    public Hashtable<String, Integer> getEntityInfo() {
         Hashtable<String, Integer> result = new Hashtable<>();
         Hashtable<GridPosition, String> info = gridWorld.getInfo();
 
@@ -37,42 +36,12 @@ public class DataAnalytics {
         return result;
     }
 
-    public void updateData(int day){
+    public void updateData(int day) {
         Hashtable<String, Integer> newData = getEntityInfo();
         this.data.put(day, newData);
     }
 
-    public String getDataString(){
-        String result = "-----------------------------------\n";
-
-        int counter = 0;
-        Enumeration<Integer> e1 = this.data.keys();
-        while (e1.hasMoreElements()) {
-            e1.nextElement();
-
-            String dayString = "-----------------\n";
-            dayString += "day: " + counter + "\n";
-            Integer day = counter;
-            counter++;
-            Hashtable<String, Integer> dayData = this.data.get(day);
-            if(dayData == null) continue;
-            Enumeration<String> e2 = dayData.keys();
-            while (e2.hasMoreElements()) {
-
-                String name = e2.nextElement();
-                Integer amount = dayData.get(name);
-
-                dayString += name + ": " + amount + "\n";
-            }
-
-            dayString += "-----------------\n";
-            result += dayString;
-        }
-        result += "-----------------------------------";
-        return result;
-    }
-
-    public void resetStatistics(){
+    public void resetStatistics() {
         this.data = new Hashtable<>();
     }
 
@@ -89,11 +58,6 @@ public class DataAnalytics {
             amounts.add(dayData.get("HUMAN"));
         }
 
-        LineChart.Create("Human Statistics",
-                "Human population per day",
-                "Human Serie",
-                "Day",
-                "Humans",
-                amounts);
+        LineChart.Create("Human Statistics", "Human population per day", "Human Serie", "Day", "Humans", amounts);
     }
 }

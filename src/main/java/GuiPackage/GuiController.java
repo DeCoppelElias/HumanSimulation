@@ -27,8 +27,6 @@ public class GuiController {
 
     private Boolean automatic = false;
 
-    private ArrayList<GuiShutdownListener> shutdownListeners = new ArrayList<>();
-
     private ScheduledFuture<?> t = null;
     private ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
     private Runnable automaticAdvance = new Runnable() {
@@ -216,20 +214,6 @@ public class GuiController {
             t.cancel(true);
         }
         t = executor.scheduleAtFixedRate(automaticAdvance, 0, rate, TimeUnit.MILLISECONDS);
-    }
-
-    public void shutdown() {
-        for (GuiShutdownListener guiShutdownListener : this.shutdownListeners) {
-            guiShutdownListener.notifyShutdown();
-        }
-    }
-
-    public void subscribe(GuiShutdownListener guiShutdownListener) {
-        this.shutdownListeners.add(guiShutdownListener);
-    }
-
-    public void unsubscribe(GuiShutdownListener guiShutdownListener) {
-        this.shutdownListeners.remove(guiShutdownListener);
     }
 
     public void resetStatistics() {
