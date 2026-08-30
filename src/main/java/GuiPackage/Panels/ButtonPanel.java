@@ -38,7 +38,7 @@ public class ButtonPanel extends JPanel {
             public void mouseClicked(MouseEvent e) {
                 super.mouseClicked(e);
 
-                if (InputEvent.BUTTON3_DOWN_MASK != 0) {
+                if (e.getButton() == MouseEvent.BUTTON3) {
                     guiController.toNormalState();
                 }
             }
