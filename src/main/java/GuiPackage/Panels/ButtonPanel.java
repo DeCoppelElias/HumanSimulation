@@ -153,9 +153,9 @@ public class ButtonPanel extends JPanel {
         JButton addFoodRandomButton = new JButton("Add Food Random");
         addFoodRandomButton.addActionListener(e -> {
             try {
-                if (amountHumansTextArea.getText().equals("")) guiController.spawnFood(1);
+                if (amountFoodTextArea.getText().equals("")) guiController.spawnFood(1);
                 else {
-                    int amount = Integer.parseInt(amountHumansTextArea.getText());
+                    int amount = Integer.parseInt(amountFoodTextArea.getText());
                     if (amount < 1000) {
                         guiController.spawnFood(amount);
                     }
