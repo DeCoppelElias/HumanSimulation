@@ -1,0 +1,16 @@
+# Normalise text files to LF in the repository.
+* text=auto eol=lf
+
+# mvnw is executed by /bin/sh on the CI runner and must stay LF.
+mvnw text eol=lf
+
+# Windows scripts must stay CRLF to run under cmd.exe.
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# Never touch binaries.
+*.png binary
+*.jpg binary
+*.gif binary
+*.jar binary
+*.zip binary
