@@ -8,12 +8,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 /**
- * Guards the packaging contract rather than any simulation behaviour.
- *
- * GridPanel loads its icons with getClass().getResource("/Human.png"), which only
- * resolves if the images sit at the root of the classpath. Moving them out of
- * src/main/resources, or nesting them in a subdirectory, breaks the application at
- * runtime while everything still compiles and every other test still passes.
+ * Guards the packaging contract, not simulation behaviour. GridPanel loads its icons with
+ * getResource("/Human.png"), which only resolves if the images sit at the classpath root.
  */
 class ResourceLoadingTest {
 

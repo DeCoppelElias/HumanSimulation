@@ -15,12 +15,8 @@
   <properties>
     <maven.compiler.release>21</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <!--
-      Fixed entry timestamps, so building the same commit twice produces a
-      byte-identical jar. Verified: two clean packages give the same sha256.
-      The release workflow's versions:set rewrites this to the release time, so
-      a released jar carries the date it was cut without anyone editing it.
-    -->
+    <!-- Fixed entry timestamps make the jar byte-reproducible. The release
+         workflow's versions:set rewrites this to the release time. -->
     <project.build.outputTimestamp>2026-08-30T00:00:00Z</project.build.outputTimestamp>
     <jfreechart.version>1.5.3</jfreechart.version>
     <junit.version>6.1.3</junit.version>
@@ -47,12 +43,8 @@
 
     <pluginManagement>
       <plugins>
-        <!--
-          Not bound to any phase. The release workflow invokes versions:set to
-          stamp the tag name into the pom. Pinned here so that invocation does
-          not resolve whatever happens to be latest at release time, and so
-          Dependabot can see it.
-        -->
+        <!-- Not bound to a phase. The release workflow calls versions:set;
+             pinning it here stops that resolving to whatever is latest. -->
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>versions-maven-plugin</artifactId>
@@ -135,11 +127,8 @@
         </executions>
       </plugin>
 
-      <!--
-        Ratchet mode: only files that differ from origin/master are formatted or
-        checked, so the untouched 2022 sources keep their original bytes and
-        git blame still reaches the commits that wrote them.
-      -->
+      <!-- Ratchet mode: only files differing from origin/master are checked,
+           so the 2022 sources keep their original bytes. -->
       <plugin>
         <groupId>com.diffplug.spotless</groupId>
         <artifactId>spotless-maven-plugin</artifactId>

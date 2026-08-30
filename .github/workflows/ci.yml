@@ -13,8 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Windows is where the app is actually developed and run, so the
-        # resource-loading and path behaviour gets checked there too.
+        # Windows is where the app actually runs, so it is checked too.
         os: [ubuntu-latest, windows-latest]
 
     runs-on: ${{ matrix.os }}

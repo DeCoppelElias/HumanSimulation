@@ -21,9 +21,7 @@ jobs:
           java-version: '21'
           cache: maven
 
-      # The pom carries a -SNAPSHOT version between releases. The tag is the
-      # single source of truth for what a release is called, so derive it from
-      # there rather than relying on someone remembering to bump the pom.
+      # The pom stays on -SNAPSHOT; the tag is the source of truth.
       - name: Set the version from the tag
         run: |
           VERSION="${GITHUB_REF_NAME#v}"

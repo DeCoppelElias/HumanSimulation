@@ -1,6 +1,4 @@
 # Matches palantir-java-format, which Spotless enforces at verify time.
-# Without this your editor formats one way on save and the build reformats it
-# another way, and you bounce between the two.
 
 root = true
 
