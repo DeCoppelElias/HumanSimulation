@@ -24,8 +24,10 @@ Java 21. No `mvn` on PATH is needed, the wrapper fetches it. `jfreechart:1.5.3`
 and `junit-jupiter:6.1.3` are pinned in `pom.xml`, and the enforcer plugin fails
 the build on a version range or a snapshot. Let Dependabot propose upgrades.
 
-CI runs `./mvnw -B verify` on pushes to `master` and on pull requests. A `v*`
-tag builds the jar and attaches it to a GitHub Release.
+CI runs `./mvnw -B verify` on Linux and Windows, on pushes to `master` and on
+pull requests. A `v*` tag builds the jar and attaches it to a GitHub Release,
+taking the version from the tag, so the pom stays on `-SNAPSHOT` between
+releases and never needs a manual bump. The jar is byte-reproducible.
 
 ## Formatting
 
@@ -35,6 +37,10 @@ changes.
 
 Never format the whole tree. That would rewrite all 29 files and move
 `git blame` off the 2022 commits, which is what the ratchet exists to prevent.
+
+`ResourceLoadingTest` guards the packaging contract, not the simulation: the
+icons have to stay directly under `src/main/resources` or `GridPanel` fails at
+runtime while everything still compiles.
 
 ## Two things to know before writing tests
 
