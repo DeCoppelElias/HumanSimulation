@@ -1,14 +1,12 @@
 package GuiPackage.Panels;
 
 import GuiPackage.GuiController;
-
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import javax.swing.*;
 
 public class GridWorldParametersPanel extends JPanel {
     private GuiController guiController;
@@ -17,7 +15,7 @@ public class GridWorldParametersPanel extends JPanel {
 
     private Hashtable<String, JTextArea> textAreas = new Hashtable<>();
 
-    public GridWorldParametersPanel(GuiController guiController){
+    public GridWorldParametersPanel(GuiController guiController) {
         this.guiController = guiController;
         this.parameters = guiController.getHumanParameterInfo();
 
@@ -30,7 +28,7 @@ public class GridWorldParametersPanel extends JPanel {
 
         // Parameters with textbox
         Enumeration<String> e = parameters.keys();
-        while(e.hasMoreElements()){
+        while (e.hasMoreElements()) {
             JPanel parameterPanel = new JPanel();
             parameterPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
             parameterPanel.setAlignmentX(0);
@@ -38,12 +36,12 @@ public class GridWorldParametersPanel extends JPanel {
             String name = e.nextElement();
             Integer value = parameters.get(name);
 
-            JTextArea parameterTextArea = new JTextArea(Integer.toString(value),1,1);
+            JTextArea parameterTextArea = new JTextArea(Integer.toString(value), 1, 1);
             parameterTextArea.addKeyListener(new KeyAdapter() {
                 public void keyTyped(KeyEvent e) {
                     char c = e.getKeyChar();
-                    if ( ((c < '0') || (c > '9')) && (c != KeyEvent.VK_BACK_SPACE)) {
-                        e.consume();  // if it's not a number, ignore the event
+                    if (((c < '0') || (c > '9')) && (c != KeyEvent.VK_BACK_SPACE)) {
+                        e.consume(); // if it's not a number, ignore the event
                     }
                 }
             });
@@ -72,17 +70,16 @@ public class GridWorldParametersPanel extends JPanel {
         this.add(applyButton);
     }
 
-    private void applyParameterChanges(){
+    private void applyParameterChanges() {
         Hashtable<String, Integer> newParameters = new Hashtable<>();
 
         Enumeration<String> e = textAreas.keys();
-        while (e.hasMoreElements()){
+        while (e.hasMoreElements()) {
             String name = e.nextElement();
             JTextArea textArea = textAreas.get(name);
 
-            if(textArea.getText().equals("") || textArea.getText().equals("0"))
-                newParameters.put(name, 1);
-            else{
+            if (textArea.getText().equals("") || textArea.getText().equals("0")) newParameters.put(name, 1);
+            else {
                 Integer value = Integer.parseInt(textArea.getText());
                 newParameters.put(name, value);
             }
