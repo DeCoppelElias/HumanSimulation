@@ -6,7 +6,6 @@ import SimulationApplication.GridPosition;
 import SimulationApplication.GridWorld;
 import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.Random;
 
 public class Food extends GridContent {
     private ArrayList<Human> tryingToCollect = new ArrayList<>();
@@ -43,8 +42,7 @@ public class Food extends GridContent {
 
         // Aggressive behaviours > 1 => fight
         else if (aggressiveHumans.size() > 1) {
-            Random random = new Random();
-            int r = random.nextInt(0, aggressiveHumans.size() + 1);
+            int r = gridWorld.getRandom().nextInt(0, aggressiveHumans.size() + 1);
             for (int i = 0; i < aggressiveHumans.size(); i++) {
                 Human human = aggressiveHumans.get(i);
                 if (i == r) {

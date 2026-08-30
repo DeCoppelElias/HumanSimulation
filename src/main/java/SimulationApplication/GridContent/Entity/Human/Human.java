@@ -6,7 +6,6 @@ import SimulationApplication.GridContent.Entity.*;
 import SimulationApplication.GridContent.Entity.Human.HumanBehaviour.FoodBehaviour;
 import SimulationApplication.GridContent.Entity.Human.HumanBehaviour.MovementBehaviour;
 import java.util.Hashtable;
-import java.util.Random;
 
 public class Human extends Entity {
     private int days;
@@ -25,7 +24,7 @@ public class Human extends Entity {
         super(gridWorld, gridPosition);
 
         this.movementBehaviour = new MovementBehaviour(gridWorld, this);
-        this.foodBehaviour = new FoodBehaviour(this);
+        this.foodBehaviour = new FoodBehaviour(gridWorld.getRandom(), this);
         this.foodAmount = 0;
         this.days = 1;
         this.humanParameters = humanParameters;
@@ -148,8 +147,7 @@ public class Human extends Entity {
 
     @Override
     public void createChildSpecific() throws Exception {
-        Random random = new Random();
-        int viewRangeR = random.nextInt(-1, 2);
+        int viewRangeR = gridWorld.getRandom().nextInt(-1, 2);
         int newViewingRange = this.viewRange + viewRangeR;
 
         MovementBehaviour movementBehaviour = this.movementBehaviour.createVariation();
