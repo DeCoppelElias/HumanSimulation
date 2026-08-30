@@ -4,12 +4,9 @@ import SimulationApplication.*;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.Timer;
 
 public class GuiController {
     private enum GuiState {
@@ -27,26 +24,23 @@ public class GuiController {
 
     private Boolean automatic = false;
 
-    private ScheduledFuture<?> t = null;
-    private ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
-    private Runnable automaticAdvance = new Runnable() {
-        public void run() {
-            try {
-                advanceTime();
-            } catch (Exception e) {
-                e.printStackTrace();
-                automatic = false;
-                t.cancel(false);
-            }
-        }
-    };
-    private long rate = 500;
+    private int rate = 500;
+    private Timer timer;
 
     private Toolkit toolkit = Toolkit.getDefaultToolkit();
     private Image humanCursorImage;
     private Image foodCursorImage;
 
     public GuiController(GridWorldManager gridWorldManager) throws Exception {
+        this.timer = new Timer(rate, e -> {
+            try {
+                advanceTime();
+            } catch (RuntimeException ex) {
+                ex.printStackTrace();
+                automatic = false;
+                timer.stop();
+            }
+        });
         this.gui = new Gui(this);
         this.gridWorldManager = gridWorldManager;
 
@@ -176,44 +170,34 @@ public class GuiController {
     }
 
     public void toggleAutomatic() {
-        if (automatic) this.automatic = false;
-        else this.automatic = true;
+        this.automatic = !this.automatic;
 
-        if (automatic) {
-            t = executor.scheduleAtFixedRate(automaticAdvance, 0, rate, TimeUnit.MILLISECONDS);
-        } else {
-            if (t == null) return;
-            t.cancel(false);
-        }
+        if (automatic) timer.start();
+        else timer.stop();
     }
 
     public void increaseAutomaticSpeed() {
         if (!automatic) return;
         if (rate > 100) {
-            rate -= 100;
+            setRate(rate - 100);
         } else {
-            rate -= 10;
-            if (rate < 10) rate = 10;
+            setRate(Math.max(10, rate - 10));
         }
-        if (t != null) {
-            t.cancel(true);
-        }
-        t = executor.scheduleAtFixedRate(automaticAdvance, 0, rate, TimeUnit.MILLISECONDS);
     }
 
     public void decreaseAutomaticSpeed() {
         if (!automatic) return;
         if (rate > 100) {
-            rate += 100;
-
-            if (rate > 1000) rate = 1000;
+            setRate(Math.min(1000, rate + 100));
         } else {
-            rate += 10;
+            setRate(rate + 10);
         }
-        if (t != null) {
-            t.cancel(true);
-        }
-        t = executor.scheduleAtFixedRate(automaticAdvance, 0, rate, TimeUnit.MILLISECONDS);
+    }
+
+    private void setRate(int newRate) {
+        this.rate = newRate;
+        timer.setDelay(rate);
+        timer.setInitialDelay(rate);
     }
 
     public void resetStatistics() {
