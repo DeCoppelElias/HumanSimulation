@@ -10,7 +10,15 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Windows is where the app is actually developed and run, so the
+        # resource-loading and path behaviour gets checked there too.
+        os: [ubuntu-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
+
     steps:
       - uses: actions/checkout@v5
         with:
@@ -24,4 +32,6 @@ jobs:
           cache: maven
 
       - name: Build, check formatting and run tests
+        # bash on both runners, so ./mvnw is the same command everywhere.
+        shell: bash
         run: ./mvnw -B verify
