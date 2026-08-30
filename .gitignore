@@ -6,3 +6,6 @@
 
 # Brainstorming specs and plans, kept local
 /docs/superpowers/
+
+# Maven build output
+/target/
