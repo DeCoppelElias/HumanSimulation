@@ -1,7 +1,7 @@
 # HumanSimulation
 This is a simple java application where you can simulate humans searching for food. Each human has a different behaviour and will create variations on that behaviour when creating children. With this application, you can play around with different evoirements and test which behaviour will perform best.  
 
-The jar file is located inside the out/artifacts/MyFirstGui_jar folder.  
+Download the runnable jar from the [releases page](https://github.com/DeCoppelElias/HumanSimulation/releases) and start it with `java -jar HumanSimulation.jar`. It needs Java 21 or newer. To build it yourself, run `./mvnw package`.  
 
 # Screenshots
 The simulation running with 30 humans and 150 food on a 20x20 grid. The population grows at first, then starves back down to the humans that are best at finding food.  
