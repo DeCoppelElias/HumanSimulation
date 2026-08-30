@@ -1,8 +1,8 @@
 # AGENTS.md
 
 Java Swing application that simulates humans searching for food on a 2D grid.
-The simulation was written in September 2022 and its behaviour is kept as it
-was. README.md describes what the application does and how to use it.
+It was written in September 2022. README.md describes what the application does
+and how to use it.
 
 ## Layout
 
