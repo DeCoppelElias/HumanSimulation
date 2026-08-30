@@ -3,6 +3,19 @@ This is a simple java application where you can simulate humans searching for fo
 
 The jar file is located inside the out/artifacts/MyFirstGui_jar folder.  
 
+# Screenshots
+The simulation running with 30 humans and 150 food on a 20x20 grid. The population grows at first, then starves back down to the humans that are best at finding food.  
+
+![The simulation running](screenshots/simulation.gif)
+
+Clicking a human shows its behaviour values in the info panel and highlights its view range.  
+
+![Info panel](screenshots/human-info.png)
+
+The human population graph.  
+
+![Population graph](screenshots/population-graph.png)
+
 # Features
 - Adding humans and food to a 2d grid world.  
 - Advancing time and viewing the behaviour of the humans in the 2d grid world.  
