@@ -59,12 +59,21 @@ runtime while everything still compiles.
 
 ## Two things to know before writing tests
 
-The simulation seeds no RNG. `FindFoodBehaviour`, `MovementBehaviour`,
-`FoodBehaviour` and `Human.createChildSpecific` each construct `new Random()`
-inline, so runs cannot be reproduced. That is why `fightingForFoodTest` asserts
-the grid is either of two states. Any test of behaviour or selection needs a
-seed injected first.
+`GridWorld` owns the one `RandomGenerator` every behaviour class draws from;
+construct it via `new GridWorld(width, height, new Random(seed))` for a
+reproducible run, or use `TestWorlds.seeded` in `src/test/java/Test/`.
+`fightingForFoodTest` still asserts the grid is either of two states rather
+than seeding, since it predates this seam.
 
 `v1.0-original-2022` and the `original-2022` branch hold the 2022 version, with
 the old IntelliJ files, the flat `src/` layout and a committed jar. Both are
 immutable. Land changes on top of `master`.
+
+## GUI smoke test
+
+There is no automated GUI test suite. To verify a change that touches
+`GuiPackage/` or `GuiController`, or to check a reported GUI bug against the
+current build rather than guessing from source, use the `gui-smoke-test`
+skill (`.claude/skills/gui-smoke-test/`), which drives the real app with
+`tools/gui-smoke-test/GuiRobotHarness.java` and `java.awt.Robot` and
+screenshots what actually renders.
