@@ -1,15 +1,10 @@
 package GuiPackage.Panels;
 
 import GuiPackage.GuiController;
-import SimulationApplication.GridPosition;
-import SimulationApplication.GridWorld;
-import SimulationApplication.GridWorldManager;
-
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.Arrays;
+import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 
 public class InfoPanel extends JPanel {
     private GuiController guiController;
@@ -20,7 +15,7 @@ public class InfoPanel extends JPanel {
 
     private JPopupMenu popupMenu;
 
-    public InfoPanel(GuiController guiController){
+    public InfoPanel(GuiController guiController) {
         this.guiController = guiController;
 
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -28,13 +23,14 @@ public class InfoPanel extends JPanel {
 
         JLabel headerLabel = new JLabel("Info Panel");
         headerLabel.setAlignmentX(0);
-        headerLabel.setBorder(new EmptyBorder(0,120,10,120));//top,left,bottom,right
+        headerLabel.setBorder(new EmptyBorder(0, 120, 10, 120)); // top,left,bottom,right
         this.add(headerLabel);
 
         JButton sortButton = new JButton("Sort");
         sortButton.setAlignmentX(0);
         sortButton.addActionListener(e -> {
-            popupMenu.show(sortButton,sortButton.getX() + sortButton.getWidth(), sortButton.getY() - sortButton.getHeight());
+            popupMenu.show(
+                    sortButton, sortButton.getX() + sortButton.getWidth(), sortButton.getY() - sortButton.getHeight());
         });
         this.add(sortButton);
 
@@ -46,25 +42,24 @@ public class InfoPanel extends JPanel {
         holderPanel.setAlignmentX(0);
         holderPanel.add(contentPanel);
 
-        JScrollPane scrollPane = new JScrollPane(holderPanel,
-                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        JScrollPane scrollPane = new JScrollPane(
+                holderPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setAlignmentX(0);
-        scrollPane.setBorder(new EmptyBorder(0,0,0,10));//top,left,bottom,right
+        scrollPane.setBorder(new EmptyBorder(0, 0, 0, 10)); // top,left,bottom,right
 
         this.add(scrollPane);
 
         popupMenu = createJPopupMenu();
     }
 
-    public void displayInfo(ArrayList<Integer> gridContentIds){
+    public void displayInfo(ArrayList<Integer> gridContentIds) {
         ids = gridContentIds;
 
         display(gridContentIds);
     }
 
-    private void display(ArrayList<Integer> gridContentIds){
-        for (Integer id : gridContentIds){
+    private void display(ArrayList<Integer> gridContentIds) {
+        for (Integer id : gridContentIds) {
             String infoString = guiController.getInfoString(id);
 
             JButton button = new JButton();
@@ -78,7 +73,8 @@ public class InfoPanel extends JPanel {
                 }
             });
 
-            button.setText("<html>" + infoString.replaceAll("<","&lt;").replaceAll(">", "&gt;").replaceAll("\n", "<br/>") + "</html>");
+            button.setText("<html>"
+                    + infoString.replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\n", "<br/>") + "</html>");
             button.setFont(new Font("Serif", Font.PLAIN, 10));
 
             contentPanel.add(button);
@@ -88,13 +84,13 @@ public class InfoPanel extends JPanel {
         contentPanel.revalidate();
     }
 
-    public void resetInfo(){
+    public void resetInfo() {
         contentPanel.removeAll();
         contentPanel.repaint();
         contentPanel.revalidate();
     }
 
-    public JPopupMenu createJPopupMenu(){
+    public JPopupMenu createJPopupMenu() {
         JPopupMenu popupMenu = new JPopupMenu("Sort");
         popupMenu.setAlignmentX(0);
 
@@ -115,17 +111,5 @@ public class InfoPanel extends JPanel {
         popupMenu.add(sortByFoodButton);
 
         return popupMenu;
-    }
-
-    public static void main(String[] args) throws Exception {
-        JFrame frame = new JFrame("App");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(new Dimension(500,100));
-
-        InfoPanel infoPanel = new InfoPanel(new GuiController(new GridWorldManager(new GridWorld(5,5))));
-        infoPanel.setPreferredSize(new Dimension(100,500));
-
-        frame.add(infoPanel);
-        frame.setVisible(true);
     }
 }

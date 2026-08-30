@@ -1,8 +1,6 @@
 package GuiPackage.Panels;
 
 import GuiPackage.GuiController;
-import SimulationApplication.GridWorld;
-import SimulationApplication.GridWorldManager;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
@@ -345,16 +343,5 @@ public class ButtonPanel extends JPanel {
         gridWorldPanel.add(glue);
 
         return gridWorldPanel;
-    }
-
-    public static void main(String[] args) throws Exception {
-        JFrame frame = new JFrame("App");
-        frame.setSize(800, 500);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        ButtonPanel buttonPanel = new ButtonPanel(new GuiController(new GridWorldManager(new GridWorld(5, 5))));
-
-        frame.add(buttonPanel);
-        frame.setVisible(true);
     }
 }
