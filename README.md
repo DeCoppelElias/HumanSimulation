@@ -1,7 +1,17 @@
 # HumanSimulation
+[![CI](https://github.com/DeCoppelElias/HumanSimulation/actions/workflows/ci.yml/badge.svg)](https://github.com/DeCoppelElias/HumanSimulation/actions/workflows/ci.yml)
+
 This is a simple java application where you can simulate humans searching for food. Each human has a different behaviour and will create variations on that behaviour when creating children. With this application, you can play around with different evoirements and test which behaviour will perform best.  
 
-Download the runnable jar from the [releases page](https://github.com/DeCoppelElias/HumanSimulation/releases) and start it with `java -jar HumanSimulation.jar`. It needs Java 21 or newer. To build it yourself, run `./mvnw package`.  
+# Running it
+Download the jar from the [releases page](https://github.com/DeCoppelElias/HumanSimulation/releases) and start it with `java -jar HumanSimulation.jar`. You need Java 21 or newer.  
+
+To build it yourself, no Maven install is needed. The wrapper fetches it:  
+
+    ./mvnw package
+    java -jar target/HumanSimulation.jar
+
+`./mvnw verify` compiles, checks formatting and runs the tests.  
 
 # Screenshots
 The simulation running with 30 humans and 150 food on a 20x20 grid. The population grows at first, then starves back down to the humans that are best at finding food.  
