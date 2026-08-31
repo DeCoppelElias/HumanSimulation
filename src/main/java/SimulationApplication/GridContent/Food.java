@@ -42,7 +42,7 @@ public class Food extends GridContent {
 
         // Aggressive behaviours > 1 => fight
         else if (aggressiveHumans.size() > 1) {
-            int r = gridWorld.getRandom().nextInt(0, aggressiveHumans.size() + 1);
+            int r = gridWorld.getRandom().nextInt(0, aggressiveHumans.size());
             for (int i = 0; i < aggressiveHumans.size(); i++) {
                 Human human = aggressiveHumans.get(i);
                 if (i == r) {

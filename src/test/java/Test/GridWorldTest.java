@@ -90,12 +90,9 @@ class GridWorldTest {
 
         // Humans fight for food
         gridWorld.advanceTime();
-        Assertions.assertTrue(
-                gridWorld.toString().equals("Empty Empty HUMAN \n" + "Empty Empty Empty \n" + "Empty Empty Empty \n")
-                        || gridWorld
-                                .toString()
-                                .equals("Empty Empty FOOD \n" + "Empty Empty Empty \n" + "Empty Empty Empty \n"));
+        Assertions.assertEquals(
+                "Empty Empty HUMAN \n" + "Empty Empty Empty \n" + "Empty Empty Empty \n", gridWorld.toString());
 
-        Assertions.assertTrue(!(human1.checkAlive() && human2.checkAlive()));
+        Assertions.assertTrue(human1.checkAlive() ^ human2.checkAlive(), "exactly one survives");
     }
 }
