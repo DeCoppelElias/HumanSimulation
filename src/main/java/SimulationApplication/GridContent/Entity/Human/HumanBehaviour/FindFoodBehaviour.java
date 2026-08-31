@@ -131,18 +131,18 @@ public class FindFoodBehaviour extends Behaviour {
     public GridPosition findFarthestFromOtherHumansFood(
             ArrayList<GridPosition> allFood, ArrayList<GridPosition> humanPositions) {
         GridPosition farthestFromOtherPlayersFood = null;
-        int smallestDistance = Integer.MAX_VALUE;
+        double largestDistance = -1;
 
         for (GridPosition foodPosition : allFood) {
             double distance = GridPosition.distance(foodPosition, human.getGridPosition());
             if (distance <= human.getViewRange()) {
-                int distanceFromOtherPlayers = 0;
+                double distanceFromOtherPlayers = 0;
                 for (GridPosition humanPosition : humanPositions) {
                     distanceFromOtherPlayers += GridPosition.distance(foodPosition, humanPosition);
                 }
-                if (distanceFromOtherPlayers < smallestDistance) {
+                if (distanceFromOtherPlayers > largestDistance) {
                     farthestFromOtherPlayersFood = foodPosition;
-                    smallestDistance = distanceFromOtherPlayers;
+                    largestDistance = distanceFromOtherPlayers;
                 }
             }
         }

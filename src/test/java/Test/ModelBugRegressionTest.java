@@ -8,6 +8,7 @@ import SimulationApplication.GridContent.Entity.Human.HumanParameters;
 import SimulationApplication.GridContent.Food;
 import SimulationApplication.GridPosition;
 import SimulationApplication.GridWorld;
+import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -106,6 +107,21 @@ class ModelBugRegressionTest {
         for (int attempt = 0; attempt < 1000; attempt++) {
             Assertions.assertDoesNotThrow(behaviour::getMovementAction, "attempt " + attempt);
         }
+    }
+
+    @Test
+    void farthestFromOtherHumansAvoidsTheCrowd() throws Exception {
+        GridWorld world = TestWorlds.seeded(10, 10, 1L);
+        Human human = TestWorlds.walker(world, new GridPosition(5, 5), TestWorlds.inert(), 0);
+        FindFoodBehaviour behaviour = new FindFoodBehaviour(world, human);
+
+        ArrayList<GridPosition> crowd = new ArrayList<>(List.of(new GridPosition(2, 5), new GridPosition(2, 6)));
+        ArrayList<GridPosition> food = new ArrayList<>(List.of(new GridPosition(3, 5), new GridPosition(8, 5)));
+
+        GridPosition found = behaviour.findFarthestFromOtherHumansFood(food, crowd);
+
+        Assertions.assertEquals(8, found.getX(), "should walk away from the crowd at x=2");
+        Assertions.assertEquals(5, found.getY());
     }
 
     @Test
