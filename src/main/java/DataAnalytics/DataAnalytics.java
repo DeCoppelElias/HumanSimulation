@@ -3,6 +3,7 @@ package DataAnalytics;
 import SimulationApplication.GridPosition;
 import SimulationApplication.GridWorld;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
@@ -45,19 +46,19 @@ public class DataAnalytics {
         this.data = new Hashtable<>();
     }
 
-    public void drawHumanGraph() {
+    public ArrayList<Integer> humanCountsPerDay() {
+        ArrayList<Integer> days = Collections.list(this.data.keys());
+        Collections.sort(days);
+
         ArrayList<Integer> amounts = new ArrayList<>();
-
-        int counter = 1;
-        Enumeration<Integer> e1 = this.data.keys();
-        while (e1.hasMoreElements()) {
-            e1.nextElement();
-            Integer day = counter;
-            counter++;
-            Hashtable<String, Integer> dayData = this.data.get(day);
-            amounts.add(dayData.get("HUMAN"));
+        for (Integer day : days) {
+            amounts.add(this.data.get(day).get("HUMAN"));
         }
+        return amounts;
+    }
 
-        LineChart.Create("Human Statistics", "Human population per day", "Human Serie", "Day", "Humans", amounts);
+    public void drawHumanGraph() {
+        LineChart.Create(
+                "Human Statistics", "Human population per day", "Human Serie", "Day", "Humans", humanCountsPerDay());
     }
 }

@@ -8,6 +8,7 @@ import SimulationApplication.GridContent.Entity.Human.HumanParameters;
 import SimulationApplication.GridContent.Food;
 import SimulationApplication.GridPosition;
 import SimulationApplication.GridWorld;
+import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -48,6 +49,34 @@ class ModelBugRegressionTest {
         }
 
         Assertions.assertTrue(changed, "the same-length branch never moved a weight");
+    }
+
+    @Test
+    void theHumanCountsSurviveAStatisticsReset() throws Exception {
+        GridWorld world = TestWorlds.seeded(5, 5, 3L);
+        world.spawnHumanRandom(2);
+        for (int day = 0; day < 5; day++) {
+            world.advanceTime();
+        }
+
+        world.resetStatistics();
+        world.advanceTime();
+        world.advanceTime();
+
+        List<Integer> counts = world.getDataAnalytics().humanCountsPerDay();
+        Assertions.assertEquals(2, counts.size(), "two days recorded since the reset");
+        Assertions.assertFalse(counts.contains(null), "no day is missing its count");
+    }
+
+    @Test
+    void theHumanCountsCoverEveryRecordedDay() throws Exception {
+        GridWorld world = TestWorlds.seeded(5, 5, 3L);
+        world.spawnHumanPosition(1, new GridPosition(0, 0));
+        for (int day = 0; day < 4; day++) {
+            world.advanceTime();
+        }
+
+        Assertions.assertEquals(4, world.getDataAnalytics().humanCountsPerDay().size());
     }
 
     @Test
