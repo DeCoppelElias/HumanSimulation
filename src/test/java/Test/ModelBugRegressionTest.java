@@ -36,6 +36,21 @@ class ModelBugRegressionTest {
     }
 
     @Test
+    void stepVariationChangesTheWeightsWhenTheLengthIsUnchanged() throws Exception {
+        GridWorld world = TestWorlds.seeded(3, 3, 7L);
+        MovementBehaviour behaviour =
+                new MovementBehaviour(world, null, 0, 1, new double[] {0.5, 0.5}, new FindFoodBehaviour(world, null));
+
+        boolean changed = false;
+        for (int attempt = 0; attempt < 200 && !changed; attempt++) {
+            double[] varied = behaviour.createStepVariation(new double[] {0.5, 0.5});
+            changed = varied.length == 2 && varied[0] != 0.5;
+        }
+
+        Assertions.assertTrue(changed, "the same-length branch never moved a weight");
+    }
+
+    @Test
     void aZeroEatIntervalIsRejected() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> new HumanParameters(0, 1, 15, 3));
     }

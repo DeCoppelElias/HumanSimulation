@@ -194,7 +194,7 @@ public class MovementBehaviour extends Behaviour {
             int size = copy.length;
             int first = random.nextInt(0, size);
             int second = random.nextInt(0, size);
-            double r = Math.round(random.nextDouble(-0.2d, 0.2d) * 100) / 100;
+            double r = (double) Math.round(random.nextDouble(-0.2d, 0.2d) * 100) / 100;
             copy[first] += r;
             copy[second] -= r;
         } else {
