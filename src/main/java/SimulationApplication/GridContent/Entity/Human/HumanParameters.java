@@ -12,9 +12,9 @@ public class HumanParameters {
     public HumanParameters() {}
 
     public HumanParameters(int eatInterval, int eatCost, int breedInterval, int breedCost) {
-        this.eatInterval = eatInterval;
+        setEatInterval(eatInterval);
         this.eatCost = eatCost;
-        this.breedInterval = breedInterval;
+        setBreedInterval(breedInterval);
         this.breedCost = breedCost;
     }
 
@@ -35,6 +35,7 @@ public class HumanParameters {
     }
 
     public void setEatInterval(int eatInterval) {
+        if (eatInterval < 1) throw new IllegalArgumentException("Eat interval must be at least 1, was " + eatInterval);
         this.eatInterval = eatInterval;
     }
 
@@ -43,6 +44,8 @@ public class HumanParameters {
     }
 
     public void setBreedInterval(int breedInterval) {
+        if (breedInterval < 1)
+            throw new IllegalArgumentException("Breed interval must be at least 1, was " + breedInterval);
         this.breedInterval = breedInterval;
     }
 
