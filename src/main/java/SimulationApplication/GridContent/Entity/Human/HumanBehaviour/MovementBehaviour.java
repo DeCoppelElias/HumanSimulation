@@ -50,7 +50,7 @@ public class MovementBehaviour extends Behaviour {
         this.findFoodBehaviour = findFoodBehaviour;
         this.randomMovement = randomMovement;
         this.toFoodMovement = toFoodMovement;
-        this.stepAmount = stepAmount;
+        this.stepAmount = normalised(stepAmount);
     }
 
     public void generateRandomChances() {
@@ -60,7 +60,7 @@ public class MovementBehaviour extends Behaviour {
         this.toFoodMovement = chances[1];
 
         int maxDistance = random.nextInt(1, 4);
-        this.stepAmount = generateRandomArray(maxDistance);
+        this.stepAmount = normalised(generateRandomArray(maxDistance));
     }
 
     public double[] generateRandomArray(int size) {
@@ -104,12 +104,7 @@ public class MovementBehaviour extends Behaviour {
     private MovementAction generateRandomAction() {
         int r = random.nextInt(5);
 
-        int distance = 1;
-        float distanceR = random.nextFloat();
-        while (distanceR > stepAmount[distance - 1]) {
-            distanceR -= stepAmount[distance - 1];
-            distance += 1;
-        }
+        int distance = rollStepDistance();
 
         switch (r) {
             case 0:
@@ -134,12 +129,7 @@ public class MovementBehaviour extends Behaviour {
 
         GridPosition entityGridPosition = this.human.getGridPosition();
 
-        int distance = 1;
-        float distanceR = random.nextFloat();
-        while (distanceR > stepAmount[distance - 1]) {
-            distanceR -= stepAmount[distance - 1];
-            distance += 1;
-        }
+        int distance = rollStepDistance();
 
         GridPosition targetGridPosition = this.selectedFoodPosition;
 
@@ -207,7 +197,7 @@ public class MovementBehaviour extends Behaviour {
                     pos = random.nextInt(0, newSize);
                 }
                 double chance = 0;
-                if (i == newSize - 1 || chanceLeft == 0) {
+                if (i == newSize - 1 || chanceLeft <= 0) {
                     chance = chanceLeft;
                 } else {
                     chance = Math.round(random.nextDouble(0, chanceLeft) * 100.0) / 100.0;
@@ -217,7 +207,33 @@ public class MovementBehaviour extends Behaviour {
                 copy[pos] = chance;
             }
         }
-        return copy;
+        return normalised(copy);
+    }
+
+    private int rollStepDistance() {
+        double remaining = random.nextDouble();
+        for (int i = 0; i < stepAmount.length - 1; i++) {
+            if (remaining <= stepAmount[i]) return i + 1;
+            remaining -= stepAmount[i];
+        }
+        return stepAmount.length;
+    }
+
+    private static double[] normalised(double[] weights) {
+        double[] result = new double[weights.length];
+        double sum = 0;
+        for (int i = 0; i < weights.length; i++) {
+            result[i] = Math.max(0, weights[i]);
+            sum += result[i];
+        }
+        if (sum == 0) {
+            Arrays.fill(result, 1.0 / result.length);
+            return result;
+        }
+        for (int i = 0; i < result.length; i++) {
+            result[i] /= sum;
+        }
+        return result;
     }
 
     @Override

@@ -80,6 +80,35 @@ class ModelBugRegressionTest {
     }
 
     @Test
+    void stepVariationAlwaysReturnsAValidDistribution() throws Exception {
+        GridWorld world = TestWorlds.seeded(3, 3, 11L);
+        MovementBehaviour behaviour =
+                new MovementBehaviour(world, null, 0, 1, new double[] {1}, new FindFoodBehaviour(world, null));
+
+        for (int attempt = 0; attempt < 500; attempt++) {
+            double[] varied = behaviour.createStepVariation(new double[] {0.3, 0.3, 0.4});
+
+            double sum = 0;
+            for (double weight : varied) {
+                Assertions.assertTrue(weight >= 0, "negative weight on attempt " + attempt);
+                sum += weight;
+            }
+            Assertions.assertEquals(1.0, sum, 1e-6, "weights do not sum to one on attempt " + attempt);
+        }
+    }
+
+    @Test
+    void movementNeverWalksOffTheStepArray() throws Exception {
+        GridWorld world = TestWorlds.seeded(5, 5, 13L);
+        MovementBehaviour behaviour =
+                new MovementBehaviour(world, null, 1, 0, new double[] {0.2, 0.2}, new FindFoodBehaviour(world, null));
+
+        for (int attempt = 0; attempt < 1000; attempt++) {
+            Assertions.assertDoesNotThrow(behaviour::getMovementAction, "attempt " + attempt);
+        }
+    }
+
+    @Test
     void aZeroEatIntervalIsRejected() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> new HumanParameters(0, 1, 15, 3));
     }
