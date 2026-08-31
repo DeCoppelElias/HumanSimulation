@@ -62,8 +62,11 @@ runtime while everything still compiles.
 `GridWorld` owns the one `RandomGenerator` every behaviour class draws from;
 construct it via `new GridWorld(width, height, new Random(seed))` for a
 reproducible run, or use `TestWorlds.seeded` in `src/test/java/Test/`.
-`fightingForFoodTest` still asserts the grid is either of two states rather
-than seeding, since it predates this seam.
+`DeterminismTest` guards that a seeded run replays exactly. Build test humans
+through `TestWorlds` rather than by hand: each `Human` constructor calls
+`movementBehaviour.setHuman(this)`, so two humans sharing one
+`MovementBehaviour` or `FoodBehaviour` instance end up pointing at each
+other's state.
 
 `v1.0-original-2022` and the `original-2022` branch hold the 2022 version, with
 the old IntelliJ files, the flat `src/` layout and a committed jar. Both are
