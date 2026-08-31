@@ -140,14 +140,15 @@ public class GridWorld {
 
     public void removeContent(GridContent content) throws Exception {
         if (!isWithinBounds(content.getGridPosition())) throw new Exception("Content is out of bounds");
+
+        Integer id = gridContents.get(content);
+        if (id == null) throw new Exception("Content doesn't exist in gridworld");
+
         GridTile gridTile = getGridTile(content.getGridPosition());
-
-        int id = gridContents.get(content);
-        ids.remove(id);
-        gridContents.remove(content);
-
         if (!gridTile.contains(id)) throw new Exception("Content doesn't exist in gridworld");
 
+        ids.remove(id);
+        gridContents.remove(content);
         gridTile.removeContent(id);
 
         if (content instanceof Human h) {

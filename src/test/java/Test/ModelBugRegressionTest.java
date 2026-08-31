@@ -125,6 +125,22 @@ class ModelBugRegressionTest {
     }
 
     @Test
+    void removingUnknownContentFailsWithoutTouchingTheWorld() throws Exception {
+        GridWorld world = TestWorlds.seeded(3, 3, 1L);
+        GridWorld elsewhere = TestWorlds.seeded(3, 3, 1L);
+        Food resident = new Food(world, new GridPosition(1, 1));
+        Food stranger = new Food(elsewhere, new GridPosition(1, 1));
+
+        Exception thrown = Assertions.assertThrows(Exception.class, () -> world.removeContent(stranger));
+        Assertions.assertFalse(thrown instanceof NullPointerException, "should be a stated failure, not an NPE");
+
+        Assertions.assertEquals(
+                "FOOD", world.getGridTile(new GridPosition(1, 1)).toString());
+        Assertions.assertNotNull(world.getId(resident), "the resident keeps its id");
+        Assertions.assertNotNull(elsewhere.getId(stranger), "the stranger keeps its own world");
+    }
+
+    @Test
     void aZeroEatIntervalIsRejected() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> new HumanParameters(0, 1, 15, 3));
     }
