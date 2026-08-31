@@ -11,7 +11,9 @@ public class Human extends Entity {
     private int days;
     private float foodAmount;
 
-    private int viewRange = 4;
+    private static final int DEFAULT_VIEW_RANGE = 4;
+
+    private int viewRange = DEFAULT_VIEW_RANGE;
 
     private Food collectingFood;
 
@@ -37,6 +39,17 @@ public class Human extends Entity {
             MovementBehaviour movementBehaviour,
             FoodBehaviour foodBehaviour)
             throws Exception {
+        this(gridWorld, gridPosition, humanParameters, movementBehaviour, foodBehaviour, DEFAULT_VIEW_RANGE);
+    }
+
+    public Human(
+            GridWorld gridWorld,
+            GridPosition gridPosition,
+            HumanParameters humanParameters,
+            MovementBehaviour movementBehaviour,
+            FoodBehaviour foodBehaviour,
+            int viewRange)
+            throws Exception {
         super(gridWorld, gridPosition);
 
         this.movementBehaviour = movementBehaviour;
@@ -47,6 +60,7 @@ public class Human extends Entity {
 
         this.foodAmount = 0;
         this.days = 0;
+        this.viewRange = viewRange;
         this.humanParameters = humanParameters;
     }
 
@@ -148,12 +162,17 @@ public class Human extends Entity {
     @Override
     public void createChildSpecific() throws Exception {
         int viewRangeR = gridWorld.getRandom().nextInt(-1, 2);
-        int newViewingRange = this.viewRange + viewRangeR;
+        int newViewingRange = Math.max(1, this.viewRange + viewRangeR);
 
         MovementBehaviour movementBehaviour = this.movementBehaviour.createVariation();
         FoodBehaviour foodBehaviour = this.foodBehaviour.createVariation();
         Human human = new Human(
-                this.gridWorld, this.getGridPosition(), this.humanParameters, movementBehaviour, foodBehaviour);
+                this.gridWorld,
+                this.getGridPosition(),
+                this.humanParameters,
+                movementBehaviour,
+                foodBehaviour,
+                newViewingRange);
     }
 
     @Override

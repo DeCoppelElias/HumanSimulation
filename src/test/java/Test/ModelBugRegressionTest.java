@@ -141,6 +141,41 @@ class ModelBugRegressionTest {
     }
 
     @Test
+    void aChildInheritsAVariedViewRange() throws Exception {
+        boolean sawADifferentRange = false;
+
+        for (long seed = 0; seed < 30 && !sawADifferentRange; seed++) {
+            GridWorld world = TestWorlds.seeded(3, 3, seed);
+            HumanParameters parameters = new HumanParameters(100, 1, 1, 1);
+            Human parent = TestWorlds.walker(world, new GridPosition(1, 1), parameters, 0);
+            parent.addFood(5);
+
+            world.advanceTime();
+
+            for (int id : world.getAllHumanIds()) {
+                if (world.getRange(id) != parent.getViewRange()) sawADifferentRange = true;
+            }
+        }
+
+        Assertions.assertTrue(sawADifferentRange, "every child copied the parent's view range");
+    }
+
+    @Test
+    void aViewRangeNeverDropsBelowOne() throws Exception {
+        GridWorld world = TestWorlds.seeded(3, 3, 5L);
+        HumanParameters parameters = new HumanParameters(100, 1, 1, 1);
+        Human parent = TestWorlds.walker(world, new GridPosition(1, 1), parameters, 0);
+        parent.addFood(500);
+
+        for (int day = 0; day < 40; day++) {
+            world.advanceTime();
+            for (int id : world.getAllHumanIds()) {
+                Assertions.assertTrue(world.getRange(id) >= 1, "view range fell below 1 on day " + day);
+            }
+        }
+    }
+
+    @Test
     void aZeroEatIntervalIsRejected() {
         Assertions.assertThrows(IllegalArgumentException.class, () -> new HumanParameters(0, 1, 15, 3));
     }
