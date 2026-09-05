@@ -101,15 +101,14 @@ the same world.
 
 A brain turns a perception into an intent. A perception is what one creature can
 see from where it stands: the tiles within its view range by straight-line
-distance, what stands on each, and the tags those things carry. An intent is the
+distance, what stands on each, and the components those things carry. An intent is the
 single action it wants to take this day, one of moving in a direction for a
-distance, attacking something, breeding, or doing nothing.
+distance, breeding, or doing nothing.
 
 The world resolves intents. A creature says what it wants and the world decides
-what actually happens, so the rules about where you may step, what you may
-attack and when you may breed live in one place and every creature obeys them
-without knowing they exist. Adding water that blocks movement changes the
-resolver and nothing else.
+what actually happens, so the rules about where you may step and when you may
+breed live in one place and every creature obeys them without knowing they
+exist. Adding water that blocks movement changes the resolver and nothing else.
 
 A system is a rule the world applies. Hunger charging, grass regrowing, fire
 spreading and corpses clearing are systems.
@@ -129,12 +128,7 @@ To make a system's behaviour rich, give its rule better input rather than
 promoting it to a brain. Fire that reads wind and moisture from the tile, and
 fuel from what it burns, stays one rule that every fire obeys.
 
-One intent per creature per day is the constraint that shapes the rest. A choice
-that only becomes available partway through a day cannot be a decision, which is
-why the aggression roll at contested food is a gene the feed system consults
-rather than something a brain is asked about. The contest does not exist until
-every intent has already been collected. The cost is that such a choice cannot
-be conditional: a creature cannot fight when starving and yield when fed.
+One intent per creature per day is the constraint that shapes the rest.
 
 ### The day
 
@@ -147,9 +141,9 @@ A day runs these systems in order:
    time and stops where the world says it must. Breeding checks the cooldown and
    the reserve, spends the cost, and spawns a child at the parent's position
    carrying a mutated copy of the parent's genome.
-3. Feed. Creatures standing on something their diet accepts contest it. The
-   contest is settled by each contender's aggression gene, so it can kill, and
-   the winners are credited to their metabolism.
+3. Feed. Creatures standing on something their diet accepts eat it. All
+   creatures on the same food share it equally, and the result is credited to
+   their metabolism.
 4. Metabolise. Reserves are charged on the eating interval, and anything that
    runs out dies.
 5. World processes, in list order: spawning new food, regrowth, fire.
@@ -167,7 +161,7 @@ The core knows nothing about the interface, and no simulation rule lives above
 the core. A headless run behaves exactly like a watched one.
 
 State leaves as a snapshot of the whole world each day: the day number, the grid,
-and for each tile its fields and what stands on it with the tags and values worth
+and for each tile its fields and what stands on it with the components worth
 drawing. Commands are the only way in, covering spawning, resetting, editing a
 species' settings, and anything else the interface initiates. The interface never
 reaches into the model.

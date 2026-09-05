@@ -23,7 +23,6 @@ A brain receives a perception and returns one intent. The world applies it.
 ```java
 public sealed interface Intent {
     record Move(Direction direction, int distance) implements Intent {}
-    record Attack(int targetId) implements Intent {}
     record Breed() implements Intent {}
     record Idle() implements Intent {}
 }
@@ -44,8 +43,13 @@ case is missing. `Brain` defaults its own key, so an implementation supplies onl
 the decision.
 
 A perception carries the tiles within view range by straight-line distance, what
-stands on each, and the tags those things advertise. Tags are strings, so adding
-a perceivable property is free and a typo is a runtime problem.
+stands on each, and the components those things carry. A brain checks for
+component presence by class reference (`tile.has(Edible.class)`), so a typo is a
+compile error rather than a silent miss. Components that carry state worth
+reading expose it through a read-only view (`tile.get(Edible.class).amount()`).
+Adding a perceivable property is adding a component, which is already the pattern
+for adding any capability. The perception API provides helpers for common queries
+such as finding the nearest tile that carries a given component.
 
 ## Consequences
 
@@ -53,13 +57,6 @@ Terrain becomes cheap. Water blocking movement is one branch in the resolver
 rather than knowledge every creature type carries.
 
 Conflicts become visible, because every intent exists before any is applied.
-
-One intent per creature per day is the real constraint. A choice that only
-becomes available partway through a day cannot be a decision, which forces the
-aggression roll at contested food to be a gene the feed system consults: the
-contest does not exist until every intent has been collected. Such a choice
-cannot be conditional, so a creature cannot fight when starving and yield when
-fed.
 
 Breeding is a decision rather than a system, reversing what an earlier draft of
 this entry said. It passes the brain test on all three counts, and the argument

@@ -36,8 +36,5 @@ Nothing enforces it. Someone can give water a brain and the decide step will
 start asking it for intents, and no test will fail. The rule works only as long
 as it is consulted.
 
-Two behaviours sit on the brain side of the test. Breeding is modelled as a
-decision, per [0004](0004-creatures-return-intents.md). The aggression roll at
-contested food is not, because the contest does not exist until every intent has
-been collected, so there is nothing to ask at decision time. That one is the
-known exception, and the cost is that aggression cannot be conditional.
+Breeding is modelled as a decision, per [0004](0004-creatures-return-intents.md),
+and passes the brain test on all three counts.
