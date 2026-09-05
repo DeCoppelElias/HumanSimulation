@@ -31,3 +31,5 @@ costs, and what the concrete type shapes are.
   which keeps large worlds reachable later.
 - [0012](0012-tests-target-brains-without-a-world.md) Tests target brains without
   a world, and a headless runner watches for lost selection.
+- [0013](0013-brain-computation-model-and-warm-starting.md) Fixed-rules brain
+  first, neural net second; species carries a baseline genome for warm starting.

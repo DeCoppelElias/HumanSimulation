@@ -57,9 +57,9 @@ Anything that occupies a tile is an entity: a human, a wolf, a patch of grass, a
 rock, a pile of ash. There is no class per kind of thing.
 
 A species is the recipe for a kind of entity. It carries the name, the sprite
-that draws it, the gene layout its members inherit, the settings shared by every
-member, the brain its members are born with, and the other components they start
-with. The brain has its own slot rather than sitting among the components,
+that draws it, the gene layout and baseline genome its members inherit, the
+settings shared by every member, the brain its members are born with, and the
+other components they start with. The brain has its own slot rather than sitting among the components,
 because it is the seam that gets swapped. Terrain is a species too, and water
 decides nothing, so the brain slot can be empty.
 
@@ -70,11 +70,13 @@ cuts across kinds is written once, and every kind that carries it gets the
 behaviour.
 
 A genome holds what varies between individuals of a species and what changes
-between parent and child. The species declares a layout of genes, and each gene
-has one of two shapes: a bounded scalar, or a normalised distribution whose own
-length can change. The second shape exists because the step distribution already
-needs it, and it is also where a network brain's weights would live. Adding an
-evolvable trait means adding one entry to a layout.
+between parent and child. The species declares a layout of genes and a baseline
+genome. Each gene has one of two shapes: a bounded scalar, or a normalised
+distribution whose own length can change. A third shape for neural network
+weights is added when that brain is introduced. Adding an evolvable trait means
+adding one entry to a layout. First-generation members start from the baseline
+with mutation applied, so a new species begins with working behaviour rather than
+random values.
 
 The grid holds what occupies each tile, and the scalar fields belonging to the
 location itself, such as elevation or moisture. One question separates them: can

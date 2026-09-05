@@ -56,9 +56,15 @@ Keys are strings, so a typo is a runtime failure where a field would have been a
 compile error. Reading an unknown key throws, which keeps the failure loud and
 local.
 
-The two shapes cover the current genome exactly, and a simplex is also where a
-network brain's weights would live. A brain whose topology evolves needs the
-genome to carry a graph, which is a third shape and real work.
+The two shapes cover the current genome exactly. Network weights are not a
+simplex: they are not normalised and may be negative. A third shape —
+`WeightArray` — is needed when the neural net brain is added, but is deferred
+until then, per [0013](0013-brain-computation-model-and-warm-starting.md).
+
+The species carries a baseline genome alongside the layout. First-generation
+members start from that baseline with mutation applied, rather than from random
+values. This is how warm starting is expressed: the species author sets the
+baseline to encode sensible starting behaviour.
 
 A gene nothing reads does nothing, so a new trait still needs a brain or a system
 that consults it.
