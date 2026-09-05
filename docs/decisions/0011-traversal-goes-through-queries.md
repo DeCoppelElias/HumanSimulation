@@ -29,7 +29,9 @@ goes through a query on the world or the grid.
 ## Consequences
 
 An index, a spatial structure or a partial snapshot can be added later without a
-caller changing.
+caller changing. [0014](0014-decide-and-queries-get-an-index-not-a-type-split.md)
+settles that the fix for decide and component queries is this kind of index, not
+a split between entity kinds.
 
 The query surface has to be designed before the first system is written, and
 guessed at while there are few systems to learn from. A query nobody needs is

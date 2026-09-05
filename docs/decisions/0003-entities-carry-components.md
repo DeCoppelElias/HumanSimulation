@@ -71,6 +71,9 @@ burn, and no way to hold burn progress without being alight.
 This buys no query speed. The world keeps no component index, so finding
 everything on fire is a scan with a filter, exactly as the flag version would be.
 If profiling ever makes that matter, an index is internal to the world.
+[0014](0014-decide-and-queries-get-an-index-not-a-type-split.md) settles that
+this index stays internal to the world rather than becoming a split between
+entity kinds.
 
 The cost is two concepts instead of one, a rule for telling them apart, and
 losing the compiler's guarantee that a creature has a brain. Nothing stops a

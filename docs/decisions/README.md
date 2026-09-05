@@ -33,3 +33,6 @@ costs, and what the concrete type shapes are.
   a world, and a headless runner watches for lost selection.
 - [0013](0013-brain-computation-model-and-warm-starting.md) Fixed-rules brain
   first, neural net second; species carries a baseline genome for warm starting.
+- [0014](0014-decide-and-queries-get-an-index-not-a-type-split.md) Decide and
+  component queries get an internal index when they need one; entities stay one
+  type.
