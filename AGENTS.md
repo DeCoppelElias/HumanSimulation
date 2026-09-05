@@ -4,6 +4,23 @@ Java Swing application that simulates humans searching for food on a 2D grid.
 It was written in September 2022. README.md describes what the application does
 and how to use it.
 
+## Where to find things
+
+`DESIGN.md` describes the system as it is meant to be: what it is for, what it is
+not, and how the model fits together. Read it before changing anything in the
+model layer, and before proposing a feature.
+
+`docs/decisions/` is the decision log, one entry per settled choice with what was
+rejected and why. Read the entry before reopening a design question.
+`docs/decisions/README.md` indexes them.
+
+The model layer is being rebuilt, so the tree does not match `DESIGN.md` yet. The
+work plan under `docs/superpowers/plans/` tracks where that stands. It is
+gitignored and may be missing from a fresh clone.
+
+Keep this file mechanical. Anything about why the system is shaped the way it is
+belongs in `DESIGN.md` or the decision log.
+
 ## Layout
 
 - `src/main/java/` `Main` and `Application` at the root, then
