@@ -1,4 +1,4 @@
-# 0001. Documentation splits into three artifacts
+# 0001. Documentation splits into four artifacts
 
 ## Status
 
@@ -18,7 +18,7 @@ single document holding all three churns constantly and stops being trusted.
 
 ## Decision
 
-Three artifacts with three jobs.
+Four artifacts, each with one job.
 
 `DESIGN.md`, at the repository root and committed, describes the system as it is
 meant to be. Present tense, no history, no progress, no alternatives. Its readers
@@ -28,8 +28,14 @@ are Elias and Claude. It holds vision, non-goals and architecture, and no code.
 Nygard format, append-only. Concrete type shapes belong here, because an entry is
 a dated record and cannot go stale.
 
-The work plan, under the gitignored `docs/superpowers/plans/`, tracks where the
-work actually stands. It is disposable.
+`docs/roadmap.md`, committed, holds the build order: what's planned, in what
+sequence, and whether each entry is done yet. Status is a field on each entry
+rather than a separate description of what the code currently contains, which
+would duplicate the code and go stale the same way.
+
+The work plan, under the gitignored `docs/superpowers/plans/`, tracks
+finer-grained, in-progress work for whoever is at the keyboard. It is
+disposable and does not travel between machines, unlike the roadmap.
 
 `README.md` keeps its existing audience, a visitor to the repository.
 
@@ -41,11 +47,12 @@ at the top points at the work plan and is deleted when the gap closes.
 `AGENTS.md` becomes mechanical: build, run, formatting, hooks, layout. It gains a
 section saying which document to read and when.
 
-Three documents have to stay consistent with each other forever, and the split
+Four documents have to stay consistent with each other forever, and the split
 creates the drift it is designed to survive. A decision that changes now means
 editing an entry's status, writing a new entry, and editing `DESIGN.md`, and
-missing the third is the common failure.
+missing one of them is the common failure. Landing a roadmap entry adds a
+fifth thing to remember: flipping its status.
 
 The work plan does not travel between machines, being gitignored, so anyone
-picking the work up elsewhere gets the design and the reasoning and has to be
-told separately where the work stands.
+picking the work up elsewhere gets the design, the reasoning and the build
+order, and has to be told separately where today's in-progress work stands.

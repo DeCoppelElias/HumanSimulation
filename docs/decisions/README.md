@@ -8,7 +8,7 @@ one has its status changed to say which entry supersedes it.
 costs, and what the concrete type shapes are.
 
 - [0001](0001-documentation-splits-into-three-artifacts.md) Documentation splits
-  into three artifacts: a design file, this log, and a work plan.
+  into four artifacts: a design file, this log, a roadmap, and a work plan.
 - [0002](0002-replace-the-model-layer-in-place.md) Replace the model layer in
   place, growing from zero, one watchable package at a time.
 - [0003](0003-entities-carry-components.md) Entities carry components, species
