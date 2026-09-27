@@ -31,3 +31,19 @@ costs, and what the concrete type shapes are.
   which keeps large worlds reachable later.
 - [0012](0012-tests-target-brains-without-a-world.md) Tests target brains without
   a world, and a headless runner watches for lost selection.
+- [0013](0013-perception-is-one-type.md) Perception is one type, and the builder
+  is the seam that varies.
+- [0014](0014-resolve-order-comes-from-a-speed-gene.md) Resolve order comes from
+  a speed gene, amending [0010](0010-runs-replay-exactly-from-a-seed.md).
+- [0015](0015-speculative-features-live-in-an-idea-list.md) Speculative features
+  live in a committed idea list under `docs/ideas/`.
+- [0016](0016-geometry-lives-in-the-grid.md) Geometry lives in the grid: four
+  directions for now, and the shape stays changeable.
+- [0017](0017-the-resolve-step-owns-legality.md) The resolve step owns legality:
+  occupancy, blocking, dead actors and breeding.
+- [0018](0018-feeding-takes-the-tile.md) Feeding takes the whole tile, and the
+  food contest is cut.
+- [0019](0019-commands-queue-at-the-day-boundary.md) Commands queue and drain at
+  the start of a day.
+- [0020](0020-every-number-is-a-setting-or-a-gene.md) Every number is a setting
+  or a gene, and a setting is declared with a default.

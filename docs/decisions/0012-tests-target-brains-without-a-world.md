@@ -2,7 +2,9 @@
 
 ## Status
 
-Accepted, 2026-09-03.
+Accepted, 2026-09-03. Amended by
+[0018](0018-feeding-takes-the-tile.md), 2026-09-27: eight of the nine regression
+rules carry over, and the food fight rule is retired with the contest.
 
 ## Context
 

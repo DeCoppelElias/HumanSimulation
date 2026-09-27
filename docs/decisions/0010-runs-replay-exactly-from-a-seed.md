@@ -2,7 +2,12 @@
 
 ## Status
 
-Accepted, 2026-09-03.
+Accepted, 2026-09-03. The resolve-order half is amended by
+[0014](0014-resolve-order-comes-from-a-speed-gene.md), 2026-09-27: the resolve
+step orders on a speed gene, and the rest of this entry stands. The food
+tiebreak gene it promises is dropped by
+[0018](0018-feeding-takes-the-tile.md), 2026-09-27, since a creature takes every
+edible on its tile.
 
 ## Context
 

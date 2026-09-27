@@ -2,7 +2,9 @@
 
 ## Status
 
-Accepted, 2026-09-03.
+Accepted, 2026-09-03. Amended by
+[0018](0018-feeding-takes-the-tile.md), 2026-09-27: the food contest is cut, so
+the known exception at the end of this entry no longer exists.
 
 ## Context
 

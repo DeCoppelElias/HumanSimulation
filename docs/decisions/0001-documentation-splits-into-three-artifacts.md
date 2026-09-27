@@ -2,7 +2,9 @@
 
 ## Status
 
-Accepted, 2026-09-03.
+Accepted, 2026-09-03. Extended by
+[0015](0015-speculative-features-live-in-an-idea-list.md), 2026-09-27: a fourth
+artifact holds ideas that are wanted and not decided.
 
 ## Context
 

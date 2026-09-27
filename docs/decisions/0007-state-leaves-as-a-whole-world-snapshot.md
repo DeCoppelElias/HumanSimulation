@@ -2,7 +2,10 @@
 
 ## Status
 
-Accepted, 2026-09-03.
+Accepted, 2026-09-03. Extended by
+[0019](0019-commands-queue-at-the-day-boundary.md), 2026-09-27: commands queue
+and drain at the start of a day, and a run reproduces from its seed plus its
+command log.
 
 ## Context
 

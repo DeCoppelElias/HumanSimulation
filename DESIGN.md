@@ -59,7 +59,10 @@ rock, a pile of ash. There is no class per kind of thing.
 A species is the recipe for a kind of entity. It carries the name, the sprite
 that draws it, the gene layout its members inherit, the settings shared by every
 member, the brain its members are born with, and the other components they start
-with. The brain has its own slot rather than sitting among the components,
+with. Every number a rule reads is one of those two: a gene when it varies
+between individuals and passes to a child, a setting otherwise. A setting
+declares its default and what an editor needs to show it, so the interface can
+edit anything without a line of code per number. The brain has its own slot rather than sitting among the components,
 because it is the seam that gets swapped. Terrain is a species too, and water
 decides nothing, so the brain slot can be empty.
 
@@ -76,8 +79,11 @@ length can change. The second shape exists because the step distribution already
 needs it, and it is also where a network brain's weights would live. Adding an
 evolvable trait means adding one entry to a layout.
 
-The grid holds what occupies each tile, and the scalar fields belonging to the
-location itself, such as elevation or moisture. One question separates them: can
+The grid owns the shape of the world. It holds what occupies each tile and the
+scalar fields belonging to the location itself, such as elevation or moisture,
+and it is the only thing that knows which directions exist and how far apart two
+tiles are. There are four directions today, and because nothing outside the grid
+measures distance or enumerates directions, that can change. One question separates them: can
 the thing be created and destroyed independently of the tile? Grass, water, rock
 and ash all can, so they are entities. A tile always has exactly one elevation
 and you cannot detach it, so elevation is a field.
@@ -92,18 +98,32 @@ it. No class builds its own.
 
 Entities are held in ascending id order, every system walks them in that order,
 and asking the grid what stands on a tile returns its occupants in that order
-too. Any index or spatial structure added later has to preserve it.
+too. Any index or spatial structure added later has to preserve it. Resolving is
+the one step whose order is a rule rather than the id: intents are applied by
+speed descending and equal speeds drawn at random, so acting first is a trait a
+creature pays for instead of an accident of when it spawned.
 
 Deciding finishes before anything is applied, so every creature in a day sees
 the same world.
+
+Commands from outside queue and take effect at the start of a day, never between
+two systems, so a run is described by its seed and the days its commands landed
+on.
 
 ### Deciding and applying
 
 A brain turns a perception into an intent. A perception is what one creature can
 see from where it stands: the tiles within its view range by straight-line
-distance, what stands on each, and the tags those things carry. An intent is the
-single action it wants to take this day, one of moving in a direction for a
-distance, attacking something, breeding, or doing nothing.
+distance, what stands on each, the tags and values those things carry, and the
+values its own components publish, such as what is left in its reserve.
+Positions in it are relative to the creature, and a tile off the grid is simply
+absent, which is how an edge is perceived. An intent is the single action it
+wants to take this day, one of moving in a direction for a distance, attacking
+something, breeding, or doing nothing.
+
+There is one perception type, and what fills it is a component. A species that
+senses differently carries a different builder, and every brain still takes the
+same input.
 
 The world resolves intents. A creature says what it wants and the world decides
 what actually happens, so the rules about where you may step, what you may
@@ -111,8 +131,8 @@ attack and when you may breed live in one place and every creature obeys them
 without knowing they exist. Adding water that blocks movement changes the
 resolver and nothing else.
 
-A system is a rule the world applies. Hunger charging, grass regrowing, fire
-spreading and corpses clearing are systems.
+A system is a rule the world applies. Hunger charging, grass regrowing and fire
+spreading are systems.
 
 The line between a brain and a system is whose rule it is. A system's procedure
 belongs to the world and applies identically to everything of its kind, even
@@ -130,11 +150,10 @@ promoting it to a brain. Fire that reads wind and moisture from the tile, and
 fuel from what it burns, stays one rule that every fire obeys.
 
 One intent per creature per day is the constraint that shapes the rest. A choice
-that only becomes available partway through a day cannot be a decision, which is
-why the aggression roll at contested food is a gene the feed system consults
-rather than something a brain is asked about. The contest does not exist until
-every intent has already been collected. The cost is that such a choice cannot
-be conditional: a creature cannot fight when starving and yield when fed.
+that only becomes available partway through a day cannot be a decision at all,
+because the decisions are already collected by then. Anything that wants to be
+chosen has to be visible when the day starts, which is why violence is an intent
+a creature returns rather than something the feed step does to it.
 
 ### The day
 
@@ -143,15 +162,16 @@ A day runs these systems in order:
 1. Decide. Every entity with a brain is handed a perception and returns an
    intent. Nothing else changes.
 2. Resolve. Each intent is applied against a list of ids fixed at the start,
-   since resolving can spawn and remove entities. Movement walks one tile at a
-   time and stops where the world says it must. Breeding checks the cooldown and
-   the reserve, spends the cost, and spawns a child at the parent's position
-   carrying a mutated copy of the parent's genome.
-3. Feed. Creatures standing on something their diet accepts contest it. The
-   contest is settled by each contender's aggression gene, so it can kill, and
-   the winners are credited to their metabolism.
-4. Metabolise. Reserves are charged on the eating interval, and anything that
-   runs out dies.
+   since resolving can spawn and remove entities, ordered by the speed gene with
+   equal speeds drawn at random. Movement walks one tile at a time and stops where the world says
+   it must. Breeding checks the cooldown and the reserve, spends the cost, and
+   spawns a child at the parent's position carrying a mutated copy of the
+   parent's genome.
+3. Feed. In the same order, a creature takes every edible on its tile that its
+   diet accepts, crediting its metabolism. A pile taken is gone, so whoever
+   comes later finds nothing.
+4. Metabolise. Reserves are charged on the eating interval and again for the
+   speed the creature carries, and anything that runs out dies.
 5. World processes, in list order: spawning new food, regrowth, fire.
 6. Clean up. The dead are removed, one census row is written, and the day's
    intents are discarded.
@@ -169,8 +189,13 @@ the core. A headless run behaves exactly like a watched one.
 State leaves as a snapshot of the whole world each day: the day number, the grid,
 and for each tile its fields and what stands on it with the tags and values worth
 drawing. Commands are the only way in, covering spawning, resetting, editing a
-species' settings, and anything else the interface initiates. The interface never
-reaches into the model.
+species' settings, and anything else the interface initiates. They queue and
+drain at the start of a day, and a paused world drains them at once and draws the
+result without advancing. The interface never reaches into the model.
+
+The world advances on the interface's own thread. The snapshot out and the queue
+in are the handoff a background thread would need, so moving it off is available
+and not needed.
 
 Population counts come from a census the world writes each day.
 

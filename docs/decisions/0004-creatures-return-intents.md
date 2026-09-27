@@ -2,7 +2,11 @@
 
 ## Status
 
-Accepted, 2026-09-03.
+Accepted, 2026-09-03. Extended by
+[0013](0013-perception-is-one-type.md), 2026-09-27, which gives the perception
+its shape, and by
+[0017](0017-the-resolve-step-owns-legality.md), 2026-09-27, which says what the
+resolver treats as legal.
 
 ## Context
 

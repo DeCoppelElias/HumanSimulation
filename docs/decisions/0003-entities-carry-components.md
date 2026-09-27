@@ -2,7 +2,10 @@
 
 ## Status
 
-Accepted, 2026-09-03.
+Accepted, 2026-09-03. Amended by
+[0020](0020-every-number-is-a-setting-or-a-gene.md), 2026-09-27: a species'
+settings are declared and typed rather than a map of doubles, and they are read
+live.
 
 ## Context
 
