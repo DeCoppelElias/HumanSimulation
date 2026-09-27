@@ -10,9 +10,10 @@ and how to use it.
 not, and how the model fits together. Read it before changing anything in the
 model layer, and before proposing a feature.
 
-`docs/decisions/` is the decision log, one entry per settled choice with what was
-rejected and why. Read the entry before reopening a design question.
-`docs/decisions/README.md` indexes them.
+`docs/decisions/` is the decision log, one entry per topic with what was
+rejected and why. Read the entry before reopening a design question. When a
+choice changes, rewrite its entry in place and update `DESIGN.md` to match. Add
+an entry only for a new topic. `docs/decisions/README.md` indexes them.
 
 `docs/ideas/` holds what is wanted and not decided, one file per idea. Look there
 before proposing a feature, and put a rejected or deferred one there rather than

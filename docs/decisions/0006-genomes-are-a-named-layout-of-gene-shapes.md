@@ -2,9 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-03. Amended by
-[0020](0020-every-number-is-a-setting-or-a-gene.md), 2026-09-27: a newborn's
-reserve of zero is the default of a setting rather than a rule.
+Accepted, 2026-09-03. Revised 2026-09-27.
 
 ## Context
 
@@ -23,6 +21,13 @@ reflection over record components, which trades the safety back for a runtime
 failure in a less obvious place. A variable-length distribution is also awkward
 in a record, since the bounds on its length have nowhere to live.
 
+A child also needs a starting reserve. A reserve of zero kills it on its first
+metabolism charge unless it has eaten, and it cannot eat on its birth day, per
+[0004](0004-creatures-return-intents.md), so nearly every child would starve. A
+grace period of some days without charges was the other way out. It adds an age
+check to the metabolise step, and it gives every child days of life that no food
+paid for.
+
 ## Decision
 
 A species declares a layout of gene specifications. A genome holds values for
@@ -38,11 +43,14 @@ public sealed interface GeneSpec {
 
 A scalar mutates by an offset within its mutation size, clamped to its bounds. A
 simplex mutates by shifting weight between two entries and occasionally growing
-or shrinking by one, then renormalising, which is what the current step variation
-does.
+or shrinking by one, then renormalising, which is what the current step
+variation does.
 
 Reproduction stays asexual. A child spawns at the parent's position with the
-parent's genome mutated and a reserve of zero.
+parent's genome mutated. Its starting reserve is its endowment, a fraction of
+the breeding cost the parent pays, set by a species setting per
+[0017](0017-every-number-is-a-setting-or-a-gene.md). Metabolism charges a
+newborn like everyone else.
 
 Scalars are continuous. Traits that are conceptually whole numbers, such as view
 range, round at read time, so selection still sees differences that a stored
@@ -62,9 +70,16 @@ The two shapes cover the current genome exactly, and a simplex is also where a
 network brain's weights would live. A brain whose topology evolves needs the
 genome to carry a graph, which is a third shape and real work.
 
-A gene nothing reads does nothing, so a new trait still needs a brain or a system
-that consults it.
+A gene nothing reads does nothing, so a new trait still needs a brain or a
+system that consults it.
 
-The mutation rate is a constant in the layout rather than a gene, so it cannot
-itself come under selection. Making it one is a later change and needs no new
+The mutation size is declared in the layout rather than being a gene, so it
+cannot itself come under selection. Making it one is a later change and needs no
+new shape.
+
+Energy passes from parent to child, so every day a child lives was paid for by
+food someone gathered. A parent's condition shows in how often it can breed,
+since its reserve has to cover the cost, rather than in what each child gets.
+The endowment fraction is a setting, and making it a gene later would let
+selection choose between few well-fed children and many thin ones, with no new
 shape.

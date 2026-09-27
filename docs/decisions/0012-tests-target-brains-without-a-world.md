@@ -2,9 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-03. Amended by
-[0018](0018-feeding-takes-the-tile.md), 2026-09-27: eight of the nine regression
-rules carry over, and the food fight rule is retired with the contest.
+Accepted, 2026-09-03. Revised 2026-09-27.
 
 ## Context
 
@@ -14,8 +12,9 @@ worth deciding once.
 
 Three groups behave differently. Determinism, resource loading and grid geometry
 test rules rather than structure. Behaviour mechanics, meaning movement
-distributions, breeding and the food contest, test units that are changing shape.
-The nine model-bug regression cases encode bugs that took a full phase to find.
+distributions, breeding and the food contest, test units that are changing
+shape. The nine model-bug regression cases encode bugs that took a full phase to
+find.
 
 Selection is the part no unit test can see. A rebuild can compile, pass
 everything, and quietly stop selecting for anything.
@@ -28,9 +27,12 @@ Behaviour mechanics are rewritten against the new units. A brain is tested by
 handing it a perception and asserting the intent it returns, with no world at
 all.
 
-The nine regression rules become acceptance criteria on the package that
-reintroduces each rule, from [0002](0002-replace-the-model-layer-in-place.md),
-rather than a suite ported in one go. All nine carry over; none is written off.
+Eight of the nine regression rules become acceptance criteria on the package
+that reintroduces each rule, from
+[0002](0002-replace-the-model-layer-in-place.md), rather than a suite ported in
+one go. The ninth, that a food fight leaves exactly one winner, has nothing to
+guard, since there is no contest in [0016](0016-feeding-takes-the-tile.md), and
+the rule it guarded is kept in `docs/ideas/aggression-at-contested-food.md`.
 
 A headless runner is built early. It advances a seeded world for a given number
 of days and reports population and gene means.
@@ -38,15 +40,16 @@ of days and reports population and gene means.
 ## Consequences
 
 The runner is the only thing that catches a build which passes every unit test
-and no longer selects. It is also what records the before and after of the
-rebuild, alongside the `gui-smoke-test` skill for what has to be watched rather
-than measured.
+and no longer selects. It measures the new core across changes, alongside the
+`gui-smoke-test` skill for what has to be watched rather than measured. The
+before and after of the rebuild is a gif, per
+[0002](0002-replace-the-model-layer-in-place.md).
 
-The 2022 selection baseline no longer applies, because the previous phase fixed
-the dead view-range assignment and changed how the simulation evolves. Any
-comparison is about the direction of selection rather than a matching trace,
-since [0004](0004-creatures-return-intents.md) changes movement deliberately.
+The 2022 selection baseline no longer applies, because the current code already
+differs from 2022 in how view range is inherited. Any comparison is about the
+direction of selection rather than a matching trace, since
+[0004](0004-creatures-return-intents.md) changes movement deliberately.
 
-Nine rules spread across nine packages is nine chances to forget one. A suite
-ported in one go would have failed loudly instead, and the work plan is now the
-only thing tracking that each rule found a home.
+Eight rules spread across their packages are eight chances to forget one. A
+suite ported in one go would have failed loudly instead, and the work plan is
+the only thing tracking that each rule found a home.

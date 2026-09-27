@@ -5,8 +5,7 @@ Status: idea.
 ## What it does
 
 Death leaves a corpse entity on the tile carrying an edible component and a
-flammable one, cleared by a system after some days, instead of crediting a
-killer directly.
+flammable one, cleared by a system after some days.
 
 ## Why it is interesting
 
@@ -18,11 +17,14 @@ third place. And a starving creature near a battlefield has somewhere to go.
 
 ## What it would touch
 
-A corpse species, and whatever kills a creature spawning one instead of
-crediting the killer. The clean-up step gains a rule for clearing old corpses,
-which `DESIGN.md` already describes as a system.
+A corpse species, and whatever kills a creature spawning one, which fits the
+rule that whatever kills an entity removes it. Clearing old corpses is one more
+world process, alongside regrowth.
 
 ## Open questions
+
+Whether a kill also feeds the killer directly, which
+[0004](../decisions/0004-creatures-return-intents.md) leaves open.
 
 Whether the corpse's value comes from what the creature was carrying in its
 reserve, from its species settings, or both.

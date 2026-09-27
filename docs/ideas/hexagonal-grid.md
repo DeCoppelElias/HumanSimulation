@@ -18,10 +18,10 @@ same thing everywhere.
 ## What it would touch
 
 Not much of the model, because
-[0016](../decisions/0016-geometry-lives-in-the-grid.md) keeps the direction set
-and the distance function inside the grid. The cost is in the interface. Axial
-coordinates replace x and y, so `GridPosition` stops being one of the types
-[0002](../decisions/0002-replace-the-model-layer-in-place.md) keeps, and
+[0015](../decisions/0015-geometry-lives-in-the-grid.md) keeps the direction set
+and the distance function inside the grid. The cost is mostly in the interface.
+Axial coordinates replace x and y, so `GridPosition` stops being one of the
+types [0002](../decisions/0002-replace-the-model-layer-in-place.md) keeps, and
 `GridPanel` has to draw hexagons and hit-test mouse clicks against them.
 
 ## Open questions

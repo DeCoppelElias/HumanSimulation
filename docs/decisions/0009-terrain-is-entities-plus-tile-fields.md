@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-03.
+Accepted, 2026-09-03. Revised 2026-09-27.
 
 ## Context
 
@@ -12,12 +12,12 @@ Terrain as tile state alone means fire needs one code path for burning entities
 and a second for burning tile state, and every future capability faces the same
 fork.
 
-Terrain as entities alone means inventing an object to hold a number that belongs
-to the location. Elevation is not a thing sitting on a tile.
+Terrain as entities alone means inventing an object to hold a number that
+belongs to the location. Elevation is not a thing sitting on a tile.
 
-An earlier form of the split asked two questions: can there be more than one on a
-tile, and can it be removed. That misclassifies water, which is one per tile and
-is nonetheless an entity carrying a blocking capability. The first question was
+Splitting on two questions was considered: can there be more than one on a tile,
+and can it be removed. That misclassifies water, which is one per tile and is
+nonetheless an entity carrying a blocking capability. The first question was
 doing the wrong work.
 
 ## Decision
@@ -25,10 +25,10 @@ doing the wrong work.
 One question separates the two. Can the thing be created and destroyed
 independently of the tile?
 
-Grass, water, rock and ash all can, so they are entities. Grass carries an edible
-component and a flammable one, water carries a blocking one. A tile always has
-exactly one elevation and it cannot be detached, so elevation is a field,
-alongside moisture and temperature.
+Grass, water, rock and ash all can, so they are entities. Grass carries an
+edible component and a flammable one, water carries a blocking one. A tile
+always has exactly one elevation and it cannot be detached, so elevation is a
+field, alongside moisture and temperature.
 
 Fire is neither. It is a state of something that occupies a tile, so it is a
 component attached to that thing.

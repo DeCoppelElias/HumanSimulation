@@ -5,7 +5,7 @@ Status: idea.
 ## What it does
 
 Shows what is actually on a tile when several things share it.
-[0017](../decisions/0017-the-resolve-step-owns-legality.md) puts no limit on
+[0004](../decisions/0004-creatures-return-intents.md) puts no limit on
 occupancy, so a tile can hold grass, three creatures and a fire, and the grid
 draws one sprite.
 
@@ -18,7 +18,7 @@ population.
 ## What it would touch
 
 `GridPanel` only. The snapshot already carries every entity on every tile with
-its tags and values, so nothing in the model changes.
+its tags and displayable values, so nothing in the model changes.
 
 ## Open questions
 

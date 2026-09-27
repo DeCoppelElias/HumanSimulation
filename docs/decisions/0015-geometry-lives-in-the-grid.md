@@ -1,4 +1,4 @@
-# 0016. Geometry lives in the grid
+# 0015. Geometry lives in the grid
 
 ## Status
 
@@ -10,17 +10,17 @@ Accepted, 2026-09-27.
 distance and [0004](0004-creatures-return-intents.md) moves by a direction and a
 distance. On a square grid those two disagree, and each fix picks a different
 lie. Four directions means movement is Manhattan while sight is Euclidean, so a
-creature sees a corner tile it cannot reach in one move. Eight directions means a
-diagonal step covers 1.41 tiles for the price of one, so anything moving toward a
-target evolves to prefer diagonals.
+creature sees a corner tile it cannot reach in one move. Eight directions means
+a diagonal step covers 1.41 tiles for the price of one, so anything moving
+toward a target evolves to prefer diagonals.
 
-A hexagonal grid removes the mismatch rather than choosing a lie, because all six
-neighbours sit at the same distance and hex distance is a proper metric. Its cost
-is not in the model. Axial coordinates replace x and y, so `GridPosition` stops
-being one of the few types
+A hexagonal grid removes the mismatch rather than choosing a lie, because all
+six neighbours sit at the same distance and hex distance is a proper metric. Its
+cost is mostly in the interface. Axial coordinates replace x and y, so
+`GridPosition` stops being one of the few types
 [0002](0002-replace-the-model-layer-in-place.md) keeps, and `GridPanel` has to
-draw hexagons and hit-test mouse clicks against them, which is the fiddliest code
-in the project for the smallest reward.
+draw hexagons and hit-test mouse clicks against them, which is the fiddliest
+code in the project for the smallest reward.
 
 ## Decision
 
