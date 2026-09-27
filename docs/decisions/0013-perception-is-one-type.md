@@ -27,63 +27,69 @@ of the vision, where a wolf avoids a burning tile without anyone having
 introduced fire to wolves. Adding a perceivable property would mean editing the
 summary and every brain reading it.
 
+String tags and string-keyed values were the third. Adding a perceivable
+property is free, a typo is a silent miss at runtime, and every tag needs some
+component to be responsible for it. Components already say what a thing is, so a
+brain can ask for them directly.
+
 Whether a creature sees its own state matters to
 [0004](0004-creatures-return-intents.md), since a brain that cannot read its own
 reserve can only breed on a schedule, which is a system's job.
 
-Whether it sees the state of others is the other half. Making every published
-value visible to every neighbour is the simplest answer, and it leaks exact
-inner state: a predator would read how close each prey animal is to starving,
-which no animal can know. Keeping values private and letting components signal
-publicly through tags, such as a `weak` tag below some threshold, was also
-considered. Each threshold is then a setting that decides in advance what may
-matter, the same fault as the summarised perception.
+Whether it sees the state of others is the other half. Making all of it visible
+leaks exact inner state: a predator would read how close each prey animal is to
+starving, which no animal can know.
 
 ## Decision
 
-One type, filled by a per-species builder.
+One type, filled by a per-species builder. A brain reads components by class.
 
 ```java
 public record Perception(SelfView self, List<TileView> tiles) {
-    public record SelfView(int id, Set<String> tags, Map<String, Double> values) {}
+    public record SelfView(int id, Parts parts) {}
     public record TileView(int dx, int dy, Map<String, Double> fields, List<EntityView> entities) {}
-    public record EntityView(int id, String species, Set<String> tags, Map<String, Double> values) {}
+    public record EntityView(int id, String species, Parts parts) {}
+}
+
+public interface Parts {
+    boolean has(Class<? extends Component> type);
+    <V extends Record> Optional<V> view(Class<V> viewType);
 }
 ```
 
-Positions are relative to the perceiver, and no absolute position appears
-anywhere in a perception. A tile outside the grid is absent from the list, which
-is how a creature perceives an edge.
-
-Every component declares each value it publishes and who may see it. There is no
-default audience.
+Every component declares what its carrier sees of it and what creatures in range
+see of it, as read-only view records, and neither has a default. `Brain` is the
+one exception, per [0004](0004-creatures-return-intents.md).
 
 ```java
-public enum Audience { SELF, NEARBY }
-
-public record Observable(String key, Audience audience) {}
-
 // on Component
-List<Observable> observables();
-Map<String, Double> publish();
+Record ownView();
+Optional<Record> seenView();   // empty: invisible to others
 ```
 
-Metabolism declares `reserve` as `SELF`, breeding declares its time until ready
-as `SELF`, edibles declare `nutrition` as `NEARBY`, and a burning component
-declares its heat as `NEARBY`. Publishing a key that was not declared throws.
+`Metabolism` shows its reserve to its carrier and nothing to others, so a
+neighbour cannot tell it is there. `Edible` shows its amount to everyone. A
+burning component shows its heat to everyone. A brain asks
+`entity.parts().has(Edible.class)` or
+`self.parts().view(Metabolism.Own.class)`, and a misspelt class does not
+compile.
 
-`self` carries every value the perceiver's own components publish. An
-`EntityView` carries only the `NEARBY` values of the entity it shows. Neither
-carries genes, because a brain built from its `Spawn` already closed over its
-own.
+`self` carries the own view of every component the perceiver has. An
+`EntityView` carries only the components that offer a seen view. Neither carries
+genes, because a brain built from its `Spawn` already closed over its own.
+
+Positions are relative to the perceiver, and no absolute position appears
+anywhere in a perception. A tile outside the grid is absent from the list, which
+is how a creature perceives an edge. Tile fields stay string-keyed, since they
+belong to the grid rather than to a component.
 
 Ordering is fixed: tiles by straight-line distance ascending, then by `dy` and
 `dx`; entities within a tile by ascending id. A brain that takes the first
 edible tile it finds makes the same choice on a replay.
 
-The type carries derived helpers, such as `nearest(tag)`, `tilesWithTag` and
-`occupantsWithTag`. They are pure functions over the same data, so they cost
-nothing in flexibility.
+The type carries derived helpers, such as `nearest(Edible.class)` and
+`tilesWith(Edible.class)`. They are pure functions over the same data, so they
+cost nothing in flexibility.
 
 A `Sense` component builds the perception, through queries per
 [0011](0011-traversal-goes-through-queries.md). The decide step asks the
@@ -95,27 +101,29 @@ no brain, no test and no other species changes.
 
 Breeding is a real decision, so a creature can hold off while starving.
 
-A brain sees a value only if some component publishes it and declares it
-visible, so publishing is a design act the constructor enforces. A component
-that publishes nothing is invisible to the creature carrying it.
+Adding a perceivable property is adding a component or a field to a view, which
+is already how any capability is added.
 
-What one creature can know about another is data, readable from a species' parts
-without running anything, so a test can assert it and the interface can show it.
+A brain sees something only if a component offers a view of it, so what one
+creature can know about another is a choice every component makes explicitly. It
+is also readable from a species' parts without running anything, so a test can
+assert it.
 
-A sense that reads some `SELF` values of others, such as a keen eye that can
-tell who is weak, would arrive as a new `Sense`, so that knowledge can become a
-trait under selection rather than a fixed fact of the world.
+A sense that sees more than the seen view, such as a keen eye that can tell who
+is weak, would arrive as a new `Sense` with access to the own views of others,
+so that knowledge can become a trait under selection rather than a fixed fact of
+the world.
+
+A fixed-rules brain names the component classes it reacts to. A network brain
+needs a generic encoding of whatever components it meets, which is part of the
+open input question in
+[0018](0018-brain-computation-model-and-warm-starting.md).
 
 No absolute position means a brain cannot navigate to a fixed point on the map,
 and a homing behaviour would arrive as a new `Sense` rather than as coordinates.
 
 A perception is allocated per creature per day, about thirty small records at
 view range three. If that ever matters it is internal to the builder.
-
-Tags and value keys are strings, so a typo is a runtime failure, the same trade
-accepted for genes in [0006](0006-genomes-are-a-named-layout-of-gene-shapes.md)
-and for settings in [0017](0017-every-number-is-a-setting-or-a-gene.md). An
-undeclared value key at least fails where it is published.
 
 A perception and the whole-world snapshot from
 [0007](0007-state-leaves-as-a-snapshot-commands-go-in.md) are the same idea at

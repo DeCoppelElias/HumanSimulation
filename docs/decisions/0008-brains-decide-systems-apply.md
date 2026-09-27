@@ -37,7 +37,7 @@ start asking it for intents, and no test will fail. The rule works only as long
 as it is consulted.
 
 Every behaviour on the brain side of the test is decided by a brain. Breeding is
-an intent, per [0004](0004-creatures-return-intents.md). Violence is an `Attack`
-intent, and there is no automatic fight at contested food, per
-[0016](0016-feeding-takes-the-tile.md), since that contest would not exist until
-every intent had been collected and so could never be decided.
+an intent, per [0004](0004-creatures-return-intents.md). Violence, when it
+arrives, is an intent too, and there is no automatic fight at contested food,
+per [0016](0016-feeding-takes-the-tile.md), since that contest would not exist
+until every intent had been collected and so could never be decided.

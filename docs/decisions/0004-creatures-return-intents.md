@@ -51,9 +51,9 @@ public interface Brain extends Component {
 A move carries a direction and a distance rather than a delta, matching the step
 distribution over distances one to three and making the walked path unambiguous.
 `Intent` is sealed, so a switch with no default branch fails to compile when a
-case is missing. `Brain` defaults its own key, so an implementation supplies
-only the decision. The perception's shape is
-[0013](0013-perception-is-one-type.md).
+case is missing. `Brain` defaults its own key and offers no views, since a brain
+shows only in what it does, so an implementation supplies only the decision. The
+perception's shape is [0013](0013-perception-is-one-type.md).
 
 The resolve step owns legality.
 
@@ -68,9 +68,8 @@ rather than through space. The resolver walks a move one tile at a time, and a
 blocked mover walks as far as it legally can and stops there.
 
 An entity that dies leaves the world at once, whichever step killed it. When a
-dead entity's turn arrives its id no longer resolves and it is skipped, and an
-attack naming a target that is gone resolves as nothing. Remains, if they are
-ever wanted, are spawned by whatever does the killing.
+dead entity's turn arrives its id no longer resolves and it is skipped. Remains,
+if they are ever wanted, are spawned by whatever does the killing.
 
 Breeding takes its interval, its cost and the child's endowment from species
 settings, per [0017](0017-every-number-is-a-setting-or-a-gene.md). A parent
@@ -78,12 +77,10 @@ breeds when the interval has elapsed and its reserve covers the cost. The child
 spawns on the parent's tile with a mutated genome and a reserve funded from the
 cost, per [0006](0006-genomes-are-a-named-layout-of-gene-shapes.md).
 
-Attacking arrives with the combat slice and not before, as a fourth case,
-`Attack(int targetId)`. Two things about it are settled: how far a creature can
-strike is a component, so reach belongs to the creature rather than to the
-resolver, and an attack is a contest both sides can lose. What it rolls against,
-whether reach is a gene or a setting, and what a kill yields are left open until
-there is a predator to ask.
+There is no attack. Nothing in the base simulation needs one, and designing it
+before there is a predator to ask would be guesswork. When the predator on the
+roadmap needs violence, it arrives as a new intent, never as something the feed
+step does to a creature.
 
 ## Consequences
 
@@ -95,8 +92,8 @@ Conflicts become visible, because every intent exists before any is applied.
 One intent per creature per day is the real constraint. A choice that only
 becomes available partway through a day cannot be a decision, because the
 decisions are already collected by then, so anything that wants to be chosen has
-to be visible when the day starts. That is why violence is an `Attack` intent
-rather than something the feed step does to a creature.
+to be visible when the day starts. That is why violence, when it arrives, is an
+intent rather than a rule the feed step applies.
 
 Breeding costs a creature its move for that day, which is the tradeoff that
 makes it worth deciding, and it allows behaviour a schedule could not express,
@@ -110,8 +107,8 @@ Many creatures on one tile is normal, so the interface has to show a stack where
 it currently draws one sprite. That is `docs/ideas/drawing-a-stacked-tile.md`. A
 child is always born somewhere, since a tile cannot be full.
 
-Nothing dead acts, which makes being early a real advantage and gives the speed
-gene another thing to buy once combat exists.
+Nothing dead acts, so once creatures can kill each other, being early in the
+order matters in a fight as well as at food.
 
 Removal at death means every loop that can kill has to walk a copy of the ids,
 which [0011](0011-traversal-goes-through-queries.md) makes the rule for all
@@ -121,6 +118,6 @@ kills, since no body is left to find later in the day.
 A day can contain fewer actions than it collected intents, so anything counting
 actions has to read what was applied rather than what was decided.
 
-When `Attack` joins the sealed intent type, the switch in the resolver fails to
+When a new intent joins the sealed type, the switch in the resolver fails to
 compile until that case is handled, which is the reminder that nothing else
 provides.

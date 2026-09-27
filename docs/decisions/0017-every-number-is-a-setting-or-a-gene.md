@@ -46,14 +46,14 @@ appears in the interface with no interface code. Editing one is a command, per
 
 ## Consequences
 
-The breeding interval, the breeding cost, the child's endowment, the eating
+The breeding interval, the breeding cost, the endowment fraction, the eating
 charge and the charge for speed are all species settings.
 
 A world has settings too, such as grid size and how much food arrives, and they
 are declared the same way.
 
 Keys are strings, so a typo is a runtime failure, which this log already accepts
-for genes and for perception tags.
+for genes.
 
 Bounds keep a value in range and say nothing about whether it is sensible.
 Nothing stops a configuration that makes the world dull or unsurvivable, which

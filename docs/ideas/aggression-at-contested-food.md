@@ -26,8 +26,8 @@ species layout. Nothing else, since it needs no new component and no new intent.
 Whether it belongs anywhere, since
 [0016](../decisions/0016-feeding-takes-the-tile.md) settles feeding without it.
 
-Whether it is still wanted once the `Attack` intent exists, which gives violence
-a home where a creature chooses it. Keeping both means two combat systems, one
+Whether it is still wanted once violence exists as an intent, which gives it a
+home where a creature chooses it. Keeping both means two combat systems, one
 decided and one automatic.
 
 Whether the automatic version can be made conditional, which

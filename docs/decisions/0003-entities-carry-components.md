@@ -42,23 +42,25 @@ public record Species(
         String name,
         String spriteKey,
         List<GeneSpec> geneLayout,
+        Genome baseline,
         List<Setting> settings,
         Optional<Function<Spawn, Brain>> brain,
         List<Function<Spawn, Component>> parts) {}
 ```
 
-`Setting` is [0017](0017-every-number-is-a-setting-or-a-gene.md). A component
-also declares the values it publishes, per
-[0013](0013-perception-is-one-type.md).
+`Setting` is [0017](0017-every-number-is-a-setting-or-a-gene.md), and the
+baseline genome is [0018](0018-brain-computation-model-and-warm-starting.md). A
+component also declares what its carrier and its neighbours can perceive of it,
+per [0013](0013-perception-is-one-type.md).
 
 A component declares the type it is filed under, so a query for `Brain.class`
 finds a `UtilityBrain`. The brain has its own field rather than sitting among
 the parts, because it is the seam that gets swapped, and it is optional because
 terrain is a species too and water decides nothing.
 
-At spawn the world builds a `Spawn` from the genome it rolled or inherited plus
-the species itself, whose settings are read live, and hands it to the brain and
-every part.
+At spawn the world builds a `Spawn` from the genome it drew from the baseline or
+inherited from a parent, plus the species itself, whose settings are read live,
+and hands it to the brain and every part.
 
 This entity replaces the existing `Entity`, `GridContent`, `Human` and `Food`
 hierarchy. Rendering reads the sprite key instead of matching class names

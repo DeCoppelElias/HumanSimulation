@@ -3,13 +3,14 @@
 One entry per topic: title, status, context, decision, consequences. When the
 choice on a topic changes, its entry is rewritten to state the current decision,
 and `git log` keeps what it said before. A new entry is only for a new topic.
-See [0001](0001-documentation-splits-into-four-artifacts.md).
+See [0001](0001-documentation-splits-into-five-artifacts.md).
 
 `DESIGN.md` states what was decided. These say why, what was rejected, what it
 costs, and what the concrete type shapes are.
 
-- [0001](0001-documentation-splits-into-four-artifacts.md) Documentation splits
-  into four artifacts: a design file, this log, an idea list, and a work plan.
+- [0001](0001-documentation-splits-into-five-artifacts.md) Documentation splits
+  into five artifacts: a design file, this log, an idea list, a roadmap and a
+  work plan.
 - [0002](0002-replace-the-model-layer-in-place.md) Replace the model layer in
   place, growing from zero, one watchable package at a time.
 - [0003](0003-entities-carry-components.md) Entities carry components, species
@@ -29,11 +30,13 @@ costs, and what the concrete type shapes are.
 - [0010](0010-runs-replay-exactly-from-a-seed.md) Runs replay exactly from a
   seed: one generator, id ordering, decide before apply.
 - [0011](0011-traversal-goes-through-queries.md) Traversal goes through queries
-  that return fresh lists, which keeps large worlds reachable later.
+  that return fresh lists, and an index behind them rather than a split entity
+  type keeps large worlds reachable later.
 - [0012](0012-tests-target-brains-without-a-world.md) Tests target brains
   without a world, and a headless runner watches for lost selection.
 - [0013](0013-perception-is-one-type.md) Perception is one type, the builder is
-  the seam, and components declare who sees each value.
+  the seam, brains read components by class, and each component declares what
+  others see of it.
 - [0014](0014-resolve-order-comes-from-a-speed-gene.md) Resolve order comes from
   a speed gene, with equal speeds drawn at random.
 - [0015](0015-geometry-lives-in-the-grid.md) Geometry lives in the grid: four
@@ -42,3 +45,6 @@ costs, and what the concrete type shapes are.
   contest.
 - [0017](0017-every-number-is-a-setting-or-a-gene.md) Every number is a setting
   or a gene, and a setting is declared with a default.
+- [0018](0018-brain-computation-model-and-warm-starting.md) A fixed-rules brain
+  first, a network brain later, and every species starts from a baseline
+  genome.

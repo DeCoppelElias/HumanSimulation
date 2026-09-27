@@ -19,9 +19,13 @@ an entry only for a new topic. `docs/decisions/README.md` indexes them.
 before proposing a feature, and put a rejected or deferred one there rather than
 losing it. It is not a roadmap.
 
-The model layer is being rebuilt, so the tree does not match `DESIGN.md` yet. The
-work plan under `docs/superpowers/plans/` tracks where that stands. It is
-gitignored and may be missing from a fresh clone.
+`docs/roadmap.md` is the committed build order for the model layer: what is
+planned, in what sequence, and whether each entry is done yet. Read it for
+current status and what comes next. The model layer is being rebuilt, so the
+tree does not match `DESIGN.md` yet.
+
+The work plan under `docs/superpowers/plans/` tracks finer-grained work in
+progress. It is gitignored and may be missing from a fresh clone.
 
 Keep this file mechanical. Anything about why the system is shaped the way it is
 belongs in `DESIGN.md` or the decision log.

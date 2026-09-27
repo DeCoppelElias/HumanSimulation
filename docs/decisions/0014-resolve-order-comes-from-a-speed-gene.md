@@ -11,16 +11,16 @@ ordering in the model with ascending id. That is right for storage, for
 iteration and for what a tile returns, and it is wrong for the steps where order
 changes outcomes.
 
-Resolving in id order means the lower id strikes first in every fight and
-reaches contested ground first, every day, forever. An id records when a thing
-happened to spawn and correlates with nothing else, so the advantage is
-permanent, invisible and chosen by nobody. It is the same defect as the hash
-enumeration tiebreak in the 2022 code, one layer up.
+Resolving in id order means the lower id acts first and reaches contested ground
+first, every day, forever. An id records when a thing happened to spawn and
+correlates with nothing else, so the advantage is permanent, invisible and
+chosen by nobody. It is the same defect as the hash enumeration tiebreak in the
+2022 code, one layer up.
 
 Three alternatives were considered. Ordering by the intent, so a creature that
 declared a three-tile move acts before one that declared one tile, needs no new
-gene and rewards declaring a long move to buy initiative, and it gives attacking
-and breeding no natural place in the order. Shuffling the whole order each day
+gene and rewards declaring a long move to buy initiative, and it gives breeding
+and idling no natural place in the order. Shuffling the whole order each day
 with the world's generator removes the bias and replaces it with noise, which
 nothing can select on. It is the right answer for equal speeds alone. Breaking
 ties on a second gene moves the tie one level down, couples two traits that have

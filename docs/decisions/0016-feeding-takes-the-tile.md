@@ -14,8 +14,8 @@ the seeded generator picks a winner and the rest die, and none means the
 peaceful ones split it evenly.
 
 The rebuild removes the constraint that produced that design. A brain sees its
-neighbours and can return an attack, so violence has a home where a creature
-chooses it, conditional on what it sees and on how hungry it is.
+neighbours, so when violence is wanted it can be an intent a creature chooses,
+conditional on what it sees and on how hungry it is.
 
 Keeping the contest as well means two combat systems, one decided and one
 applied. The applied one would be a behaviour that belongs to the individual by

@@ -18,11 +18,10 @@ And the nine regression scenarios could be ported one at a time and checked
 against a version that still demonstrably passes them, so there would always be
 a working oracle.
 
-The first argument dissolved when the comparison turned out not to be wanted: a
-before and after gif is enough. The second dissolves differently, because there
-is no porting. Growing from zero means each rule arrives with a fresh test
-written against the new units, so the old suite is never the thing being
-satisfied and an oracle has nothing to do.
+Neither holds. The comparison is not wanted, since a before and after gif is
+enough. And there is no porting. Growing from zero means each rule arrives with
+a fresh test written against the new units, so the old suite is never the thing
+being satisfied and an oracle has nothing to do.
 
 ## Decision
 

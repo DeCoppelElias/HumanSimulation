@@ -32,7 +32,7 @@ the day. Commands drain before the first step, per
 [0007](0007-state-leaves-as-a-snapshot-commands-go-in.md). Six steps:
 
 1. Decide. Every entity with a brain gets a perception and returns an intent,
-   attached to the entity as a component.
+   attached to the entity until clean up.
 2. Resolve. Apply each intent in the day's order, per
    [0014](0014-resolve-order-comes-from-a-speed-gene.md), under the legality
    rules in [0004](0004-creatures-return-intents.md). Movement walks a tile at a
@@ -47,9 +47,9 @@ the day. Commands drain before the first step, per
 
 Whatever kills an entity removes it at once, in whichever step that happens.
 
-Systems pass work to each other through components rather than through fields on
-the world. Step one writes an intent, step two reads it, and a new system that
-needs to see intents needs no change anywhere.
+Systems pass work to each other through what is attached to entities rather than
+through fields on the world. Step one writes an intent, step two reads it, and a
+new system that needs to see intents needs no change anywhere.
 
 The census is the one long-lived exception, since it is durable output rather
 than state for the current day. It is what the population graph reads, replacing

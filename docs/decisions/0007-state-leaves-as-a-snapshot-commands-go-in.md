@@ -30,15 +30,15 @@ reproduce, is the one that cannot be.
 The core holds no reference to Swing, and no simulation rule lives above the
 core. Each day the world produces an immutable snapshot of everything: the day
 number, the grid dimensions, and for each tile its scalar fields and the
-entities standing on it with their species, sprite key, tags and displayable
-values.
+entities standing on it with their species, sprite key and the values worth
+displaying. The viewer is a person rather than a creature, so the audience rules
+in [0013](0013-perception-is-one-type.md) do not limit what the snapshot shows.
 
 ```java
 public record WorldSnapshot(int day, int width, int height, List<TileView> tiles) {
     public record TileView(GridPosition at, Map<String, Double> fields, List<EntityView> entities) {}
     public record EntityView(
-            int id, String species, String spriteKey,
-            Set<String> tags, Map<String, Double> info) {}
+            int id, String species, String spriteKey, Map<String, Double> info) {}
 }
 ```
 

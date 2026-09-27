@@ -5,8 +5,8 @@ here, the alternatives that lost, and the concrete type shapes this file leaves
 out. Read the relevant entry before writing model code or reopening a design
 question.
 
-The model layer is being rebuilt, so the tree does not match this file yet. The
-work plan under `docs/superpowers/plans/` tracks where that stands.
+The model layer is being rebuilt, so the tree does not match this file yet.
+`docs/roadmap.md` says which parts exist and what comes next.
 
 ## Vision
 
@@ -58,16 +58,16 @@ Anything that occupies a tile is an entity: a human, a wolf, a patch of grass, a
 rock, a pile of ash. There is no class per kind of thing.
 
 A species is the recipe for a kind of entity. It carries the name, the sprite
-that draws it, the gene layout its members inherit, the settings shared by every
-member, the brain its members are born with, and the other components they start
-with. Every number a rule reads is declared on its species or on the world: a
-gene when it varies between individuals and passes to a child, a setting
-otherwise, and a gene's own bounds and mutation size in the layout. A setting
-declares its default and what an editor needs to show it, so the interface can
-edit anything without a line of code per number. The brain has its own slot
-rather than sitting among the components, because it is the seam that gets
-swapped. Terrain is a species too, and water decides nothing, so the brain slot
-can be empty.
+that draws it, the gene layout its members inherit and the baseline genome the
+first generation starts from, the settings shared by every member, the brain its
+members are born with, and the other components they start with. Every number a
+rule reads is declared on its species or on the world: a gene when it varies
+between individuals and passes to a child, a setting otherwise, and a gene's own
+bounds and mutation size in the layout. A setting declares its default and what
+an editor needs to show it, so the interface can edit anything without a line of
+code per number. The brain has its own slot rather than sitting among the
+components, because it is the seam that gets swapped. Terrain is a species too,
+and water decides nothing, so the brain slot can be empty.
 
 A component is one capability with whatever state it needs. Being edible is a
 component. Having a metabolism is a component. Being on fire is a component,
@@ -79,8 +79,13 @@ A genome holds what varies between individuals of a species and what changes
 between parent and child. The species declares a layout of genes, and each gene
 has one of two shapes: a bounded scalar, or a normalised distribution whose own
 length can change. The second shape exists because the step distribution already
-needs it, and it is also where a network brain's weights would live. Adding an
-evolvable trait means adding one entry to a layout.
+needs it. A third shape, for a network brain's weights, arrives with that brain.
+Adding an evolvable trait means adding one entry to a layout. The first
+generation starts from the species' baseline genome with mutation applied, so a
+new species begins with working behaviour rather than random values.
+
+The first brain is a fixed set of rules whose parameters are genes. A network
+brain, started from weights that imitate it, comes when those rules run out.
 
 The grid owns the shape of the world. It holds what occupies each tile and the
 scalar fields belonging to the location itself, such as elevation or moisture,
@@ -119,25 +124,25 @@ its seed and its command log.
 
 A brain turns a perception into an intent. A perception is what one creature can
 see from where it stands: the tiles within its view range by straight-line
-distance, what stands on each, the tags those things carry and the values they
-show to others, and every value its own components publish, such as what is left
-in its reserve. Each component declares every value it publishes and whether
-only its owner or also nearby creatures may see it, so what one creature can
-know about another is a deliberate choice. Positions in it are relative to the
+distance, what stands on each, and the components of its own and of those
+things. A brain asks for components by class, so it checks for something edible
+rather than for a string that says so. Each component declares what its carrier
+sees of it and what others in range see, which may be nothing, so a creature can
+read its own reserve while its neighbours cannot, and what one creature can know
+about another is a deliberate choice. Positions in it are relative to the
 creature, and a tile off the grid is simply absent, which is how an edge is
 perceived. An intent is the single action it wants to take this day, one of
-moving in a direction for a distance, attacking something, breeding, or doing
-nothing.
+moving in a direction for a distance, breeding, or doing nothing. There is no
+attack until a predator needs one.
 
 There is one perception type, and what fills it is a component. A species that
 senses differently carries a different builder, and every brain still takes the
 same input.
 
 The world resolves intents. A creature says what it wants and the world decides
-what actually happens, so the rules about where you may step, what you may
-attack and when you may breed live in one place and every creature obeys them
-without knowing they exist. Adding water that blocks movement changes the
-resolver and nothing else.
+what actually happens, so the rules about where you may step and when you may
+breed live in one place and every creature obeys them without knowing they
+exist. Adding water that blocks movement changes the resolver and nothing else.
 
 Whatever kills an entity removes it at once, so there is never a dead thing in
 the world for a later system to skip. Every loop walks a copy of the ids it
@@ -164,8 +169,9 @@ fuel from what it burns, stays one rule that every fire obeys.
 One intent per creature per day is the constraint that shapes the rest. A choice
 that only becomes available partway through a day cannot be a decision at all,
 because the decisions are already collected by then. Anything that wants to be
-chosen has to be visible when the day starts, which is why violence is an intent
-a creature returns rather than something the feed step does to it.
+chosen has to be visible when the day starts, which is why violence, when it
+arrives, is an intent a creature returns rather than something the feed step
+does to it.
 
 ### The day
 
@@ -188,10 +194,11 @@ A day runs these systems in order:
 5. World processes, in list order: spawning new food, regrowth, fire.
 6. Clean up. One census row is written and the day's intents are discarded.
 
-Systems hand work to each other through components rather than through fields on
-the world. Step one attaches an intent to the entity and step two reads it, so a
-new system that wants to see intents needs no change anywhere. The census is the
-one exception, being durable output rather than state for the current day.
+Systems hand work to each other through what is attached to entities rather than
+through fields on the world. Step one attaches an intent to the entity and step
+two reads it, so a new system that wants to see intents needs no change
+anywhere. The census is the one exception, being durable output rather than
+state for the current day.
 
 ### Boundaries
 
@@ -199,12 +206,11 @@ The core knows nothing about the interface, and no simulation rule lives above
 the core. A headless run behaves exactly like a watched one.
 
 State leaves as a snapshot of the whole world each day: the day number, the
-grid, and for each tile its fields and what stands on it with the tags and
-values worth drawing. Commands are the only way in, covering spawning,
-resetting, editing a species' settings, and anything else the interface
-initiates. They queue and drain at the start of a day, and a paused world drains
-them at once and draws the result without advancing. The interface never reaches
-into the model.
+grid, and for each tile its fields and what stands on it with the values worth
+drawing. Commands are the only way in, covering spawning, resetting, editing a
+species' settings, and anything else the interface initiates. They queue and
+drain at the start of a day, and a paused world drains them at once and draws
+the result without advancing. The interface never reaches into the model.
 
 The world advances on the interface's own thread. The snapshot out and the queue
 in are the handoff a background thread would need, so moving it off is available
@@ -223,9 +229,10 @@ compiles, passes every test, and quietly stops selecting for anything.
 
 A world is built from its dimensions, a seed, its world settings, the set of
 species it knows, and an initial population given as counts or positions per
-species. Everything else follows from advancing days. The same construction
-serves the interface and the headless runner, which is what makes a watched run
-and a scripted one comparable.
+species, each member drawn from its species' baseline genome. Everything else
+follows from advancing days. The same construction serves the interface and the
+headless runner, which is what makes a watched run and a scripted one
+comparable.
 
 ### Keeping large worlds open
 
@@ -244,8 +251,9 @@ an existing one, and changes nothing else. The first time something forces a
 change to the world, the entity, the genome or the shape of a day, the design
 has a flaw and the work plan should record it.
 
-A wolf tests it. The wolf is a species value and no existing file changes,
-because the world has never needed to know what a human is. What the species
-value does not give you is the brain: a wolf that hunts has to condition on
-where prey is, which a brain that picks a weighted-random direction cannot do.
-The data is free and the brain is the work.
+A wolf tests it. The wolf is a species value, plus one intent case and its
+branch in the resolver once it hunts, and nothing else changes, because the
+world has never needed to know what a human is. What the species value does not
+give you is the brain: a wolf that hunts has to condition on where prey is,
+which a brain that picks a weighted-random direction cannot do. The data is free
+and the brain is the work.

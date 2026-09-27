@@ -8,8 +8,9 @@ their order means nothing.
 This is not a roadmap. Nothing here is committed to.
 
 An idea that gets adopted is settled in `docs/decisions/`, in the entry for its
-topic or in a new one if the topic is new. It keeps its file, marked `planned`,
-and once built its status line links the entry that settled it.
+topic or in a new one if the topic is new, and goes onto `docs/roadmap.md`. It
+keeps its file, marked `planned`, and once built its status line links the entry
+that settled it.
 
 - [Aggression at contested food](aggression-at-contested-food.md) the 2022 food
   contest, left out of the rebuild on purpose.

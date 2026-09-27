@@ -18,7 +18,7 @@ population.
 ## What it would touch
 
 `GridPanel` only. The snapshot already carries every entity on every tile with
-its tags and displayable values, so nothing in the model changes.
+its displayable values, so nothing in the model changes.
 
 ## Open questions
 

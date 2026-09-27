@@ -1,4 +1,4 @@
-# 0001. Documentation splits into four artifacts
+# 0001. Documentation splits into five artifacts
 
 ## Status
 
@@ -11,11 +11,12 @@ outside git, with the durable record living in agent memory. Memory is a fine
 backstop for six decisions and a bad one for a document, and a gitignored file
 means every clone and every CI run has a different idea of what the project is.
 
-Four kinds of content were getting mixed. Why the project exists changes rarely
+Five kinds of content were getting mixed. Why the project exists changes rarely
 and wholesale. A decision changes rarely and is useless without its reasoning. A
 feature that is wanted and not decided has no decision and no consequences yet.
-A description of the current tree is stale on the next commit. A single document
-holding all four churns constantly and stops being trusted.
+What is planned, in what order, and whether it exists yet changes with every
+piece of work. A description of the current tree is stale on the next commit. A
+single document holding all of them churns constantly and stops being trusted.
 
 An append-only log was considered, where a changed choice gets a new entry and
 the old one is marked as superseded. It keeps the trail visible in the log
@@ -29,7 +30,7 @@ blurs the one thing that document promises.
 
 ## Decision
 
-Four artifacts with four jobs.
+Five artifacts with five jobs.
 
 `DESIGN.md`, at the repository root and committed, describes the system as it is
 meant to be. Present tense, no history, no progress, no alternatives. Its
@@ -49,33 +50,40 @@ nothing. Each file carries a status line, either `idea`, `planned`, or `built`
 with a link to the entry that settled it, then four sections: what it does, why
 it is interesting, what it would touch, and open questions. A README indexes
 them. An adopted idea is settled in the entry for its topic, or in a new entry
-if it is a new topic, and keeps its file.
+if it is a new topic, goes onto the roadmap, and keeps its file.
 
-The work plan, under the gitignored `docs/superpowers/plans/`, tracks where the
-work actually stands. It is disposable.
+`docs/roadmap.md`, committed, holds the build order: what is planned, in what
+sequence, and whether each entry is done yet. Status is a field on each entry
+rather than a description of what the code contains, which would duplicate the
+code and go stale the same way.
+
+The work plan, under the gitignored `docs/superpowers/plans/`, tracks the
+finer-grained work in progress for whoever is at the keyboard. It is
+disposable.
 
 `README.md` keeps its existing audience, a visitor to the repository.
 
 ## Consequences
 
 `DESIGN.md` describes a target the code does not meet during a rebuild. One line
-at the top points at the work plan and is deleted when the gap closes.
+at the top points at the roadmap and is deleted when the gap closes.
 
 `AGENTS.md` becomes mechanical: build, run, formatting, hooks, layout. It gains
 a section saying which document to read and when.
 
-Four documents have to stay consistent with each other, and the split creates
-the drift it is designed to survive. A changed decision means editing its entry
-and `DESIGN.md`, and missing the second is the common failure.
+The committed documents have to stay consistent with each other, and the split
+creates the drift it is designed to survive. A changed decision means editing
+its entry and `DESIGN.md`, and missing the second is the common failure. Landing
+a roadmap entry adds one more thing to remember: flipping its status.
 
 Rewriting in place means the log does not show what changed. `git log` on an
 entry does.
 
 An idea has somewhere to go the moment it appears, so a conversation can end in
 neither a decision nor a loss. The failure mode is an idea that was built and
-still says `idea`. The list is committed, so a visitor reads it as a roadmap. It
-is not one, which its README says.
+still says `idea`. The list is committed, so a visitor could read it as a plan.
+It is not one, which its README says, and the roadmap is.
 
 The work plan does not travel between machines, being gitignored, so anyone
-picking the work up elsewhere gets the design and the reasoning and has to be
-told separately where the work stands.
+picking the work up elsewhere gets the design, the reasoning and the build
+order, and has to be told separately where today's work in progress stands.
