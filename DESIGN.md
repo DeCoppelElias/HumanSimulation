@@ -175,7 +175,7 @@ does to it.
 
 ### The day
 
-A day runs these systems in order:
+A day runs these steps in order:
 
 1. Decide. Every entity with a brain is handed a perception and returns an
    intent. Nothing else changes.
@@ -192,13 +192,13 @@ A day runs these systems in order:
 4. Metabolise. Reserves are charged on the eating interval and again for the
    speed the creature carries, and anything whose reserve falls below zero dies.
 5. World processes, in list order: spawning new food, regrowth, fire.
-6. Clean up. One census row is written and the day's intents are discarded.
+6. Clean up. One census row is written.
 
-Systems hand work to each other through what is attached to entities rather than
-through fields on the world. Step one attaches an intent to the entity and step
-two reads it, so a new system that wants to see intents needs no change
-anywhere. The census is the one exception, being durable output rather than
-state for the current day.
+A day is one method on the world, and the steps are calls in it. The intents
+and the day's order pass between them as local variables, so an entity holds
+only its own state and nothing from the day outlives it. Only the world
+processes are a list, since that is where new systems get added. The census is
+the one lasting output.
 
 ### Boundaries
 

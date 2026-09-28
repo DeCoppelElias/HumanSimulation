@@ -78,4 +78,4 @@ that is nothing.
 Two scale costs are untouched by it, and both are named where they are made:
 ground cover as entities in
 [0009](0009-terrain-is-entities-plus-tile-fields.md), and a day being a full
-pass in [0005](0005-a-day-is-an-ordered-list-of-systems.md).
+pass in [0005](0005-a-day-is-one-method.md).

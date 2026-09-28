@@ -17,8 +17,8 @@ costs, and what the concrete type shapes are.
   are the recipe. The decision the rest hangs on.
 - [0004](0004-creatures-return-intents.md) Creatures return one intent a day and
   the world resolves it. The resolver owns legality, and the dead leave at once.
-- [0005](0005-a-day-is-an-ordered-list-of-systems.md) A day is an ordered list
-  of systems, in six steps.
+- [0005](0005-a-day-is-one-method.md) A day is one method in six
+  steps, passing intents as local data, with world processes as a list.
 - [0006](0006-genomes-are-a-named-layout-of-gene-shapes.md) Genomes are a named
   layout of two gene shapes, and a child's reserve comes from its parent.
 - [0007](0007-state-leaves-as-a-snapshot-commands-go-in.md) State leaves as a

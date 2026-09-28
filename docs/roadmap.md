@@ -36,7 +36,7 @@ Regression rules that land here: resetting the statistics does not break the
 population graph, and removing an entity validates before it mutates anything.
 
 See [0004](decisions/0004-creatures-return-intents.md),
-[0005](decisions/0005-a-day-is-an-ordered-list-of-systems.md),
+[0005](decisions/0005-a-day-is-one-method.md),
 [0007](decisions/0007-state-leaves-as-a-snapshot-commands-go-in.md),
 [0010](decisions/0010-runs-replay-exactly-from-a-seed.md),
 [0011](decisions/0011-traversal-goes-through-queries.md),
