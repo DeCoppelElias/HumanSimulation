@@ -1,11 +1,13 @@
 #!/bin/sh
-# Checks only staged files, so 2022 comments are left alone until that file is edited.
+# The comment check reads only staged files, so 2022 comments are left alone
+# until that file is edited. The docs check reads the whole docs tree.
 # Enable with: git config core.hooksPath .githooks
 # Bypass once with: git commit --no-verify
 
 if ! command -v python >/dev/null 2>&1; then
-    echo "pre-commit: python not found, skipping the comment check" >&2
+    echo "pre-commit: python not found, skipping the comment and docs checks" >&2
     exit 0
 fi
 
-python tools/comment-check.py --staged
+python tools/comment-check.py --staged || exit 1
+python tools/docs-check.py

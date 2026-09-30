@@ -30,6 +30,14 @@ jobs:
           java-version: '21'
           cache: maven
 
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.x'
+
+      - name: Check the docs agree with each other
+        shell: bash
+        run: python tools/docs-check.py && python tools/test_docs_check.py
+
       - name: Build, check formatting and run tests
         # bash on both runners, so ./mvnw is the same command everywhere.
         shell: bash
