@@ -83,7 +83,10 @@ Never format the whole tree. That would rewrite all 29 files and move
 icons have to stay directly under `src/main/resources` or `GridPanel` fails at
 runtime while everything still compiles.
 
-## Two things to know before writing tests
+## Before writing tests
+
+Write the test first, run it, and see it fail for the reason it names before
+writing the code that makes it pass. `docs/decisions/0012` says why.
 
 `GridWorld` owns the one `RandomGenerator` every behaviour class draws from;
 construct it via `new GridWorld(width, height, new Random(seed))` for a

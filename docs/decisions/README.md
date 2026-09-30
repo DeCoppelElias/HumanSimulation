@@ -14,7 +14,8 @@ costs, and what the concrete type shapes are.
 - [0002](0002-replace-the-model-layer-in-place.md) Replace the model layer in
   place, growing from zero, one watchable package at a time.
 - [0003](0003-entities-carry-components.md) Entities carry components, species
-  are the recipe. The decision the rest hangs on.
+  are the recipe, and DDD supplies the vocabulary. The decision the rest hangs
+  on.
 - [0004](0004-creatures-return-intents.md) Creatures return one intent a day and
   the world resolves it. The resolver owns legality, and the dead leave at once.
 - [0005](0005-a-day-is-one-method.md) A day is one method in six
@@ -22,7 +23,8 @@ costs, and what the concrete type shapes are.
 - [0006](0006-genomes-are-a-named-layout-of-gene-shapes.md) Genomes are a named
   layout of two gene shapes, and a child's reserve comes from its parent.
 - [0007](0007-state-leaves-as-a-snapshot-commands-go-in.md) State leaves as a
-  whole-world snapshot, and commands go in, draining at the start of a day.
+  whole-world snapshot, and commands go in, draining at the start of a day. The
+  core is a hexagonal domain, wired by hand, and a `jdeps` test holds the line.
 - [0008](0008-brains-decide-systems-apply.md) Brains decide, systems apply. The
   test is whose rule it is.
 - [0009](0009-terrain-is-entities-plus-tile-fields.md) Terrain is entities plus
@@ -32,8 +34,9 @@ costs, and what the concrete type shapes are.
 - [0011](0011-traversal-goes-through-queries.md) Traversal goes through queries
   that return fresh lists, and an index behind them rather than a split entity
   type keeps large worlds reachable later.
-- [0012](0012-tests-target-brains-without-a-world.md) Tests target brains
-  without a world, and a headless runner watches for lost selection.
+- [0012](0012-tests-target-brains-without-a-world.md) Tests come first and
+  target brains without a world, and a headless runner watches for lost
+  selection.
 - [0013](0013-perception-is-one-type.md) Perception is one type, the builder is
   the seam, brains read components by class, and each component declares what
   others see of it.

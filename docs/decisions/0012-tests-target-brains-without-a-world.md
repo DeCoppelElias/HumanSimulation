@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-03. Revised 2026-09-27.
+Accepted, 2026-09-03. Revised 2026-09-30.
 
 ## Context
 
@@ -16,10 +16,20 @@ distributions, breeding and the food contest, test units that are changing
 shape. The nine model-bug regression cases encode bugs that took a full phase to
 find.
 
+The bug fix phase wrote every regression test first and watched it fail before
+changing the code, and that caught a test that would have passed vacuously.
+Writing tests after the code was the alternative. It is faster per change and
+produces tests that confirm whatever the code already does.
+
 Selection is the part no unit test can see. A rebuild can compile, pass
 everything, and quietly stop selecting for anything.
 
 ## Decision
+
+Development is test-driven. A rule's test is written first, run, and seen to fail
+for the reason it names before the code that makes it pass exists. Tests drive
+the domain through its own surface, commands in and snapshots out, or a brain
+handed a perception, and never through an adapter.
 
 Determinism, resource loading and grid geometry carry over with new type names.
 
@@ -49,6 +59,10 @@ The 2022 selection baseline no longer applies, because the current code already
 differs from 2022 in how view range is inherited. Any comparison is about the
 direction of selection rather than a matching trace, since
 [0004](0004-creatures-return-intents.md) changes movement deliberately.
+
+Each rule arrives with a test that has already failed once, so the suite
+documents behaviour the code was made to meet rather than behaviour it happened
+to have.
 
 Eight rules spread across their packages are eight chances to forget one. A
 suite ported in one go would have failed loudly instead, and the work plan is

@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-03. Revised 2026-09-27.
+Accepted, 2026-09-03. Revised 2026-09-30.
 
 ## Context
 
@@ -25,10 +25,41 @@ command the moment it arrives is cheaper and makes the interface feel instant.
 It also means the run someone actually watched, which is the one they want to
 reproduce, is the one that cannot be.
 
+A boundary written down and not checked gets crossed by the first quick fix.
+Three ways of checking it were considered. A separate Maven module for the core
+is a true compile-time guarantee, and it restructures the build: a parent pom,
+the shaded jar, the release workflow's jar path and the Spotless ratchet. A
+second compiler run over only the core package was tried and fails at the job:
+limited to `java.base` it rejected Swing, and it let the interface package and
+JFreeChart through, because the rest of the build is already on its classpath.
+Running `jdeps` over the compiled classes from a test was tried against the same
+three planted references and caught each one by class.
+
+A dependency injection container was considered for wiring the pieces together.
+It buys configuration and scoping for a program with about a dozen
+collaborators, at the cost of startup magic, and `DESIGN.md` rules out framework
+generality this one simulation does not need.
+
 ## Decision
 
-The core holds no reference to Swing, and no simulation rule lives above the
-core. Each day the world produces an immutable snapshot of everything: the day
+The core is the domain of a hexagonal architecture and lives in the package
+`domain`. It depends on nothing but itself and `java.base`: no Swing, no AWT, no
+JFreeChart and no interface package. No simulation rule lives outside it.
+Commands are its inbound port, and the snapshot and the census are its outbound
+ports. The Swing interface, the population chart and the headless runner are
+adapters on the outside, and each one sends commands in and reads snapshots and
+census rows out.
+
+A test runs `jdeps` over the compiled classes and fails when a class in `domain`
+depends on anything outside `domain` and `java.base`, naming the class.
+
+Dependencies are injected by constructor, by hand. A class receives its
+collaborators rather than building them, which is how the world's one generator
+reaches everything that draws from it, per
+[0010](0010-runs-replay-exactly-from-a-seed.md). `Main` is the composition root:
+it builds the world and the adapters and connects them, and nothing else
+constructs either. There is no container.
+ Each day the world produces an immutable snapshot of everything: the day
 number, the grid dimensions, and for each tile its scalar fields and the
 entities standing on it with their species, sprite key and the values worth
 displaying. The viewer is a person rather than a creature, so the audience rules
@@ -61,6 +92,18 @@ hundred tiles.
 
 A headless run behaves exactly like a watched one, so a scripted run is possible
 and the food regeneration bug cannot recur.
+
+A boundary violation fails the test run, not the compile, so it shows in
+`./mvnw verify` and in CI rather than in the editor. The check enforces more than
+the interface boundary, since the domain cannot reach for AWT's `Point` either.
+
+`GridPosition` survives the rebuild per
+[0002](0002-replace-the-model-layer-in-place.md) and moves into `domain`. The
+current world constructs `DataAnalytics`, which the test flags when pointed at
+the old model. In the rebuild `DataAnalytics` is an adapter reading the census.
+
+Wiring by hand keeps every dependency visible in one constructor call, and
+adding a collaborator means editing `Main`.
 
 At a few hundred tiles a snapshot is a few thousand small records per day. The
 cost is real if the world grows to tens of thousands of tiles, at which point

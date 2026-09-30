@@ -48,6 +48,24 @@ without promising to scale.
 
 ## Architecture
 
+### How the code is built
+
+The core is a domain model in the sense of domain-driven design. The words in
+this file are its ubiquitous language, the world is the aggregate root, entities
+are known by their id, and positions, genomes, intents and perceptions are
+immutable values. Behaviour lives in the rules of a day rather than on a class
+per kind of creature.
+
+The architecture is hexagonal. The domain depends on nothing but itself and the
+Java base library. Commands are the one way in, snapshots and the census the way
+out, and the interface, the chart and the headless runner are adapters around
+it.
+
+Collaborators are injected by constructor, and `Main` wires everything by hand.
+
+Development is test-driven. A test is written and seen to fail before the code
+that makes it pass.
+
 ### What the world is made of
 
 A world holds a grid, an ordered collection of entities, one random generator
@@ -218,8 +236,9 @@ and not needed.
 
 Population counts come from a census the world writes each day.
 
-The core lives in its own package and imports nothing from the interface. A
-compile of the core with the interface removed is what enforces it.
+The core lives in the package `domain` and depends only on itself and
+`java.base`. A test runs `jdeps` over the compiled classes and fails on anything
+else.
 
 A headless runner advances a seeded world for a given number of days and reports
 population and gene means. It is the only thing that catches a build which

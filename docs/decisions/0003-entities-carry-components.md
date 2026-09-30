@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-03. Revised 2026-09-27.
+Accepted, 2026-09-03. Revised 2026-09-30.
 
 ## Context
 
@@ -25,6 +25,14 @@ A full entity component system, with components in global tables keyed by id,
 was also considered. Its benefit is cache locality across thousands of entities,
 which buys nothing measurable at this size, and it costs debuggability and type
 safety.
+
+The model follows domain-driven design, and DDD's usual shape puts behaviour on
+a class per kind, a `Rabbit` that knows how to eat. That is the class hierarchy
+this entry rejects, so DDD is taken for its vocabulary and its tactical patterns
+and not for rich per-kind objects. Its strategic layer was also considered:
+bounded contexts, repositories and domain events. This is one simulation with
+one context and nothing persisted, so each would be structure with nothing to
+organise.
 
 ## Decision
 
@@ -62,6 +70,14 @@ At spawn the world builds a `Spawn` from the genome it drew from the baseline or
 inherited from a parent, plus the species itself, whose settings are read live,
 and hands it to the brain and every part.
 
+In DDD terms the world is the aggregate root, and nothing inside it changes
+except through it. An entity is a DDD entity, identified by its id alone.
+`GridPosition`, `Genome`, `Intent`, `Perception` and the snapshot records are
+immutable value objects. The rules of a day are domain services on the world
+rather than methods on a creature. The words in `DESIGN.md` are the ubiquitous
+language: the code uses them, and a new concept gets its word there before it
+gets a class.
+
 This entity replaces the existing `Entity`, `GridContent`, `Human` and `Food`
 hierarchy. Rendering reads the sprite key instead of matching class names
 against literal strings, and the parameters panel is generated from each
@@ -82,6 +98,9 @@ be. If profiling ever makes that matter, an index is internal to the world.
 The cost is two concepts instead of one, a rule for telling them apart, and
 losing the compiler's guarantee that a creature has a brain. Nothing stops a
 species being built with a metabolism and no way to eat.
+
+A reader expecting DDD finds creatures without behaviour. The behaviour is in
+the day's steps, and a component holds state and says what can be seen of it.
 
 Adding a new kind of capability costs one component, plus either a new system or
 a branch in an existing one. Inventing new kinds of capability over years is the
