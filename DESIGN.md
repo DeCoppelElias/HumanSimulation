@@ -14,7 +14,7 @@ HumanSimulation is a world you watch evolve. Creatures look for food, breed, and
 pass varied behaviour to their children, so over a few hundred days the
 population drifts toward whatever happens to work.
 
-The fun comes from effects nobody wrote. Fire burns grass, humans and wolves
+The fun comes from effects nobody wrote. Fire burns grass, rabbits and wolves
 through one rule, because all three are flammable and the rule names none of
 them. A wolf avoids a burning tile because burning is a thing it can see, rather
 than because wolves know about fire. Capabilities that meet without having been
@@ -72,7 +72,7 @@ A world holds a grid, an ordered collection of entities, one random generator
 and a day counter, and advances one day at a time.
 
 An entity is an id, a position, a species, a genome and a set of components.
-Anything that occupies a tile is an entity: a human, a wolf, a patch of grass, a
+Anything that occupies a tile is an entity: a rabbit, a wolf, a patch of grass, a
 rock, a pile of ash. There is no class per kind of thing.
 
 A species is the recipe for a kind of entity. It carries the name, the sprite
@@ -271,9 +271,9 @@ an existing one, and changes nothing else. The first time something forces a
 change to the world, the entity, the genome or the shape of a day, the design
 has a flaw and the work plan should record it.
 
-A wolf tests it. The wolf is a species value, plus one intent case and its
-branch in the resolver once it hunts, and nothing else changes, because the
-world has never needed to know what a human is. What the species value does not
-give you is the brain: a wolf that hunts has to condition on where prey is,
+The rabbit is the first species, and a wolf tests it. The wolf is a species
+value, plus one intent case and its branch in the resolver once it hunts, and
+nothing else changes, because the world has never needed to know what a rabbit
+is. What the species value does not give you is the brain: a wolf that hunts has to condition on where prey is,
 which a brain that picks a weighted-random direction cannot do. The data is free
 and the brain is the work.

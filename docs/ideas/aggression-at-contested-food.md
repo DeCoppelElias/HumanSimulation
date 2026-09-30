@@ -18,7 +18,7 @@ early runs select on finding food and nothing else.
 
 ## What it would touch
 
-The feed step, which currently has no contest at all. A gene in the human
+The feed step, which currently has no contest at all. A gene in the rabbit
 species layout. Nothing else, since it needs no new component and no new intent.
 
 ## Open questions

@@ -21,9 +21,10 @@ Status: not started.
 A world with a four-direction grid that owns distance, and `Entity`, `Species`,
 `Component` and a `Genome` that holds values without mutating them yet. The
 day's six steps (decide, resolve, feed, metabolise, world processes, clean up)
-run in order. Rabbit's brain picks a random `Move`, and the resolver walks it a
-tile at a time. The day's order is a shuffle over id order, which is already
-the rule for entities without a speed gene. The decide step builds a
+run in order. Rabbit is the one species, drawn with its own sprite beside the
+2022 icons. Its brain picks a random `Move`, and the resolver walks it a tile
+at a time. The day's order is a shuffle over id order, which is already the
+rule for entities without a speed gene. The decide step builds a
 `Perception` through the default circular sense, even though the random brain
 ignores it.
 
@@ -36,7 +37,8 @@ seeded world and reports population. `DeterminismTest` carries over.
 Regression rules that land here: resetting the statistics does not break the
 population graph, and removing an entity validates before it mutates anything.
 
-See [0003](decisions/0003-entities-carry-components.md),
+See [0002](decisions/0002-replace-the-model-layer-in-place.md),
+[0003](decisions/0003-entities-carry-components.md),
 [0004](decisions/0004-creatures-return-intents.md),
 [0005](decisions/0005-a-day-is-one-method.md),
 [0006](decisions/0006-genomes-are-a-named-layout-of-gene-shapes.md),

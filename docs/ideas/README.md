@@ -20,5 +20,7 @@ that settled it.
   occupant of a shared tile.
 - [Hexagonal grid](hexagonal-grid.md) six equidistant neighbours, so sight and
   movement finally agree.
+- [Humans](humans.md) the species the project is named for, after rabbits and
+  wolves.
 - [Stomach capacity](stomach-capacity.md) a limit on what a creature can hold,
   which makes how much to eat a decision.

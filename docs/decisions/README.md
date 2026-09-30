@@ -12,7 +12,8 @@ costs, and what the concrete type shapes are.
   into five artifacts: a design file, this log, an idea list, a roadmap and a
   work plan.
 - [0002](0002-replace-the-model-layer-in-place.md) Replace the model layer in
-  place, growing from zero, one watchable package at a time.
+  place, growing from zero, one watchable package at a time, starting with a
+  rabbit.
 - [0003](0003-entities-carry-components.md) Entities carry components, species
   are the recipe, and DDD supplies the vocabulary. The decision the rest hangs
   on.

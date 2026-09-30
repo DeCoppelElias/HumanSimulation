@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-03. Revised 2026-09-27.
+Accepted, 2026-09-03. Revised 2026-09-30.
 
 ## Context
 
@@ -23,15 +23,22 @@ enough. And there is no porting. Growing from zero means each rule arrives with
 a fresh test written against the new units, so the old suite is never the thing
 being satisfied and an oracle has nothing to do.
 
+The first species could have been the human, the one creature the 2022 model
+has and the one the project is named for. A human is too difficult a creature
+to start with. A rabbit that wanders, eats grass and breeds asks nothing of the
+first packages that they are not already building, and it is the natural prey
+for the wolf that tests the design.
+
 ## Decision
 
 Replace in place, on a branch, with `master` holding a working application until
 the switchover lands.
 
 Build up from zero rather than porting the current model wholesale. The first
-package is thin and complete: a grid, one species, a random brain, a move
-intent, a resolver, a snapshot, and the interface drawing it. Capabilities are
-added one at a time after that, each package ending with something watchable.
+package is thin and complete: a grid, one species, which is the rabbit, a random
+brain, a move intent, a resolver, a snapshot, and the interface drawing it.
+Capabilities are added one at a time after that, each package ending with
+something watchable.
 
 What survives: `GridPosition` as a value type, `LineChart` untouched,
 `DataAnalytics` reading a census, most of the interface panels, and the
@@ -58,6 +65,10 @@ dropped on purpose goes to `docs/ideas/` so nobody restores it thinking it went
 missing, as the 2022 food contest has.
 
 Each package is a live test of the claim in `DESIGN.md`.
+
+The rabbit needs its own sprite beside the 2022 icons at the classpath root. The
+project keeps its name while its first species is not a human, and humans wait
+in `docs/ideas/humans.md`.
 
 The application is broken on the branch for as long as the rebuild takes.
 Growing vertically keeps the window short.

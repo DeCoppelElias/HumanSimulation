@@ -35,7 +35,7 @@ component attached to that thing.
 
 ## Consequences
 
-Fire burns grass, humans and wolves through one code path, with no species-level
+Fire burns grass, rabbits and wolves through one code path, with no species-level
 special case.
 
 A fully covered world is one entity per tile, which is nothing at a few hundred
