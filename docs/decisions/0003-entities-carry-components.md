@@ -62,7 +62,7 @@ component also declares what its carrier and its neighbours can perceive of it,
 per [0013](0013-perception-is-one-type.md).
 
 A component declares the type it is filed under, so a query for `Brain.class`
-finds a `UtilityBrain`. The brain has its own field rather than sitting among
+finds a `FixedRulesBrain`. The brain has its own field rather than sitting among
 the parts, because it is the seam that gets swapped, and it is optional because
 terrain is a species too and water decides nothing.
 

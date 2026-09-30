@@ -28,15 +28,18 @@ the rule for entities without a speed gene. The decide step builds a
 ignores it.
 
 The interface talks to the world only through the snapshot and a command queue
-covering spawn, reset and draining while paused. A census replaces the
+covering spawning, resetting the world, resetting the statistics, and draining
+while paused. A census replaces the
 population counting that parses display strings. A headless runner advances a
 seeded world and reports population. `DeterminismTest` carries over.
 
 Regression rules that land here: resetting the statistics does not break the
 population graph, and removing an entity validates before it mutates anything.
 
-See [0004](decisions/0004-creatures-return-intents.md),
+See [0003](decisions/0003-entities-carry-components.md),
+[0004](decisions/0004-creatures-return-intents.md),
 [0005](decisions/0005-a-day-is-one-method.md),
+[0006](decisions/0006-genomes-are-a-named-layout-of-gene-shapes.md),
 [0007](decisions/0007-state-leaves-as-a-snapshot-commands-go-in.md),
 [0010](decisions/0010-runs-replay-exactly-from-a-seed.md),
 [0011](decisions/0011-traversal-goes-through-queries.md),
@@ -67,6 +70,7 @@ A creature standing on grass is now the normal case, so the grid needs at least
 a draw order for two occupants.
 
 Depends on entry 1. See
+[0009](decisions/0009-terrain-is-entities-plus-tile-fields.md),
 [0013](decisions/0013-perception-is-one-type.md),
 [0016](decisions/0016-feeding-takes-the-tile.md),
 [0017](decisions/0017-every-number-is-a-setting-or-a-gene.md),
@@ -90,10 +94,13 @@ settings, the remaining interface operations as commands, and the old model
 deleted. The branch merges to `master`.
 
 Depends on entry 2. See
+[0002](decisions/0002-replace-the-model-layer-in-place.md),
 [0004](decisions/0004-creatures-return-intents.md),
 [0006](decisions/0006-genomes-are-a-named-layout-of-gene-shapes.md),
+[0007](decisions/0007-state-leaves-as-a-snapshot-commands-go-in.md),
 [0014](decisions/0014-resolve-order-comes-from-a-speed-gene.md),
-[0017](decisions/0017-every-number-is-a-setting-or-a-gene.md).
+[0017](decisions/0017-every-number-is-a-setting-or-a-gene.md),
+[0018](decisions/0018-brain-computation-model-and-warm-starting.md).
 
 ## 4. Rabbit learns
 

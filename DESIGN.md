@@ -117,7 +117,7 @@ elevation is a field.
 
 ### Replaying a run
 
-The determinism the vision depends on is three invariants rather than a
+The determinism the vision depends on is four invariants rather than a
 convention.
 
 The world owns one random generator and hands it to everything that draws from
@@ -154,8 +154,8 @@ moving in a direction for a distance, breeding, or doing nothing. There is no
 attack until a predator needs one.
 
 There is one perception type, and what fills it is a component. A species that
-senses differently carries a different builder, and every brain still takes the
-same input.
+senses differently carries a different sense, the component that builds its
+perception, and every brain still takes the same input.
 
 The world resolves intents. A creature says what it wants and the world decides
 what actually happens, so the rules about where you may step and when you may
@@ -202,7 +202,8 @@ A day runs these steps in order:
    equal speeds drawn at random. Movement walks one tile at a time and stops
    where the world says it must. Breeding checks the interval and the reserve,
    spends the cost, and spawns a child at the parent's position carrying a
-   mutated copy of the parent's genome and part of the cost as its reserve. A
+   mutated copy of the parent's genome and part of the cost as its reserve, its
+   endowment. A
    child is not on the day's list, so it first acts and feeds the next day.
 3. Feed. In the same order, a creature takes every edible on its tile that its
    diet accepts, crediting its metabolism. A pile taken is gone, so whoever

@@ -59,7 +59,8 @@ reaches everything that draws from it, per
 [0010](0010-runs-replay-exactly-from-a-seed.md). `Main` is the composition root:
 it builds the world and the adapters and connects them, and nothing else
 constructs either. There is no container.
- Each day the world produces an immutable snapshot of everything: the day
+
+Each day the world produces an immutable snapshot of everything: the day
 number, the grid dimensions, and for each tile its scalar fields and the
 entities standing on it with their species, sprite key and the values worth
 displaying. The viewer is a person rather than a creature, so the audience rules

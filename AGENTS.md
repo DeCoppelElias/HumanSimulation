@@ -99,7 +99,7 @@ Spotless with palantir-java-format, ratcheted against `origin/master`, so only
 files you actually change get formatted. Run `./mvnw spotless:apply` on your own
 changes.
 
-Never format the whole tree. That would rewrite all 29 files and move
+Never format the whole tree. That would rewrite every Java file and move
 `git blame` off the 2022 commits, which is what the ratchet exists to prevent.
 
 `ResourceLoadingTest` guards the packaging contract, not the simulation: the
