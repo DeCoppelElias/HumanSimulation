@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-03. Revised 2026-09-27.
+Accepted, 2026-09-03. Revised 2026-09-30.
 
 ## Context
 
@@ -60,6 +60,10 @@ code and go stale the same way.
 The work plan, under the gitignored `docs/superpowers/plans/`, tracks the
 finer-grained work in progress for whoever is at the keyboard. It is
 disposable.
+
+A brainstorming spec under the same gitignored folder is disposable too. What
+it settles lands in the entry for its topic and on the roadmap, so the log stays
+the one place a design choice is kept.
 
 `README.md` keeps its existing audience, a visitor to the repository.
 

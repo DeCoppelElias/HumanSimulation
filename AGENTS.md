@@ -30,6 +30,29 @@ progress. It is gitignored and may be missing from a fresh clone.
 Keep this file mechanical. Anything about why the system is shaped the way it is
 belongs in `DESIGN.md` or the decision log.
 
+## Workflows
+
+Project skills live in `.claude/skills/`, one folder each with a `SKILL.md`.
+An agent that does not load skills can read them directly.
+
+- `changing-decisions` for any change to a settled design choice, or a new one.
+- `promoting-ideas` to move an idea onto the roadmap.
+- `implementing-roadmap-entries` to start, resume or finish a roadmap entry.
+- `auditing-docs` to check the documents against each other.
+- `gui-smoke-test` to verify the Swing app, see below.
+
+A new idea goes in `docs/ideas/` without asking, in the format its README gives.
+Ask Elias before promoting an idea, changing an accepted decision, touching the
+roadmap's order, or pushing, merging or tagging. `docs/decisions/0019` says why.
+
+Each workflow skill has an `evals/` scenario. After editing a skill, run its
+scenario on a fresh agent and check the result against the pass criteria there.
+
+    python tools/docs-check.py         links, indexes and status lines
+    python tools/test_docs_check.py    its tests
+
+The pre-commit hook and CI run `docs-check.py`.
+
 ## Layout
 
 - `src/main/java/` `Main` and `Application` at the root, then

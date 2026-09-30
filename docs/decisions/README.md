@@ -51,3 +51,6 @@ costs, and what the concrete type shapes are.
 - [0018](0018-brain-computation-model-and-warm-starting.md) A fixed-rules brain
   first, a network brain later, and every species starts from a baseline
   genome.
+- [0019](0019-workflows-are-skills-and-invariants-are-scripts.md) Workflows
+  are skills, invariants are scripts, and promoting an idea or changing an
+  accepted decision waits for Elias.
