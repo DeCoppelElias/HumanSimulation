@@ -28,11 +28,17 @@ rule for entities without a speed gene. The decide step builds a
 `Perception` through the default circular sense, even though the random brain
 ignores it.
 
+The numbers this needs have a declared home from the start. `Setting` arrives
+with its first shape, a bounded scalar with a default, for the world's grid size
+and starting population. Rabbit's species carries a baseline genome of plain
+values for view range and the step distribution, and every rabbit gets it
+unchanged, since there is no mutation yet.
+
 The interface talks to the world only through the snapshot and a command queue
 covering spawning, resetting the world, resetting the statistics, and draining
-while paused. A census replaces the
-population counting that parses display strings. A headless runner advances a
-seeded world and reports population. `DeterminismTest` carries over.
+while paused. A census replaces the population counting that parses display
+strings. A headless runner advances a seeded world and reports population.
+`DeterminismTest` carries over.
 
 Regression rules that land here: resetting the statistics does not break the
 population graph, and removing an entity validates before it mutates anything.
@@ -48,7 +54,8 @@ See [0002](decisions/0002-replace-the-model-layer-in-place.md),
 [0012](decisions/0012-tests-target-brains-without-a-world.md),
 [0013](decisions/0013-perception-is-one-type.md),
 [0014](decisions/0014-resolve-order-comes-from-a-speed-gene.md),
-[0015](decisions/0015-geometry-lives-in-the-grid.md).
+[0015](decisions/0015-geometry-lives-in-the-grid.md),
+[0017](decisions/0017-every-number-is-a-setting-or-a-gene.md).
 
 ## 2. Eating and starving
 
@@ -57,16 +64,17 @@ Status: not started.
 Grass as an `Edible` entity, and a world process that spawns it. `Metabolism`
 holds a reserve its carrier can see and its neighbours cannot. The feed step
 takes every edible on the tile, and the metabolise step charges on an interval
-and removes anything whose reserve falls below zero. Intervals and charges are
-the first scalar `Setting`s, with bounds that reject non-positive values, which
-is where that regression rule lands.
+and removes anything whose reserve falls below zero. Intervals and charges join
+the settings as species settings, with bounds that reject non-positive values,
+which is where that regression rule lands.
 
 Rabbit gets the fixed-rules brain that approaches the nearest edible. Its rule
 set is a design decision per
 [0018](decisions/0018-brain-computation-model-and-warm-starting.md), so it gets
-a log entry before it is built. That entry also settles whether walking away
-from a crowd survives, which decides whether the inverted crowd comparison rule
-lands or goes to `docs/ideas/`.
+a log entry before it is built. Its parameters sit in the baseline genome as
+plain values until entry 3. That entry also settles whether walking away from a
+crowd survives, which decides whether the inverted crowd comparison rule lands
+or goes to `docs/ideas/`.
 
 A creature standing on grass is now the normal case, so the grid needs at least
 a draw order for two occupants.
@@ -83,10 +91,11 @@ Depends on entry 1. See
 Status: not started.
 
 `Breed` as an intent, with interval, cost and endowment as settings. `GeneSpec`
-with scalar and simplex mutation, and a baseline genome per species. The step
-distribution, view range, speed and the fixed-rules brain's parameters become
-genes. Speed arrives with its metabolism charge, since a free speed gene pins
-to its bound. The runner reports gene means.
+with scalar and simplex mutation turns the baseline values from entries 1 and 2
+into genes that vary and pass to a child: the step distribution, view range and
+the fixed-rules brain's parameters, plus speed. Speed arrives with its
+metabolism charge, since a free speed gene pins to its bound. The runner reports
+gene means.
 
 Regression rules that land here: the step variation is not integer divided, the
 step distribution stays valid, and view range is inherited and varied.
@@ -134,6 +143,10 @@ capabilities meeting without having been introduced.
 
 The entry decides whether a kill leaves remains, since whatever kills spawns
 them. `docs/ideas/corpses-and-scavenging.md` holds that question.
+
+A predator that eats grass is not a predator, so this is where feeding stops
+taking every edible. `docs/ideas/diet.md` holds how a creature says what it
+eats.
 
 Depends on entry 4. See
 [0004](decisions/0004-creatures-return-intents.md),
