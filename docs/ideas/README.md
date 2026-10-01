@@ -14,6 +14,12 @@ that settled it.
 
 - [Aggression at contested food](aggression-at-contested-food.md) the 2022 food
   contest, left out of the rebuild on purpose.
+- [Brain library](brain-library.md) saving genomes you like and loading them
+  into a later run.
+- [Brain memory](brain-memory.md) a brain that keeps a chosen target from one
+  day to the next.
+- [Browser smoke test](browser-smoke-test.md) an agent checks what the page
+  actually renders.
 - [Corpses and scavenging](corpses-and-scavenging.md) death leaves something
   edible behind.
 - [Diet](diet.md) which edibles a creature accepts, needed once a predator
@@ -24,5 +30,7 @@ that settled it.
   movement finally agree.
 - [Humans](humans.md) the species the project is named for, after rabbits and
   wolves.
+- [MCP server](mcp-server.md) an agent drives a world through typed tools
+  over stdio.
 - [Stomach capacity](stomach-capacity.md) a limit on what a creature can hold,
   which makes how much to eat a decision.

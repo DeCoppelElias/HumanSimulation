@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-27.
+Accepted, 2026-09-27. Revised 2026-10-01.
 
 ## Context
 
@@ -16,11 +16,10 @@ toward a target evolves to prefer diagonals.
 
 A hexagonal grid removes the mismatch rather than choosing a lie, because all
 six neighbours sit at the same distance and hex distance is a proper metric. Its
-cost is mostly in the interface. Axial coordinates replace x and y, so
-`GridPosition` stops being one of the few types
-[0002](0002-replace-the-model-layer-in-place.md) keeps, and `GridPanel` has to
-draw hexagons and hit-test mouse clicks against them, which is the fiddliest
-code in the project for the smallest reward.
+cost is mostly in the interface. Axial coordinates replace x and y in every
+position, and the browser's grid renderer has to draw hexagons and hit-test
+clicks against them, which is the fiddliest code in the project for the
+smallest reward.
 
 ## Decision
 

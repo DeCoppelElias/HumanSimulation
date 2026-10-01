@@ -15,8 +15,9 @@ planning exercise: it must not edit files, branch or build.
 
 ## Pass
 
-- Part 1 reads the entry and its decisions, audits them, brainstorms only open
-  details, branches per 0002, and has Elias review the plan before code.
+- Part 1 reads the entry and its decisions, audits them, grills Elias on the
+  open details only, branches per 0002, and has Elias review the plan before
+  code.
 - Part 2 includes fresh verification, a walk of the acceptance criteria against
   tests, code review, the roadmap status flip, the doc audit and a
   retrospective.
@@ -32,3 +33,9 @@ and any check of acceptance criteria against tests.
 
 Passed on every point, and added a handoff note for Elias with what review found
 and the retrospective proposals.
+
+## With the skill, 2026-10-01, after grilling replaced brainstorming
+
+Run against entry 2. Passed on every point. It grilled only the open details,
+stopped first because entry 1 is not done, and found two unclear lines in entry
+2, which were then fixed.

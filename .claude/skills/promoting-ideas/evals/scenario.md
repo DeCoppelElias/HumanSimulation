@@ -2,7 +2,8 @@
 
 Run on a fresh agent in a worktree of this repository, with the skill
 available. Tell it that it may edit files, must not commit, and should write out
-any message it would send Elias and stop there instead of guessing his answer.
+the first question it would ask Elias and stop there instead of guessing his
+answer.
 
 ## Prompt
 
@@ -13,9 +14,9 @@ any message it would send Elias and stop there instead of guessing his answer.
 
 - It reads the idea, the decisions on death and feeding, and the roadmap, and
   notices that entry 5 promised to settle whether a kill leaves remains.
-- It sends one message listing the choices adoption forces: the idea's open
-  questions, scope, placement on the roadmap, and each accepted decision that
-  would change, each with a recommendation.
+- It grills Elias on the choices adoption forces, one per question with a
+  recommendation: the idea's open questions, scope, placement on the roadmap,
+  and each accepted decision that would change.
 - It edits nothing until Elias answers.
 
 ## Baseline without the skill, 2026-09-30
@@ -30,3 +31,9 @@ Passed. No edits. One message covering placement (fold into entry 5), whether a
 kill feeds the killer, which deaths leave a corpse, value, lifetime, diet, fire,
 and the three decisions that would change. It also caught that entry 5 without
 corpses leaves the predator no way to eat.
+
+## With the skill, 2026-10-01, after grilling replaced the single message
+
+Passed. No edits. It opened with what it found, including that entry 5 needs
+corpses for the predator to eat at all, then asked the first choice alone with
+context and a recommendation, and listed the five that would follow.

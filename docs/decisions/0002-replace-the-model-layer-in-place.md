@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-03. Revised 2026-09-30.
+Accepted, 2026-09-03. Revised 2026-10-01.
 
 ## Context
 
@@ -29,6 +29,14 @@ to start with. A rabbit that wanders, eats grass and breeds asks nothing of the
 first packages that they are not already building, and it is the natural prey
 for the wolf that tests the design.
 
+Keeping part of the 2022 code was the earlier plan: `GridPosition`, the line
+chart, most of the Swing panels, and the determinism, resource and geometry
+suites. It lost on two counts. The 2022 code is worth keeping for what it does
+rather than how it is written, and its package names and idioms predate the
+standards the rebuild follows. And the interface moved to the web in
+[0020](0020-the-interface-is-a-web-page.md), which leaves the panels and the
+chart nothing to attach to.
+
 ## Decision
 
 Replace in place, on a branch, with `master` holding a working application until
@@ -40,12 +48,12 @@ brain, a move intent, a resolver, a snapshot, and the interface drawing it.
 Capabilities are added one at a time after that, each package ending with
 something watchable.
 
-What survives: `GridPosition` as a value type, `LineChart` untouched,
-`DataAnalytics` reading a census, most of the interface panels, and the
-`GridPositionTest`, `DeterminismTest` and `ResourceLoadingTest` suites.
-Everything else under `SimulationApplication` is replaced, `MovementAction`
-included, since it holds a mutable delta pair where
-[0004](0004-creatures-return-intents.md) needs a direction and a distance.
+No code survives. The 2022 version is a reference for features, and the first
+commit of roadmap entry 1 deletes it with its tests. Each 2022 feature is an
+acceptance line on the roadmap entry that rebuilds it, and a feature dropped on
+purpose is in `docs/ideas/`. The rules the carried-over suites guarded, that a
+seeded run replays and that positions measure distance correctly, get fresh
+tests against the new types.
 
 ## Consequences
 
@@ -60,13 +68,13 @@ package that reintroduces each rule, per
 example, carries the interval validation.
 
 Behaviour rules that were never bugs need the same treatment and are easier to
-lose, since nothing in the tree names them. The work plan owns that list. A rule
-dropped on purpose goes to `docs/ideas/` so nobody restores it thinking it went
-missing, as the 2022 food contest has.
+lose, since nothing in the tree names them. The roadmap owns that list, as
+acceptance lines on each entry. A rule dropped on purpose goes to `docs/ideas/`
+so nobody restores it thinking it went missing, as the 2022 food contest has.
 
 Each package is a live test of the claim in `DESIGN.md`.
 
-The rabbit needs its own sprite beside the 2022 icons at the classpath root. The
+The rabbit's sprite comes from a CC0 asset pack until a dedicated art pass. The
 project keeps its name while its first species is not a human, and humans wait
 in `docs/ideas/humans.md`.
 

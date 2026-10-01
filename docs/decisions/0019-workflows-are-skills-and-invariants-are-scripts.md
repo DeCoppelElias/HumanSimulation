@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-30.
+Accepted, 2026-09-30. Revised 2026-10-01.
 
 ## Context
 
@@ -36,9 +36,16 @@ describes: a scenario run without the skill, the skill written against what
 went wrong, the scenario run again with it. Each scenario is committed in the
 skill's `evals/` folder, and an edit to a skill reruns it.
 
-There are four: `changing-decisions`, `promoting-ideas`,
-`implementing-roadmap-entries` and `auditing-docs`. Recording an idea and fixing
-a bug have none, because `AGENTS.md` and the ideas README already carry them.
+There are five: `changing-decisions`, `promoting-ideas`,
+`implementing-roadmap-entries`, `auditing-docs` and `grilling`. Recording an
+idea and fixing a bug have none, because `AGENTS.md` and the ideas README
+already carry them.
+
+`grilling` settles the choices that a roadmap entry or an idea leaves open, one
+question at a time with a recommendation, before anything is planned or
+written. The implementing and promoting skills both start with it. It was added
+after a grilling session before entry 1 settled about twenty such choices,
+including the move to a web interface, that the decisions had left open.
 
 A rule a regex can check is a script. `tools/docs-check.py` checks links,
 indexes, numbering and status lines, and runs in the pre-commit hook and in CI.

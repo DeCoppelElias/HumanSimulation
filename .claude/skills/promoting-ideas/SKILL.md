@@ -19,14 +19,15 @@ covers it.
 
 1. Read the idea file, every decision it links, and `docs/roadmap.md`. Note any
    roadmap entry that says it will settle this idea's question.
-2. List the choices adoption forces, each with your recommendation:
+2. List the choices adoption forces:
    - each open question in the idea file: answer now, or defer with the roadmap
      entry recording that it gets a log entry before it is built;
    - scope, meaning what of the idea is in and what waits;
    - placement: a new roadmap entry or folded into an existing one, and what it
      depends on;
    - every accepted decision whose text would change.
-3. Send that list to Elias in one message, in prose, and wait for his answers.
+3. Grill Elias on that list with the grilling skill (REQUIRED SUB-SKILL), one
+   choice per question with your recommendation, and wait for every answer.
 4. Apply them:
    - decision changes through the changing-decisions skill (REQUIRED
      SUB-SKILL), which updates `DESIGN.md` too;

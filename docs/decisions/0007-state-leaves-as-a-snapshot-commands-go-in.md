@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-03. Revised 2026-09-30.
+Accepted, 2026-09-03. Revised 2026-10-01.
 
 ## Context
 
@@ -25,6 +25,17 @@ command the moment it arrives is cheaper and makes the interface feel instant.
 It also means the run someone actually watched, which is the one they want to
 reproduce, is the one that cannot be.
 
+A paused world still has to show a command at once, and something has to know
+it is paused. The world could hold a paused flag set by pause and resume
+commands, which fills the command log with entries that change nothing in the
+simulation and gives the domain a state only an interface uses. Applying a
+command whenever no day is running needs no flag, and makes the outcome depend
+on when a call happens, which turns into a race once the world has its own
+thread.
+
+Resetting the statistics was a command in the first version of this entry. It
+changes nothing in the simulation either, for the same reason as pausing.
+
 A boundary written down and not checked gets crossed by the first quick fix.
 Three ways of checking it were considered. A separate Maven module for the core
 is a true compile-time guarantee, and it restructures the build: a parent pom,
@@ -43,12 +54,18 @@ generality this one simulation does not need.
 ## Decision
 
 The core is the domain of a hexagonal architecture and lives in the package
-`domain`. It depends on nothing but itself and `java.base`: no Swing, no AWT, no
-JFreeChart and no interface package. No simulation rule lives outside it.
+`io.github.eliasdecoppel.humansimulation.domain`. It depends on nothing but
+itself and `java.base`: no web framework, no JSON library, no AWT and no adapter
+package. No simulation rule lives outside it.
 Commands are its inbound port, and the snapshot and the census are its outbound
-ports. The Swing interface, the population chart and the headless runner are
-adapters on the outside, and each one sends commands in and reads snapshots and
-census rows out.
+ports. The web adapter from [0020](0020-the-interface-is-a-web-page.md) and the
+command line from [0021](0021-agents-drive-worlds-over-http-and-run.md) are on
+the outside, and each one sends commands in and reads snapshots and census rows
+out.
+
+Advancing a day returns a report holding the day's snapshot and its census row,
+and the caller hands each to whatever reads it. There are no listeners to
+register.
 
 A test runs `jdeps` over the compiled classes and fails when a class in `domain`
 depends on anything outside `domain` and `java.base`, naming the class.
@@ -75,19 +92,28 @@ public record WorldSnapshot(int day, int width, int height, List<TileView> tiles
 ```
 
 Commands are the only way in. Spawning entities, resetting the world, editing a
-species' settings, resetting the statistics and setting an entity alight are all
-commands. The interface never calls a model method that is not one.
+species' settings and setting an entity alight are all commands. The interface
+never calls a model method that is not one. A reset carries the seed the new
+world uses, so the log replays it.
 
 Commands queue, and the queue drains at the start of a day, before anything
 decides. Each command is recorded with the day it applied on, so a run
-reproduces from its seed plus its command log. A command given to a paused world
-drains immediately and produces a new snapshot without advancing the day, so
-clicking food onto the grid while paused shows the food.
+reproduces from its seed plus its command log. The log is kept in memory and
+`DeterminismTest` replays it. It is not written to a file.
 
-The world advances on the Swing event dispatch thread. A snapshot out and a
-queue in are exactly the handoff a worker thread needs, so moving the world off
-the event thread stays available and contained, and nothing needs it at a few
-hundred tiles.
+The world has no paused state. An adapter that is paused submits a command and
+then asks the world to apply what is pending, which drains the queue and
+returns a new snapshot without advancing the day, so clicking food onto the
+grid while paused shows the food. Draining then or at the start of the same day
+leaves the world identical, so the log records the same day either way.
+
+The census row leaves with each day, and its history belongs to the adapter
+that reads it. Resetting the statistics clears that history and is not a
+command.
+
+Each world is owned by one thread, per
+[0020](0020-the-interface-is-a-web-page.md), and the queue is how commands cross
+from other threads.
 
 ## Consequences
 
@@ -98,10 +124,8 @@ A boundary violation fails the test run, not the compile, so it shows in
 `./mvnw verify` and in CI rather than in the editor. The check enforces more than
 the interface boundary, since the domain cannot reach for AWT's `Point` either.
 
-`GridPosition` survives the rebuild per
-[0002](0002-replace-the-model-layer-in-place.md) and moves into `domain`. The
-current world constructs `DataAnalytics`, which the test flags when pointed at
-the old model. In the rebuild `DataAnalytics` is an adapter reading the census.
+The 2022 world constructs its own chart, which the test flags when pointed at
+the old model. In the rebuild the chart is in the browser and reads census rows.
 
 Wiring by hand keeps every dependency visible in one constructor call, and
 adding a collaborator means editing `Main`.
@@ -113,8 +137,8 @@ given version is additive, and no existing caller breaks, because the interface
 never reaches into the model directly.
 
 Every command is a type someone has to write, where reaching into the model was
-free. The current interface performs around twenty operations, so that is twenty
-things to name before the switchover.
+free. The 2022 interface performs around twenty operations, and each one the
+rebuild keeps is a command to name.
 
 Two of them do not survive translation. Asking whether an entity is a human
 becomes asking whether it has a brain, and asking a human for its view range

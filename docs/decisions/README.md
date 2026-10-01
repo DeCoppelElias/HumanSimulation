@@ -13,7 +13,7 @@ costs, and what the concrete type shapes are.
   work plan.
 - [0002](0002-replace-the-model-layer-in-place.md) Replace the model layer in
   place, growing from zero, one watchable package at a time, starting with a
-  rabbit.
+  rabbit. No 2022 code survives.
 - [0003](0003-entities-carry-components.md) Entities carry components, species
   are the recipe, and DDD supplies the vocabulary. The decision the rest hangs
   on.
@@ -55,3 +55,8 @@ costs, and what the concrete type shapes are.
 - [0019](0019-workflows-are-skills-and-invariants-are-scripts.md) Workflows
   are skills, invariants are scripts, and promoting an idea or changing an
   accepted decision waits for Elias.
+- [0020](0020-the-interface-is-a-web-page.md) The interface is a web page over
+  a Java core: Javalin, React and PixiJS, one thread per world, local first.
+- [0021](0021-agents-drive-worlds-over-http-and-run.md) Agents drive worlds over
+  the HTTP API with no browser, and through a `run` command printing JSON
+  Lines.

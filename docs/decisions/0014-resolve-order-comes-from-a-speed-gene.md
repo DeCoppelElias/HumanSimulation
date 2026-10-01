@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-27.
+Accepted, 2026-09-27. Revised 2026-10-01.
 
 ## Context
 
@@ -71,6 +71,6 @@ any change to behaviour.
 The cost is a shuffle and a sort per day over the entities holding an intent,
 and a handful of draws that shift the rest of the day's random stream.
 
-`GuiController.increaseAutomaticSpeed` is playback rate and has nothing to do
-with this gene. The new interface renames it, because two unrelated speeds in
-one project is a bug waiting for a reader in a hurry.
+How fast the interface plays days is the playback rate, and has nothing to do
+with this gene. The interface never calls it speed, because two unrelated speeds
+in one project is a bug waiting for a reader in a hurry.

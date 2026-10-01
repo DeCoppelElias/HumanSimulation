@@ -19,9 +19,10 @@ checklist.
    progress.
 2. Run the auditing-docs skill over those documents. A contradiction found now
    costs a message. Found halfway through, it costs a rewrite.
-3. For details the decisions leave open, use superpowers:brainstorming on those
-   details only. Settled choices are not reopened. A gap that turns out to be a
-   design choice goes through the changing-decisions skill.
+3. Grill Elias on the details the decisions leave open with the grilling skill
+   (REQUIRED SUB-SKILL), and apply its result before planning. Settled choices
+   are not reopened. A gap that turns out to be a design choice goes through
+   the changing-decisions skill.
 4. Branch as the roadmap says. Per 0002, the rebuild lives on one branch until
    entry 3 merges it to `master`.
 5. Write the plan with superpowers:writing-plans. It lists every acceptance
@@ -31,8 +32,9 @@ checklist.
 ## Building
 
 superpowers:test-driven-development for every task, as 0012 requires. Verify
-with `./mvnw verify`, the headless runner once it exists, and the
-gui-smoke-test skill whenever `GuiPackage/` or `GuiController` changes.
+with `./mvnw verify` and the `run` command once it exists. Until the browser
+smoke test in `docs/ideas/` is built, a change to what the page shows needs
+Elias to watch it, so say what to look at.
 
 ## Finishing
 

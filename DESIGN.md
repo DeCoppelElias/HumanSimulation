@@ -27,6 +27,23 @@ Surprise and breakage look identical from outside, so a run has to be
 repeatable. Given the same seed and the same commands the world replays exactly,
 so a strange run can be watched again and taken apart.
 
+## Goals
+
+Two goals decide what gets built.
+
+It is pretty and satisfying to watch, so that people open it for the sake of
+watching. Creatures glide between tiles rather than jumping, and the interface is
+a web page anyone can reach from a link once it is hosted. A feature that makes
+the world more interesting and harder to read on screen is not finished.
+
+An AI agent can experiment with it easily. An agent starts worlds, drives them,
+runs many seeded runs and reads the results as data, with nobody at the screen.
+That is how new features and new brains get tested.
+
+Further out, a creature can start from a fitted brain that evolution then
+refines, and a brain worth keeping can be saved and loaded into another run.
+`docs/ideas/brain-library.md` holds that.
+
 ## Non-goals
 
 Not an ecology model. Plausible beats accurate.
@@ -36,11 +53,14 @@ needs is cost.
 
 No training. Learning happens through selection across generations, inside the
 run you are watching. A brain whose weights are genes is welcome, and one that
-must be trained before it is interesting is not. When behaviour looks dull, the
+must be trained before it is interesting is not. Fitting a starting brain once,
+to imitate one that already works, is a warm start rather than training, since
+selection takes over from there. When behaviour looks dull, the
 cause is almost always narrow perception and a small action space rather than a
 weak learner, so widen the world before climbing the brain ladder.
 
-Single player, local, one window.
+Single player. Each viewer watches their own world in a browser tab, served from
+their own machine or from a host. There are no shared worlds and no accounts.
 
 Large worlds are not a current target. Grids run to hundreds of tiles and
 populations to tens or low hundreds. The architecture keeps the option open
@@ -58,8 +78,7 @@ per kind of creature.
 
 The architecture is hexagonal. The domain depends on nothing but itself and the
 Java base library. Commands are the one way in, snapshots and the census the way
-out, and the interface, the chart and the headless runner are adapters around
-it.
+out, and the web interface and the command line are adapters around it.
 
 Collaborators are injected by constructor, and `Main` wires everything by hand.
 
@@ -211,18 +230,18 @@ A day runs these steps in order:
 4. Metabolise. Reserves are charged on the eating interval and again for the
    speed the creature carries, and anything whose reserve falls below zero dies.
 5. World processes, in list order: spawning new food, regrowth, fire.
-6. Clean up. One census row is written.
+6. Clean up. One census row is produced.
 
 A day is one method on the world, and the steps are calls in it. The intents
 and the day's order pass between them as local variables, so an entity holds
 only its own state and nothing from the day outlives it. Only the world
-processes are a list, since that is where new systems get added. The census is
-the one lasting output.
+processes are a list, since that is where new systems get added. The method
+returns the day's report, which holds its snapshot and census row.
 
 ### Boundaries
 
 The core knows nothing about the interface, and no simulation rule lives above
-the core. A headless run behaves exactly like a watched one.
+the core. A run with no browser behaves exactly like a watched one.
 
 State leaves as a snapshot of the whole world each day: the day number, the
 grid, and for each tile its fields and what stands on it with the values worth
@@ -231,27 +250,38 @@ species' settings, and anything else the interface initiates. They queue and
 drain at the start of a day, and a paused world drains them at once and draws
 the result without advancing. The interface never reaches into the model.
 
-The world advances on the interface's own thread. The snapshot out and the queue
-in are the handoff a background thread would need, so moving it off is available
-and not needed.
+Pausing is the adapter's business rather than the world's. A paused adapter
+asks the world to apply what is pending, which drains the queue and returns a
+snapshot without advancing the day.
 
-Population counts come from a census the world writes each day.
+Each world is owned by one thread, and everything that touches it is handed to
+that thread. Commands arrive from other threads through the queue.
 
-The core lives in the package `domain` and depends only on itself and
-`java.base`. A test runs `jdeps` over the compiled classes and fails on anything
-else.
+Population counts come from a census row the world produces each day, one row
+per day with no gaps. The history of rows belongs to whoever reads them, so
+resetting the statistics is something an adapter does to its own history and
+not a command.
 
-A headless runner advances a seeded world for a given number of days and reports
-population and gene means. It is the only thing that catches a build which
-compiles, passes every test, and quietly stops selecting for anything.
+The core lives in the package `io.github.eliasdecoppel.humansimulation.domain`
+and depends only on itself and `java.base`. A test runs `jdeps` over the
+compiled classes and fails on anything else.
+
+The web adapter serves the interface and an HTTP API, and holds worlds by an id
+nobody can guess. The browser draws what the snapshots say and animates between
+them. An agent drives worlds over the same API with no browser open.
+
+A `run` command advances a seeded world for a given number of days and prints
+the census as JSON Lines, with population and gene means. It is the only thing
+that catches a build which compiles, passes every test, and quietly stops
+selecting for anything.
 
 ### Starting a world
 
 A world is built from its dimensions, a seed, its world settings, the set of
 species it knows, and an initial population given as counts or positions per
 species, each member drawn from its species' baseline genome. Everything else
-follows from advancing days. The same construction serves the interface and the
-headless runner, which is what makes a watched run and a scripted one
+follows from advancing days. The same construction serves the web interface and
+the `run` command, which is what makes a watched run and a scripted one
 comparable.
 
 ### Keeping large worlds open
@@ -269,7 +299,7 @@ region to skip.
 Adding a capability costs one component, plus either a new system or a branch in
 an existing one, and changes nothing else. The first time something forces a
 change to the world, the entity, the genome or the shape of a day, the design
-has a flaw and the work plan should record it.
+has a flaw, and the decision entry for the topic it breaks records it.
 
 The rabbit is the first species, and a wolf tests it. The wolf is a species
 value, plus one intent case and its branch in the resolver once it hunts, and

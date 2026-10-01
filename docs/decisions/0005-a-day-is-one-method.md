@@ -41,7 +41,7 @@ method, and the data between them is local variables. Only the world processes
 are a list, since that is where new systems get added.
 
 ```java
-void advance() {
+DayReport advance() {
     drainCommands();
     List<Decision> decisions = decide();
     List<Decision> order = speedOrder(decisions);
@@ -49,8 +49,10 @@ void advance() {
     feed(order);
     metabolise();
     for (WorldProcess p : processes) p.run(this);
-    writeCensus();
+    CensusRow census = takeCensus();
+    WorldSnapshot snapshot = snapshot();
     day++;
+    return new DayReport(snapshot, census);
 }
 ```
 
@@ -68,16 +70,18 @@ Commands drain first, per
 4. Metabolise. Charge the eating cost on the interval and the cost of speed.
    Anything whose reserve falls below zero dies.
 5. World processes, in list order: spawning food, regrowth, fire.
-6. Write one census row.
+6. Take one census row, and return it with the snapshot.
 
 Whatever kills an entity removes it at once, in whichever step that happens.
 
 An entity holds only its own state. Intents and the day's order never touch it,
 and they are gone when the method returns.
 
-The census is the one long-lived output, since it is durable rather than state
-for the current day. It is what the population graph reads, replacing the code
-that counts humans by parsing display strings.
+The census row is the one output that outlives the day. The report carries it
+out with the snapshot, and whoever reads it keeps the history, per
+[0007](0007-state-leaves-as-a-snapshot-commands-go-in.md). It is what the
+population graph reads, replacing the code that counts humans by parsing
+display strings.
 
 ## Consequences
 

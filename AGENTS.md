@@ -39,6 +39,8 @@ An agent that does not load skills can read them directly.
 - `promoting-ideas` to move an idea onto the roadmap.
 - `implementing-roadmap-entries` to start, resume or finish a roadmap entry.
 - `auditing-docs` to check the documents against each other.
+- `grilling` to settle what an entry or idea leaves open, one question at a
+  time, before planning it.
 - `gui-smoke-test` to verify the Swing app, see below.
 
 A new idea goes in `docs/ideas/` without asking, in the format its README gives.

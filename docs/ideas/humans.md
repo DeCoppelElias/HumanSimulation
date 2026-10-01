@@ -17,9 +17,9 @@ system that rabbits and wolves can meet too.
 
 ## What it would touch
 
-A species value, and the 2022 `Human.png` sprite, which is already at the
-classpath root. Past that it depends on what a human can do that the other
-species cannot.
+A species value and a sprite, from the same asset pack as the rabbit. The 2022
+`Human.png` leaves the tree in roadmap entry 1 and stays in git history. Past
+that it depends on what a human can do that the other species cannot.
 
 ## Open questions
 

@@ -17,13 +17,17 @@ population.
 
 ## What it would touch
 
-`GridPanel` only. The snapshot already carries every entity on every tile with
-its displayable values, so nothing in the model changes.
+The browser's grid renderer only. The snapshot already carries every entity on
+every tile with its displayable values, so nothing in the model changes.
+
+Roadmap entry 1 draws the lowest-id occupant with a count when there is more
+than one, so the grid and the population chart agree. This idea is whatever
+goes beyond that.
 
 ## Open questions
 
-What to draw: the top sprite with a count, several sprites shrunk into the tile,
-a badge, or a tint that gets stronger with occupancy.
+What to draw beyond the count: several sprites shrunk into the tile, or a tint
+that gets stronger with occupancy.
 
 Whether the choice is per species, so grass under a creature reads as ground
 rather than as a competing occupant.
