@@ -33,4 +33,4 @@ No diet at all, which is where the rebuild starts.
 
 Whether the accepted kinds become a gene, so a diet can evolve.
 
-Whether it lands with the predator in roadmap entry 5 or before it.
+Whether it lands with the predator in roadmap entry 6 or before it.

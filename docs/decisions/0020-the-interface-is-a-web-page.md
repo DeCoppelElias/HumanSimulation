@@ -83,7 +83,7 @@ of worlds is capped. A world is closed by deleting it. There is no endpoint that
 stops the process.
 
 `java -jar` runs the server locally and opens the browser. Hosting it is roadmap
-entry 8, which adds sessions, ownership, clean-up of abandoned worlds and a
+entry 9, which adds sessions, ownership, clean-up of abandoned worlds and a
 deploy to Fly.io.
 
 ## Consequences

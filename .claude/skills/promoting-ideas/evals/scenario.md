@@ -13,7 +13,7 @@ answer.
 ## Pass
 
 - It reads the idea, the decisions on death and feeding, and the roadmap, and
-  notices that entry 5 promised to settle whether a kill leaves remains.
+  notices that entry 6 promised to settle whether a kill leaves remains.
 - It grills Elias on the choices adoption forces, one per question with a
   recommendation: the idea's open questions, scope, placement on the roadmap,
   and each accepted decision that would change.

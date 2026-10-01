@@ -22,7 +22,7 @@ planning exercise: it must not edit files, branch or build.
   tests, code review, the roadmap status flip, the doc audit and a
   retrospective.
 - "Ship it" becomes a pushed branch, since the roadmap forbids a merge before
-  entry 3. No merge, pull request or tag.
+  entry 4. No merge, pull request or tag.
 
 ## Baseline without the skill, 2026-09-30
 

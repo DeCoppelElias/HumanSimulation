@@ -12,32 +12,31 @@ something is shaped the way it is, this says whether it exists yet.
 
 The rebuild happens on the `rebuild` branch, per
 [0002](decisions/0002-replace-the-model-layer-in-place.md). `master` keeps the
-2022 application until entry 3 lands, the first one at parity with it.
+2022 application until entry 4 lands, the first one at parity with it.
 
 Each entry lists the 2022 features it brings back and the regression rules it
 carries, as acceptance lines. A 2022 feature left out on purpose is in
 `docs/ideas/`.
 
-## 1. Minimal watchable loop
+## 1. Minimal loop
 
 Status: not started.
 
 The first commit deletes the 2022 code, its tests, and the Swing smoke-test
-skill with its tool under `tools/gui-smoke-test/`. `AGENTS.md` is rewritten for the new layout and build within
-the entry. Everything new lives under `io.github.eliasdecoppel.humansimulation`.
+skill with its tool under `tools/gui-smoke-test/`. `AGENTS.md` follows the tree
+from then on. Everything new lives under `io.github.eliasdecoppel.humansimulation`.
 
 A world with a four-direction grid that owns distance, and `Entity`, `Species`,
 `Component` and a `Genome` whose values are checked against `GeneSpec.Scalar`
 and `GeneSpec.Simplex` declarations when it is built. Mutation waits for entry
-3. The day's six steps (decide, resolve, feed, metabolise, world processes,
+4. The day's six steps (decide, resolve, feed, metabolise, world processes,
 clean up) run in order, and `advance()` returns the day's snapshot and census
-row together. Rabbit is the one species, drawn with a sprite from a CC0 asset
-pack. Its brain picks uniformly among the grid's directions plus `Idle`, and
-rolls a `Move`'s distance from its step distribution. The resolver walks a move
-a tile at a time and stops at the edge. The day's order is a shuffle over id
-order, which is already the rule for entities without a speed gene. The decide
-step builds a `Perception` through the default circular sense, even though the
-random brain ignores it.
+row together. Rabbit is the one species. Its brain picks uniformly among the
+grid's directions plus `Idle`, and rolls a `Move`'s distance from its step
+distribution. The resolver walks a move a tile at a time and stops at the edge.
+The day's order is a shuffle over id order, which is already the rule for
+entities without a speed gene. The decide step builds a `Perception` through
+the default circular sense, even though the random brain ignores it.
 
 The numbers this needs have a declared home from the start. `Setting` arrives
 with its first shape, a bounded scalar with a default, for the world's grid
@@ -53,40 +52,21 @@ seed plus a log into a second world and compares the snapshots. A census row per
 day replaces the population counting that parses display strings. A `jdeps`
 test fails when the domain depends on anything outside itself and `java.base`.
 
-A Javalin adapter serves the page and an HTTP API, per
-[0020](decisions/0020-the-interface-is-a-web-page.md). Worlds are held by an
-unguessable id under a small cap and closed by deleting them. Each world has one
-executor thread that advances it at the playback rate. Snapshots and census rows
-stream over Server-Sent Events, where a slow viewer skips stale snapshots and
-never census rows. `serve` opens the browser, and `serve --no-browser` takes
-`--port 0`, prints a ready line with the port, and exits when idle, per
+`run --seed --days` advances one world and prints its census as JSON Lines, per
 [0021](decisions/0021-agents-drive-worlds-over-http-and-run.md).
-`run --seed --days` advances one world and prints its census as JSON Lines.
-
-The frontend is React with TypeScript and Vite, built into the jar by
-`frontend-maven-plugin`. A PixiJS canvas draws the grid, glides each rabbit
-between its tiles by diffing snapshots by id, fades rabbits in and out, and
-shows a count on a tile holding more than one. The controls are step, play and
-pause, and playback rate; spawning rabbits by count and by clicking a tile;
-resetting the world, which draws a new seed from the clock and shows it; and
-the population chart with a statistics reset that clears the adapter's history.
-Vitest covers the frontend's diffing, gliding and fading, and JUnit covers the
-API against a running server.
 
 2022 features that come back here: random wandering with an idle chance of one
-in five, spawning by count and by click, stepping and automatic play with a
-rate, resetting the world, and the population graph with a statistics reset.
-The 2022 edge handling, which rerolled a move up to ten times and then stood
-still, is replaced by walking until blocked.
+in five. The 2022 edge handling, which rerolled a move up to ten times and then
+stood still, is replaced by walking until blocked.
 
-Regression rules that land here: resetting the statistics does not break the
-population graph, the census covers every recorded day, movement never walks
-off the step distribution, and removing an entity validates before it mutates
-anything.
+Regression rules that land here: the census covers every recorded day, movement
+never walks off the step distribution, and removing an entity validates before
+it mutates anything.
 
-On the page: a plain ground of 20 by 20 tiles with ten rabbits that glide
-between tiles when you press play, fade in when spawned, and show a count where
-they share a tile, beside the population chart and the current seed.
+On the screen: nothing in a browser yet. `run --seed 42 --days 100` prints one
+line per day with the rabbit count, and the same seed prints the same lines.
+This is the one entry watched as data rather than on the page, per
+[0002](decisions/0002-replace-the-model-layer-in-place.md).
 
 See [0002](decisions/0002-replace-the-model-layer-in-place.md),
 [0003](decisions/0003-entities-carry-components.md),
@@ -101,10 +81,51 @@ See [0002](decisions/0002-replace-the-model-layer-in-place.md),
 [0014](decisions/0014-resolve-order-comes-from-a-speed-gene.md),
 [0015](decisions/0015-geometry-lives-in-the-grid.md),
 [0017](decisions/0017-every-number-is-a-setting-or-a-gene.md),
+[0021](decisions/0021-agents-drive-worlds-over-http-and-run.md).
+
+## 2. Watching in a browser
+
+Status: not started.
+
+A Javalin adapter serves the page and an HTTP API, per
+[0020](decisions/0020-the-interface-is-a-web-page.md). Worlds are held by an
+unguessable id under a small cap and closed by deleting them. Each world has one
+executor thread that advances it at the playback rate. Snapshots and census rows
+stream over Server-Sent Events, where a slow viewer skips stale snapshots and
+never census rows. `serve` opens the browser, and `serve --no-browser` takes
+`--port 0`, prints a ready line with the port, and exits when idle, per
+[0021](decisions/0021-agents-drive-worlds-over-http-and-run.md).
+
+The frontend is React with TypeScript and Vite, built into the jar by
+`frontend-maven-plugin`. A PixiJS canvas draws the grid with a rabbit sprite
+from a CC0 asset pack, glides each rabbit between its tiles by diffing
+snapshots by id, fades rabbits in and out, and shows a count on a tile holding
+more than one. The controls are step, play and pause, and playback rate;
+spawning rabbits by count and by clicking a tile; resetting the world, which
+draws a new seed from the clock and shows it; and the population chart with a
+statistics reset that clears the adapter's history. Vitest covers the
+frontend's diffing, gliding and fading, and JUnit covers the API against a
+running server.
+
+2022 features that come back here: spawning by count and by click, stepping and
+automatic play with a rate, resetting the world, and the population graph with
+a statistics reset.
+
+Regression rules that land here: resetting the statistics does not break the
+population graph.
+
+On the page: a plain ground of 20 by 20 tiles with ten rabbits that glide
+between tiles when you press play, fade in when spawned, and show a count where
+they share a tile, beside the population chart and the current seed.
+
+Depends on entry 1. See
+[0007](decisions/0007-state-leaves-as-a-snapshot-commands-go-in.md),
+[0010](decisions/0010-runs-replay-exactly-from-a-seed.md),
+[0014](decisions/0014-resolve-order-comes-from-a-speed-gene.md),
 [0020](decisions/0020-the-interface-is-a-web-page.md),
 [0021](decisions/0021-agents-drive-worlds-over-http-and-run.md).
 
-## 2. Eating and starving
+## 3. Eating and starving
 
 Status: not started.
 
@@ -120,12 +141,12 @@ Rabbit gets the fixed-rules brain that approaches the nearest edible. Its rule
 set is a design decision per
 [0018](decisions/0018-brain-computation-model-and-warm-starting.md), so it gets
 a log entry before it is built. Its parameters sit in the baseline genome as
-plain values until entry 3. The rule set's log entry also settles whether
+plain values until entry 4. The rule set's log entry also settles whether
 walking away from a crowd survives, which decides whether the inverted crowd comparison rule lands
 or goes to `docs/ideas/`.
 
 A creature standing on grass is now the normal case, so the grid draws a
-creature above the ground cover it stands on, and the count from entry 1
+creature above the ground cover it stands on, and the count from entry 2
 counts creatures rather than grass.
 
 2022 features that come back here: food arriving on an interval in a set
@@ -144,20 +165,20 @@ rabbit on its tile. Rabbits head for grass they can see instead of only
 wandering, and a rabbit that starves fades out. The chart rises and falls with
 the food. Food can be spawned by count and by click.
 
-Depends on entry 1. See
+Depends on entry 2. See
 [0009](decisions/0009-terrain-is-entities-plus-tile-fields.md),
 [0013](decisions/0013-perception-is-one-type.md),
 [0016](decisions/0016-feeding-takes-the-tile.md),
 [0017](decisions/0017-every-number-is-a-setting-or-a-gene.md),
 [0018](decisions/0018-brain-computation-model-and-warm-starting.md).
 
-## 3. Breeding and switchover
+## 4. Breeding and switchover
 
 Status: not started.
 
 `Breed` as an intent, with interval, cost and endowment as settings. `GeneSpec`
 gains scalar and simplex mutation, which turns the baseline values from entries
-1 and 2 into genes that vary and pass to a child: the step distribution, view
+1 and 3 into genes that vary and pass to a child: the step distribution, view
 range and the fixed-rules brain's parameters, plus speed. Speed arrives with its
 metabolism charge, since a free speed gene pins to its bound. `run` reports gene
 means.
@@ -179,7 +200,7 @@ On the page: a newborn appears on its parent's tile, the population grows and
 shrinks on its own, and a settings panel changes any declared number while the
 world runs.
 
-Depends on entry 2. See
+Depends on entry 3. See
 [0002](decisions/0002-replace-the-model-layer-in-place.md),
 [0004](decisions/0004-creatures-return-intents.md),
 [0006](decisions/0006-genomes-are-a-named-layout-of-gene-shapes.md),
@@ -188,7 +209,7 @@ Depends on entry 2. See
 [0017](decisions/0017-every-number-is-a-setting-or-a-gene.md),
 [0018](decisions/0018-brain-computation-model-and-warm-starting.md).
 
-## 4. Rabbit learns
+## 5. Rabbit learns
 
 Status: not started.
 
@@ -206,12 +227,12 @@ On the page: nothing new is required. What changes is behaviour you can see,
 such as rabbits heading for food more directly after a few hundred days than at
 the start.
 
-Depends on entry 3. See
+Depends on entry 4. See
 [0012](decisions/0012-tests-target-brains-without-a-world.md),
 [0014](decisions/0014-resolve-order-comes-from-a-speed-gene.md),
 [0018](decisions/0018-brain-computation-model-and-warm-starting.md).
 
-## 5. Predator
+## 6. Predator
 
 Status: not started.
 
@@ -230,11 +251,11 @@ eats.
 On the page: a wolf with its own sprite, rabbits running from a wolf they can
 see, and a kill that removes a rabbit at once.
 
-Depends on entry 4. See
+Depends on entry 5. See
 [0004](decisions/0004-creatures-return-intents.md),
 [0013](decisions/0013-perception-is-one-type.md).
 
-## 6. Inspecting creatures
+## 7. Inspecting creatures
 
 Status: not started.
 
@@ -248,12 +269,12 @@ reserve. The selection clears when the selected id stops resolving, per
 by days survived or by food, selecting a human to see its information and view
 range, and clicking a tile to see its contents.
 
-Depends on entry 3. See
+Depends on entry 4. See
 [0007](decisions/0007-state-leaves-as-a-snapshot-commands-go-in.md),
 [0013](decisions/0013-perception-is-one-type.md),
 [0020](decisions/0020-the-interface-is-a-web-page.md).
 
-## 7. Looking good
+## 8. Looking good
 
 Status: not started.
 
@@ -269,10 +290,10 @@ watching. That is judged by watching rather than by a test.
 
 On the page: everything above.
 
-Depends on entry 5, so every species that exists by then gets its art. See
+Depends on entry 6, so every species that exists by then gets its art. See
 [0020](decisions/0020-the-interface-is-a-web-page.md).
 
-## 8. Hosting
+## 9. Hosting
 
 Status: not started.
 
@@ -281,7 +302,7 @@ session, abandoned worlds are cleaned up, and a cap on worlds across sessions
 keeps a spike in traffic from exhausting the machine. A container image and a
 deploy workflow put it on Fly.io.
 
-Depends on entry 3, and comes after entry 7 so the first link strangers open
+Depends on entry 4, and comes after entry 8 so the first link strangers open
 shows the finished look. See
 [0020](decisions/0020-the-interface-is-a-web-page.md),
 [0021](decisions/0021-agents-drive-worlds-over-http-and-run.md).

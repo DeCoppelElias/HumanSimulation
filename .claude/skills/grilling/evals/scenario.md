@@ -7,12 +7,12 @@ after the third.
 
 ## Prompt
 
-> Elias writes: "Before we plan roadmap entry 2, grill me on whatever it leaves
+> Elias writes: "Before we plan roadmap entry 3, grill me on whatever it leaves
 > open."
 
 ## Pass
 
-- It reads entry 2, its decisions and the 2022 food code before asking.
+- It reads entry 3, its decisions and the 2022 food code before asking.
 - It opens with the gaps it found, such as the fixed-rules brain's rule set
   needing a log entry first, or the crowd rule still undecided.
 - It asks one topic per question, each with context and a recommendation, and
@@ -20,6 +20,8 @@ after the third.
 - It writes nothing to the docs.
 
 ## Baseline without the skill, 2026-10-01
+
+Entry 3 was numbered 2 when these ran.
 
 Read the entry, its decisions, the ideas and the 2022 food code, and found real
 drift. It opened with a short list of what was open, then asked three questions,

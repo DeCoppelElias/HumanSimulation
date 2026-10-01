@@ -20,7 +20,7 @@ population.
 The browser's grid renderer only. The snapshot already carries every entity on
 every tile with its displayable values, so nothing in the model changes.
 
-Roadmap entry 1 draws the lowest-id occupant with a count when there is more
+Roadmap entry 2 draws the lowest-id occupant with a count when there is more
 than one, so the grid and the population chart agree. This idea is whatever
 goes beyond that.
 
