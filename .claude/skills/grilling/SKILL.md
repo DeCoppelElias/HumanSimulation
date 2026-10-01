@@ -44,8 +44,9 @@ each other, before anything is planned or written.
 
 Record an idea that comes up and is deferred in `docs/ideas/` straight away,
 since that needs no approval. Write nothing else, even though 0019 would allow
-drafting on a branch: a half-finished grill leaves half-applied answers. Accepted decisions, the
-roadmap and `DESIGN.md` change only after the grill ends.
+drafting on a branch: a half-finished grill leaves half-applied answers.
+Accepted decisions, the roadmap and `DESIGN.md` change only after the grill
+ends.
 
 ## Ending
 

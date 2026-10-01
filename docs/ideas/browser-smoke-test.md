@@ -1,6 +1,6 @@
 # Browser smoke test
 
-Status: idea.
+Status: planned, roadmap entry 4.
 
 ## What it does
 
@@ -24,7 +24,8 @@ Linux and Windows runners, which slows every build.
 
 ## Open questions
 
-Whether it stays a skill an agent runs on demand or becomes a test in CI.
+It is a skill an agent runs on demand, not a test in CI. Moving it into CI
+later stays open.
 
 How a screenshot is judged: by an agent looking at it, or by comparing against
 stored images, which breaks on every intended visual change.

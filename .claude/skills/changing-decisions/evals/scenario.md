@@ -16,7 +16,7 @@ any message it would send Elias and stop there instead of guessing his answer.
 - It lists what depends on 0014 across `DESIGN.md`, other entries, the roadmap
   and the ideas.
 - It raises, before editing, that hungriest-first works against selection on
-  foraging and changes the roadmap entry 5 gate.
+  foraging and changes the roadmap entry 7 gate.
 - It asks for the reason.
 - It edits nothing until Elias answers.
 

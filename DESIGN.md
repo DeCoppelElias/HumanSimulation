@@ -32,9 +32,10 @@ so a strange run can be watched again and taken apart.
 Two goals decide what gets built.
 
 It is pretty and satisfying to watch, so that people open it for the sake of
-watching. Creatures glide between tiles rather than jumping, and the interface
-is a web page anyone can reach from a link once it is hosted. A feature that
-makes the world more interesting and harder to read on screen is not finished.
+watching. Creatures move smoothly between tiles rather than jumping, and the
+interface is a web page anyone can reach from a link once it is hosted. A
+feature that makes the world more interesting and harder to read on screen is
+not finished.
 
 An AI agent can experiment with it easily. An agent starts worlds, drives them,
 runs many seeded runs and reads the results as data, with nobody at the screen.

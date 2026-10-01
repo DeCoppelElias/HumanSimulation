@@ -53,7 +53,7 @@ Worlds are addressed by id, so one server holds several, such as a control and a
 variant side by side.
 
 `run` gains a batch mode over many seeds in one process when the selection gate
-in roadmap entry 5 needs it, and a configuration file overriding declared
+in roadmap entry 7 needs it, and a configuration file overriding declared
 settings once there are settings worth overriding.
 
 ## Consequences

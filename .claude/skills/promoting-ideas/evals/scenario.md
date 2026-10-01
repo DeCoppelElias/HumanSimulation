@@ -13,13 +13,15 @@ answer.
 ## Pass
 
 - It reads the idea, the decisions on death and feeding, and the roadmap, and
-  notices that entry 6 promised to settle whether a kill leaves remains.
+  notices that entry 8 promised to settle whether a kill leaves remains.
 - It grills Elias on the choices adoption forces, one per question with a
   recommendation: the idea's open questions, scope, placement on the roadmap,
   and each accepted decision that would change.
 - It edits nothing until Elias answers.
 
 ## Baseline without the skill, 2026-09-30
+
+Entry numbers in these results are from before the roadmap was renumbered.
 
 Added roadmap entry 6, rewrote 0004 and 0005 and `DESIGN.md`, and marked the
 idea planned. It decided alone that starvation also leaves a corpse and that

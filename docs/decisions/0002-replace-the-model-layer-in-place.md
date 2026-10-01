@@ -45,10 +45,11 @@ the switchover lands.
 Build up from zero rather than porting the current model wholesale. The first
 package is thin and complete: a grid, one species, which is the rabbit, a random
 brain, a move intent, a resolver, a snapshot, and the `run` command printing
-its census. The second puts it on the page. Capabilities are added one at a time
-after that, each package ending with something watchable. The first is the one
-exception, watched as data, because the domain and the whole web stack together
-would be a slice too large to finish in one go.
+its census. The second serves it over HTTP and the third puts it on the page.
+Capabilities are added one at a time after that, each package ending with
+something watchable. The first two are the exception, watched as data, because
+the domain and the whole web stack together would be a slice too large to
+finish in one go.
 
 No code survives. The 2022 version is a reference for features, and the first
 commit of roadmap entry 1 deletes it with its tests. Each 2022 feature is an

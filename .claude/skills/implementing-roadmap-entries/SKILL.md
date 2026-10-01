@@ -24,7 +24,7 @@ checklist.
    are not reopened. A gap that turns out to be a design choice goes through
    the changing-decisions skill.
 4. Branch as the roadmap says. Per 0002, the rebuild lives on one branch until
-   entry 4 merges it to `master`.
+   entry 6 merges it to `master`.
 5. Write the plan with superpowers:writing-plans. It lists every acceptance
    criterion in the entry, regression rules included, next to the task that
    meets it. Elias reviews the plan before any code.
@@ -32,9 +32,9 @@ checklist.
 ## Building
 
 superpowers:test-driven-development for every task, as 0012 requires. Verify
-with `./mvnw verify` and the `run` command once it exists. Until the browser
-smoke test in `docs/ideas/` is built, a change to what the page shows needs
-Elias to watch it, so say what to look at.
+with `./mvnw verify` and the `run` command once it exists. Until roadmap entry 4
+builds the page-checking skill, a change to what the page shows needs Elias to
+watch it, so say what to look at.
 
 ## Finishing
 

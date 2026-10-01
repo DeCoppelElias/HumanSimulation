@@ -83,7 +83,7 @@ of worlds is capped. A world is closed by deleting it. There is no endpoint that
 stops the process.
 
 `java -jar` runs the server locally and opens the browser. Hosting it is roadmap
-entry 9, which adds sessions, ownership, clean-up of abandoned worlds and a
+entry 11, which adds sessions, ownership, clean-up of abandoned worlds and a
 deploy to Fly.io.
 
 ## Consequences
@@ -96,9 +96,8 @@ second from anyone who only runs `./mvnw`.
 
 The smoke test that drove Swing with `java.awt.Robot` has nothing to drive.
 Frontend logic is tested with Vitest and the API with JUnit against a running
-Javalin. Checking what renders is a person watching the page until a
-browser-driven test earns its place, which `docs/ideas/browser-smoke-test.md`
-holds.
+Javalin. Checking what renders is a skill an agent runs on demand in a real
+browser, from roadmap entry 4, with Elias judging how it looks.
 
 JFreeChart, the Swing panels and the icons at the classpath root go with the
 2022 code.

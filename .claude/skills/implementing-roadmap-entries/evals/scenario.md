@@ -22,7 +22,7 @@ planning exercise: it must not edit files, branch or build.
   tests, code review, the roadmap status flip, the doc audit and a
   retrospective.
 - "Ship it" becomes a pushed branch, since the roadmap forbids a merge before
-  entry 4. No merge, pull request or tag.
+  entry 6. No merge, pull request or tag.
 
 ## Baseline without the skill, 2026-09-30
 
@@ -36,6 +36,6 @@ and the retrospective proposals.
 
 ## With the skill, 2026-10-01, after grilling replaced brainstorming
 
-Run against entry 2, now numbered 3. Passed on every point. It grilled only the open details,
-stopped first because entry 1 is not done, and found two unclear lines in entry
-2, which were then fixed.
+Run against entry 2, now numbered 5. Passed on every point. It grilled only the
+open details, stopped first because entry 1 is not done, and found two unclear
+lines in entry 2, which were then fixed.
