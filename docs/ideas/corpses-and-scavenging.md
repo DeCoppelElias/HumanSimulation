@@ -10,10 +10,11 @@ flammable one, cleared by a system after some days.
 ## Why it is interesting
 
 Several behaviours arrive for free through rules that already exist. Anything
-whose diet accepts corpses can scavenge without a single line about scavenging.
-Fire burns bodies, because a corpse is flammable and fire names nothing. A
-predator can lose its kill to something faster, which makes speed matter in a
-third place. And a starving creature near a battlefield has somewhere to go.
+whose [diet](diet.md) accepts corpses can scavenge without a single line about
+scavenging. Fire burns bodies, because a corpse is flammable and fire names
+nothing. A predator can lose its kill to something faster, which makes speed
+matter in a third place. And a starving creature near a battlefield has
+somewhere to go.
 
 ## What it would touch
 

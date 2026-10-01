@@ -26,6 +26,6 @@ species cannot.
 What a human does that a rabbit and a wolf do not, which is what made it too
 difficult to start with.
 
-What its diet accepts.
+What its [diet](diet.md) accepts.
 
 Whether a wolf hunts it, and whether it hunts anything.

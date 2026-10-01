@@ -16,6 +16,8 @@ that settled it.
   contest, left out of the rebuild on purpose.
 - [Corpses and scavenging](corpses-and-scavenging.md) death leaves something
   edible behind.
+- [Diet](diet.md) which edibles a creature accepts, needed once a predator
+  exists.
 - [Drawing a stacked tile](drawing-a-stacked-tile.md) a way to show every
   occupant of a shared tile.
 - [Hexagonal grid](hexagonal-grid.md) six equidistant neighbours, so sight and

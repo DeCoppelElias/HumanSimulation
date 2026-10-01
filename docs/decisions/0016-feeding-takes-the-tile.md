@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-27.
+Accepted, 2026-09-27. Revised 2026-10-01.
 
 ## Context
 
@@ -23,13 +23,17 @@ the test in [0008](0008-brains-decide-systems-apply.md) and still runs as a
 system, because the contest does not exist until every intent has been
 collected. Aggression could then never be conditional.
 
+A diet, saying which edibles a creature accepts, was considered and left out.
+While grass is the only edible and the rabbit the only eater it changes
+nothing, and the shape it should take only shows once a second eater exists.
+
 ## Decision
 
 The feed step walks the day's order from
 [0014](0014-resolve-order-comes-from-a-speed-gene.md), the same order the
 resolve step used.
 
-A creature takes every edible on its tile that its diet accepts. The value is
+A creature takes every edible on its tile. The value is
 credited to its metabolism and the edible is removed, so a creature later in the
 order finds nothing there. There is no contest, no aggression gene, and no
 splitting. Which edible is taken first does not matter, since all of them are.
@@ -63,3 +67,6 @@ A species with a metabolism and no brain would starve, which
 Feeding is unconditional, so a creature eats a pile it does not need. A limit is
 `docs/ideas/stomach-capacity.md`, and if it arrives, how much to eat becomes a
 question a brain could be asked.
+
+Every eater eats everything edible, which stops being true with the first
+predator. `docs/ideas/diet.md` holds the options.

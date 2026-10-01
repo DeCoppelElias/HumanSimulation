@@ -72,8 +72,8 @@ A world holds a grid, an ordered collection of entities, one random generator
 and a day counter, and advances one day at a time.
 
 An entity is an id, a position, a species, a genome and a set of components.
-Anything that occupies a tile is an entity: a rabbit, a wolf, a patch of grass, a
-rock, a pile of ash. There is no class per kind of thing.
+Anything that occupies a tile is an entity: a rabbit, a wolf, a patch of grass,
+a rock, a pile of ash. There is no class per kind of thing.
 
 A species is the recipe for a kind of entity. It carries the name, the sprite
 that draws it, the gene layout its members inherit and the baseline genome the
@@ -203,11 +203,11 @@ A day runs these steps in order:
    where the world says it must. Breeding checks the interval and the reserve,
    spends the cost, and spawns a child at the parent's position carrying a
    mutated copy of the parent's genome and part of the cost as its reserve, its
-   endowment. A
-   child is not on the day's list, so it first acts and feeds the next day.
-3. Feed. In the same order, a creature takes every edible on its tile that its
-   diet accepts, crediting its metabolism. A pile taken is gone, so whoever
-   comes later finds nothing.
+   endowment. A child is not on the day's list, so it first acts and feeds the
+   next day.
+3. Feed. In the same order, a creature takes every edible on its tile,
+   crediting its metabolism. A pile taken is gone, so whoever comes later finds
+   nothing.
 4. Metabolise. Reserves are charged on the eating interval and again for the
    speed the creature carries, and anything whose reserve falls below zero dies.
 5. World processes, in list order: spawning new food, regrowth, fire.
@@ -274,6 +274,6 @@ has a flaw and the work plan should record it.
 The rabbit is the first species, and a wolf tests it. The wolf is a species
 value, plus one intent case and its branch in the resolver once it hunts, and
 nothing else changes, because the world has never needed to know what a rabbit
-is. What the species value does not give you is the brain: a wolf that hunts has to condition on where prey is,
-which a brain that picks a weighted-random direction cannot do. The data is free
-and the brain is the work.
+is. What the species value does not give you is the brain: a wolf that hunts has
+to condition on where prey is, which a brain that picks a weighted-random
+direction cannot do. The data is free and the brain is the work.

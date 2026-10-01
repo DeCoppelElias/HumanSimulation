@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-03. Revised 2026-09-28.
+Accepted, 2026-09-03. Revised 2026-10-01.
 
 ## Context
 
@@ -63,8 +63,8 @@ Commands drain first, per
    [0004](0004-creatures-return-intents.md). Movement walks a tile at a time.
    Breeding checks the interval and the reserve, spends the cost and spawns a
    child carrying a mutated genome and an endowment.
-3. Feed. In the same order, each creature takes every edible on its tile that
-   its diet accepts, per [0016](0016-feeding-takes-the-tile.md).
+3. Feed. In the same order, each creature takes every edible on its tile, per
+   [0016](0016-feeding-takes-the-tile.md).
 4. Metabolise. Charge the eating cost on the interval and the cost of speed.
    Anything whose reserve falls below zero dies.
 5. World processes, in list order: spawning food, regrowth, fire.
