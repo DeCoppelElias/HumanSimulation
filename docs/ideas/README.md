@@ -32,5 +32,9 @@ that settled it.
   wolves.
 - [MCP server](mcp-server.md) an agent drives a world through typed tools
   over stdio.
+- [Network brain](network-brain.md) the second brain, warm-started from the
+  fixed rules.
+- [Run comparison](run-comparison.md) one shared way for an agent to tell
+  whether a variant did better.
 - [Stomach capacity](stomach-capacity.md) a limit on what a creature can hold,
   which makes how much to eat a decision.

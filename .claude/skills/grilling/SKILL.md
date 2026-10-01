@@ -15,7 +15,9 @@ each other, before anything is planned or written.
 ## Before the first question
 
 1. Read the roadmap entry or idea, every decision it links, the matching
-   sections of `DESIGN.md`, and the code it will replace or touch.
+   sections of `DESIGN.md`, and the code it will replace or touch. Once the
+   rebuild has deleted the 2022 code it is still on `master` and the
+   `v1.0-original-2022` tag, so read it with `git show master:<path>`.
 2. List the choices left open. Answer every question the code or the docs can
    answer by reading them, and never ask it.
 3. Note gaps: rules with no entry to land in, docs that disagree, a workflow or
@@ -41,15 +43,21 @@ each other, before anything is planned or written.
 ## While grilling
 
 Record an idea that comes up and is deferred in `docs/ideas/` straight away,
-since that needs no approval. Write nothing else. Accepted decisions, the
+since that needs no approval. Write nothing else, even though 0019 would allow
+drafting on a branch: a half-finished grill leaves half-applied answers. Accepted decisions, the
 roadmap and `DESIGN.md` change only after the grill ends.
 
 ## Ending
 
 When nothing is left open, send a summary of every choice, grouped, and the
-document changes they create. Then apply them only after Elias says go: on a
-branch, through the changing-decisions skill (REQUIRED SUB-SKILL) for decisions
-and the promoting-ideas skill for ideas, then run the auditing-docs skill.
+document changes they create. Then apply them only after Elias says go, on a
+branch:
+
+- decisions through the changing-decisions skill (REQUIRED SUB-SKILL);
+- an idea being promoted through the promoting-ideas skill from its step 4,
+  since the grill already asked its questions;
+- roadmap text, such as acceptance lines, directly;
+- then the auditing-docs skill.
 
 ## Red flags
 

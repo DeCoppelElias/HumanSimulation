@@ -36,6 +36,6 @@ and the retrospective proposals.
 
 ## With the skill, 2026-10-01, after grilling replaced brainstorming
 
-Run against entry 2. Passed on every point. It grilled only the open details,
+Run against entry 2, now numbered 3. Passed on every point. It grilled only the open details,
 stopped first because entry 1 is not done, and found two unclear lines in entry
 2, which were then fixed.

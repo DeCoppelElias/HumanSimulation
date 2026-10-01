@@ -32,9 +32,9 @@ so a strange run can be watched again and taken apart.
 Two goals decide what gets built.
 
 It is pretty and satisfying to watch, so that people open it for the sake of
-watching. Creatures glide between tiles rather than jumping, and the interface is
-a web page anyone can reach from a link once it is hosted. A feature that makes
-the world more interesting and harder to read on screen is not finished.
+watching. Creatures glide between tiles rather than jumping, and the interface
+is a web page anyone can reach from a link once it is hosted. A feature that
+makes the world more interesting and harder to read on screen is not finished.
 
 An AI agent can experiment with it easily. An agent starts worlds, drives them,
 runs many seeded runs and reads the results as data, with nobody at the screen.
@@ -154,8 +154,8 @@ Deciding finishes before anything is applied, so every creature in a day sees
 the same world.
 
 Commands from outside queue and take effect at the start of a day, or at once
-while the world is paused, never between two systems, so a run is described by
-its seed and its command log.
+when a paused adapter asks for them, never between two systems, so a run is
+described by its seed and its command log.
 
 ### Deciding and applying
 
@@ -247,22 +247,22 @@ State leaves as a snapshot of the whole world each day: the day number, the
 grid, and for each tile its fields and what stands on it with the values worth
 drawing. Commands are the only way in, covering spawning, resetting, editing a
 species' settings, and anything else the interface initiates. They queue and
-drain at the start of a day, and a paused world drains them at once and draws
-the result without advancing. The interface never reaches into the model.
+drain at the start of a day. The interface never reaches into the model.
 
 Pausing is the adapter's business rather than the world's. A paused adapter
 asks the world to apply what is pending, which drains the queue and returns a
 snapshot without advancing the day.
 
-Each world is owned by one thread, and everything that touches it is handed to
-that thread. Commands arrive from other threads through the queue.
+Each world is owned by one thread, and everything that touches it, submitting a
+command included, is handed to that thread as a task. The world itself is not
+thread-safe and does not need to be.
 
 Population counts come from a census row the world produces each day, one row
 per day with no gaps. The history of rows belongs to whoever reads them, so
 resetting the statistics is something an adapter does to its own history and
 not a command.
 
-The core lives in the package `io.github.eliasdecoppel.humansimulation.domain`
+The core lives in the package `io.github.decoppelelias.humansimulation.domain`
 and depends only on itself and `java.base`. A test runs `jdeps` over the
 compiled classes and fails on anything else.
 

@@ -34,7 +34,7 @@ partial `java.base` coverage and painful debugging. A Rust core is the fastest
 option and a steep first language for a project that needs no speed at a few
 hundred tiles.
 
-Java was measured against the agent goal and passes. A day at the target size
+Java was estimated against the agent goal and passes. A day at the target size
 is well under a millisecond, a 500-day run a fraction of a second, and seeds
 run in parallel one world per thread. JVM startup is the only cost an agent
 notices, and batch runs pay it once.
@@ -47,13 +47,13 @@ acceptable at hobby traffic.
 Spring Boot was considered for the server and is familiar. It brings a
 container, which [0007](0007-state-leaves-as-a-snapshot-commands-go-in.md)
 rejects, a slower start and more memory, for a server that needs a few routes
-and one stream. Javalin is a thin layer over Jetty that `Main` constructs by
-hand.
+and one stream. Javalin, at version 7 on Jetty 12 when this was decided, is a
+thin layer that `Main` constructs by hand.
 
 ## Decision
 
 The core stays Java and depends only on `java.base`. Everything lives under
-`io.github.eliasdecoppel.humansimulation`, with the domain in `.domain`.
+`io.github.decoppelelias.humansimulation`, with the domain in `.domain`.
 
 The interface is a web page. A Javalin adapter serves it, takes commands as
 JSON over HTTP, and streams each world's snapshots and census rows over

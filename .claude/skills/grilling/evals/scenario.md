@@ -31,7 +31,7 @@ earlier message.
 
 ## With the skill, 2026-10-01
 
-Passed. It read the 2022 code entry 2 replaces as well as the docs, opened with
+Passed. It read the 2022 code entry 3 replaces as well as the docs, opened with
 eight gaps, ordered its questions so the first answer fed the second, and wrote
 each question to stand alone inside a question box, opening with what the last
 answer settled. It wrote nothing.

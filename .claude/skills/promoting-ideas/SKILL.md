@@ -28,6 +28,7 @@ covers it.
    - every accepted decision whose text would change.
 3. Grill Elias on that list with the grilling skill (REQUIRED SUB-SKILL), one
    choice per question with your recommendation, and wait for every answer.
+   When a grill sent you here, its answers already cover this step.
 4. Apply them:
    - decision changes through the changing-decisions skill (REQUIRED
      SUB-SKILL), which updates `DESIGN.md` too;

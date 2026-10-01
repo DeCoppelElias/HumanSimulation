@@ -12,7 +12,8 @@ something is shaped the way it is, this says whether it exists yet.
 
 The rebuild happens on the `rebuild` branch, per
 [0002](decisions/0002-replace-the-model-layer-in-place.md). `master` keeps the
-2022 application until entry 4 lands, the first one at parity with it.
+2022 application until entry 4 lands, the first one worth switching to. The
+2022 inspection features wait for entry 7.
 
 Each entry lists the 2022 features it brings back and the regression rules it
 carries, as acceptance lines. A 2022 feature left out on purpose is in
@@ -24,7 +25,8 @@ Status: not started.
 
 The first commit deletes the 2022 code, its tests, and the Swing smoke-test
 skill with its tool under `tools/gui-smoke-test/`. `AGENTS.md` follows the tree
-from then on. Everything new lives under `io.github.eliasdecoppel.humansimulation`.
+from then on. Everything new lives under
+`io.github.decoppelelias.humansimulation`.
 
 A world with a four-direction grid that owns distance, and `Entity`, `Species`,
 `Component` and a `Genome` whose values are checked against `GeneSpec.Scalar`
@@ -98,13 +100,13 @@ never census rows. `serve` opens the browser, and `serve --no-browser` takes
 
 The frontend is React with TypeScript and Vite, built into the jar by
 `frontend-maven-plugin`. A PixiJS canvas draws the grid with a rabbit sprite
-from a CC0 asset pack, glides each rabbit between its tiles by diffing
-snapshots by id, fades rabbits in and out, and shows a count on a tile holding
-more than one. The controls are step, play and pause, and playback rate;
-spawning rabbits by count and by clicking a tile; resetting the world, which
-draws a new seed from the clock and shows it; and the population chart with a
-statistics reset that clears the adapter's history. Vitest covers the
-frontend's diffing, gliding and fading, and JUnit covers the API against a
+from a CC0 asset pack, glides each rabbit between its tiles by diffing snapshots
+by id, fades rabbits in and out, and shows a count on a tile holding more than
+one, drawing the lowest-id occupant. The controls are step, play and pause, and
+playback rate; spawning rabbits by count and by clicking a tile; resetting the
+world, which draws a new seed from the clock and shows it; and the population
+chart with a statistics reset that clears the adapter's history. Vitest covers
+the frontend's diffing, gliding and fading, and JUnit covers the API against a
 running server.
 
 2022 features that come back here: spawning by count and by click, stepping and
@@ -113,6 +115,19 @@ a statistics reset.
 
 Regression rules that land here: resetting the statistics does not break the
 population graph.
+
+Details a review found open, to settle in this entry's grill: how each viewer's
+stream is written without a slow tab stalling the world, with a bounded census
+queue per viewer and the history copied and subscribed in one step; a heartbeat
+on a paused world's stream; the browser's limit of six connections to one
+origin; the ready line's schema, with logging on stderr and `run`'s stdout
+holding only JSON Lines; what idle means and its default; binding to
+127.0.0.1 by default; whether a reset restarts the day count and clears the
+chart; which day number a snapshot from `applyPending` carries; a read-only
+endpoint returning a world's seed and command log, so a watched run can be
+reproduced; pinning Node and npm packages, with `package-lock.json`, `npm ci`
+and Dependabot for npm; skipping the frontend build for Java-only work; the
+chart library; and running CI on the `rebuild` branch.
 
 On the page: a plain ground of 20 by 20 tiles with ten rabbits that glide
 between tiles when you press play, fade in when spawned, and show a count where
@@ -135,15 +150,15 @@ takes every edible on the tile, and the metabolise step charges on an interval
 and removes anything whose reserve falls below zero. Intervals and charges join
 the settings as species settings, and how much food arrives and how often join
 as world settings, with bounds that reject non-positive values. That is where
-the regression rule rejecting a zero eating or breeding interval lands.
+the regression rule rejecting a zero eating interval lands.
 
 Rabbit gets the fixed-rules brain that approaches the nearest edible. Its rule
 set is a design decision per
 [0018](decisions/0018-brain-computation-model-and-warm-starting.md), so it gets
 a log entry before it is built. Its parameters sit in the baseline genome as
 plain values until entry 4. The rule set's log entry also settles whether
-walking away from a crowd survives, which decides whether the inverted crowd comparison rule lands
-or goes to `docs/ideas/`.
+walking away from a crowd survives, which decides whether the inverted crowd
+comparison rule lands or goes to `docs/ideas/`.
 
 A creature standing on grass is now the normal case, so the grid draws a
 creature above the ground cover it stands on, and the count from entry 2
@@ -189,8 +204,8 @@ child on its parent's tile; and mutation of every inherited trait. A child
 starts from an endowment rather than the 2022 empty reserve.
 
 Regression rules that land here: the step variation is not integer divided, the
-step distribution stays valid, view range is inherited and varied, and a view
-range never drops below one.
+step distribution stays valid, view range is inherited and varied, a view range
+never drops below one, and a zero breeding interval is rejected.
 
 Then what the switchover needs: the parameters panel, which 2022 also had,
 generated from declared settings, with editing a setting as a command. The
@@ -230,7 +245,8 @@ the start.
 Depends on entry 4. See
 [0012](decisions/0012-tests-target-brains-without-a-world.md),
 [0014](decisions/0014-resolve-order-comes-from-a-speed-gene.md),
-[0018](decisions/0018-brain-computation-model-and-warm-starting.md).
+[0018](decisions/0018-brain-computation-model-and-warm-starting.md),
+[0021](decisions/0021-agents-drive-worlds-over-http-and-run.md).
 
 ## 6. Predator
 
@@ -253,7 +269,8 @@ see, and a kill that removes a rabbit at once.
 
 Depends on entry 5. See
 [0004](decisions/0004-creatures-return-intents.md),
-[0013](decisions/0013-perception-is-one-type.md).
+[0013](decisions/0013-perception-is-one-type.md),
+[0016](decisions/0016-feeding-takes-the-tile.md).
 
 ## 7. Inspecting creatures
 

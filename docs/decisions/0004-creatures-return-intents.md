@@ -103,8 +103,9 @@ Movement differs from 2022. A blocked creature walks as far as it legally can,
 where the 2022 code rerolls and often stands still, so seeded runs do not match
 the old ones step for step.
 
-Many creatures on one tile is normal, so the interface has to show a stack where
-it currently draws one sprite. That is `docs/ideas/drawing-a-stacked-tile.md`. A
+Many creatures on one tile is normal, so the interface has to show a stack
+rather than one sprite. Roadmap entry 2 draws one with a count, and anything
+richer is `docs/ideas/drawing-a-stacked-tile.md`. A
 child is always born somewhere, since a tile cannot be full.
 
 Nothing dead acts, so once creatures can kill each other, being early in the

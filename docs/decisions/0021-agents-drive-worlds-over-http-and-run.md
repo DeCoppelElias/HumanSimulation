@@ -26,8 +26,9 @@ when it is ready, which port it took, and making sure it does not linger.
 
 An MCP server over stdio lets the agent's client own that lifecycle and gives
 typed tools. A study by Scale Labs found that current models succeed about as
-often through MCP as through a command line, in fewer turns, and that offering
-both interfaces did not help. It adds a dependency and a third adapter before
+often through MCP as through a command line, in fewer turns, that weaker models
+did better through a command line on data-heavy tasks, and that offering both
+interfaces did not help. It adds a dependency and a third adapter before
 anyone knows interactive driving is needed often.
 
 Experiments written as code against the domain are the most flexible and
