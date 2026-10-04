@@ -21,10 +21,16 @@ class DomainBoundaryTest {
                 jdeps.run(new PrintWriter(output), new PrintWriter(output), "-verbose:class", classes.toString());
         assertThat(exitCode).as(output.toString()).isZero();
 
-        List<String> violations = output.toString()
+        List<String> dependencies = output.toString()
                 .lines()
                 .map(String::trim)
                 .filter(line -> line.startsWith(DOMAIN) && line.contains("->"))
+                .toList();
+        assertThat(dependencies)
+                .as("jdeps found no domain classes in " + classes)
+                .isNotEmpty();
+
+        List<String> violations = dependencies.stream()
                 .filter(line -> {
                     String[] fields = line.split("\\s+");
                     String target = fields[2];
