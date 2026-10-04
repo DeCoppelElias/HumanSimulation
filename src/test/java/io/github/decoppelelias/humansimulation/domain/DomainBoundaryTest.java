@@ -26,7 +26,7 @@ class DomainBoundaryTest {
                 .map(String::trim)
                 .filter(line -> line.startsWith(DOMAIN) && line.contains("->"))
                 .filter(line -> {
-                    String[] fields = line.split("\s+");
+                    String[] fields = line.split("\\s+");
                     String target = fields[2];
                     String module = fields[fields.length - 1];
                     return !target.startsWith(DOMAIN + ".") && !module.equals("java.base");
