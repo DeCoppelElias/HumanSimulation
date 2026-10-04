@@ -3,7 +3,10 @@ package io.github.decoppelelias.humansimulation.domain;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 
 class WorldTest {
@@ -97,5 +100,55 @@ class WorldTest {
         world.submit(spawn);
         world.applyPending();
         assertThat(world.log()).containsExactly(new LoggedCommand(0, spawn));
+    }
+
+    @Test
+    void advancingCompletesADay() {
+        World world = new World(5, 5, 1, RABBITS);
+        world.submit(new Command.Spawn("rabbit", 3));
+        DayReport report = world.advance();
+        assertThat(report.snapshot().day()).isEqualTo(1);
+        assertThat(report.census()).isEqualTo(new CensusRow(1, Map.of("rabbit", 3)));
+    }
+
+    @Test
+    void theCensusListsEverySpeciesTheWorldKnows() {
+        World world = new World(5, 5, 1, List.of(Rabbit.species(), TestSpecies.walker(new Intent.Idle())));
+        world.submit(new Command.Spawn("rabbit", 2));
+        assertThat(world.advance().census().population())
+                .containsExactly(Map.entry("rabbit", 2), Map.entry("walker", 0));
+    }
+
+    @Test
+    void theCensusHasARowForEveryDay() {
+        World world = new World(5, 5, 1, RABBITS);
+        world.submit(new Command.Spawn("rabbit", 3));
+        List<Integer> days = new ArrayList<>();
+        for (int i = 0; i < 50; i++) {
+            days.add(world.advance().census().day());
+        }
+        assertThat(days).isEqualTo(IntStream.rangeClosed(1, 50).boxed().toList());
+    }
+
+    @Test
+    void aMoveStopsAtTheEdge() {
+        World world = new World(5, 5, 1, List.of(TestSpecies.walker(new Intent.Move(TestSpecies.NORTH, 3))));
+        world.submit(new Command.SpawnAt("walker", new GridPosition(2, 1)));
+        assertThat(occupied(world.advance().snapshot())).containsExactly(new GridPosition(2, 0));
+    }
+
+    @Test
+    void aClearMoveWalksItsWholeDistance() {
+        World world = new World(5, 5, 1, List.of(TestSpecies.walker(new Intent.Move(TestSpecies.EAST, 2))));
+        world.submit(new Command.SpawnAt("walker", new GridPosition(0, 0)));
+        assertThat(occupied(world.advance().snapshot())).containsExactly(new GridPosition(2, 0));
+    }
+
+    @Test
+    void rabbitsWander() {
+        World world = new World(20, 20, 1, RABBITS);
+        world.submit(new Command.Spawn("rabbit", 10));
+        List<GridPosition> start = occupied(world.applyPending());
+        assertThat(occupied(world.advance().snapshot())).isNotEqualTo(start);
     }
 }

@@ -43,6 +43,14 @@ public final class World {
         return snapshot();
     }
 
+    public DayReport advance() {
+        drain();
+        List<Decision> decisions = decide();
+        resolve(dayOrder(decisions));
+        day++;
+        return new DayReport(snapshot(), census());
+    }
+
     public List<LoggedCommand> log() {
         return List.copyOf(log);
     }
@@ -59,6 +67,65 @@ public final class World {
             tiles.add(new WorldSnapshot.TileView(at, Map.of(), standing));
         }
         return new WorldSnapshot(seed, day, width, height, tiles);
+    }
+
+    private List<Decision> decide() {
+        Options options = new Options(grid.directions());
+        List<Decision> decisions = new ArrayList<>();
+        for (int id : entityIds()) {
+            Entity entity = entities.get(id);
+            entity.brain()
+                    .ifPresent(brain -> decisions.add(new Decision(
+                            id, brain.decide(CircularSense.perceive(entity, grid, entities), options, random))));
+        }
+        return decisions;
+    }
+
+    /** Shuffled from id order with the world's generator, so the draw replays. */
+    private List<Decision> dayOrder(List<Decision> decisions) {
+        List<Decision> order = new ArrayList<>(decisions);
+        Collections.shuffle(order, random);
+        return order;
+    }
+
+    private void resolve(List<Decision> order) {
+        for (Decision decision : order) {
+            Entity entity = entities.get(decision.entityId());
+            if (entity == null) {
+                continue;
+            }
+            switch (decision.intent()) {
+                case Intent.Move move -> walk(entity, move);
+                case Intent.Idle _ -> {}
+            }
+        }
+    }
+
+    private void walk(Entity entity, Intent.Move move) {
+        for (int i = 0; i < move.distance(); i++) {
+            GridPosition next = grid.step(entity.position(), move.direction());
+            if (!grid.contains(next)) {
+                return;
+            }
+            grid.remove(entity.id(), entity.position());
+            grid.place(entity.id(), next);
+            entity.moveTo(next);
+        }
+    }
+
+    private CensusRow census() {
+        Map<String, Integer> population = new TreeMap<>();
+        for (String name : species.keySet()) {
+            population.put(name, 0);
+        }
+        for (int id : entityIds()) {
+            population.merge(entities.get(id).species().name(), 1, Integer::sum);
+        }
+        return new CensusRow(day, population);
+    }
+
+    private List<Integer> entityIds() {
+        return List.copyOf(entities.keySet());
     }
 
     private void validate(Command command) {
