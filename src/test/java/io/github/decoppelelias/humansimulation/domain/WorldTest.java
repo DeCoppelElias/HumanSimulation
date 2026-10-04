@@ -37,4 +37,65 @@ class WorldTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("rabbit");
     }
+
+    @Test
+    void aSpawnWaitsForPendingCommandsToApply() {
+        World world = new World(5, 5, 1, RABBITS);
+        world.submit(new Command.Spawn("rabbit", 3));
+        assertThat(occupied(world.snapshot())).isEmpty();
+        assertThat(occupied(world.applyPending())).hasSize(3);
+    }
+
+    @Test
+    void applyPendingShowsCommandsAndKeepsTheDay() {
+        World world = new World(5, 5, 1, RABBITS);
+        world.submit(new Command.Spawn("rabbit", 2));
+        WorldSnapshot snapshot = world.applyPending();
+        assertThat(snapshot.day()).isZero();
+        assertThat(occupied(snapshot)).hasSize(2);
+    }
+
+    @Test
+    void spawnAtPlacesOneOnThatTile() {
+        World world = new World(5, 5, 1, RABBITS);
+        world.submit(new Command.SpawnAt("rabbit", new GridPosition(3, 4)));
+        assertThat(occupied(world.applyPending())).containsExactly(new GridPosition(3, 4));
+    }
+
+    @Test
+    void aSpawnedCountMayShareTiles() {
+        World world = new World(1, 1, 1, RABBITS);
+        world.submit(new Command.Spawn("rabbit", 3));
+        WorldSnapshot snapshot = world.applyPending();
+        assertThat(snapshot.tiles().getFirst().entities())
+                .extracting(WorldSnapshot.EntityView::id)
+                .containsExactly(0, 1, 2);
+    }
+
+    @Test
+    void aRejectedCommandChangesNothing() {
+        World world = new World(5, 5, 1, RABBITS);
+        world.submit(new Command.Spawn("rabbit", 2));
+        WorldSnapshot before = world.applyPending();
+        List<LoggedCommand> logBefore = world.log();
+
+        assertThatThrownBy(() -> world.submit(new Command.Spawn("wolf", 1)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("wolf");
+        assertThatThrownBy(() -> world.submit(new Command.SpawnAt("rabbit", new GridPosition(5, 0))))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new Command.Spawn("rabbit", 0)).isInstanceOf(IllegalArgumentException.class);
+
+        assertThat(world.applyPending()).isEqualTo(before);
+        assertThat(world.log()).isEqualTo(logBefore);
+    }
+
+    @Test
+    void theLogRecordsEachCommandWithTheDayCounterWhenItDrained() {
+        World world = new World(5, 5, 1, RABBITS);
+        Command spawn = new Command.Spawn("rabbit", 2);
+        world.submit(spawn);
+        world.applyPending();
+        assertThat(world.log()).containsExactly(new LoggedCommand(0, spawn));
+    }
 }

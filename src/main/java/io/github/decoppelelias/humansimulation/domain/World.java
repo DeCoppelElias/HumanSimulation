@@ -33,6 +33,20 @@ public final class World {
         start(seed);
     }
 
+    public void submit(Command command) {
+        validate(command);
+        pending.add(command);
+    }
+
+    public WorldSnapshot applyPending() {
+        drain();
+        return snapshot();
+    }
+
+    public List<LoggedCommand> log() {
+        return List.copyOf(log);
+    }
+
     public WorldSnapshot snapshot() {
         List<WorldSnapshot.TileView> tiles = new ArrayList<>();
         for (GridPosition at : grid.tiles()) {
@@ -45,6 +59,62 @@ public final class World {
             tiles.add(new WorldSnapshot.TileView(at, Map.of(), standing));
         }
         return new WorldSnapshot(seed, day, width, height, tiles);
+    }
+
+    private void validate(Command command) {
+        switch (command) {
+            case Command.Spawn spawn -> speciesNamed(spawn.species());
+            case Command.SpawnAt spawnAt -> {
+                speciesNamed(spawnAt.species());
+                if (!grid.contains(spawnAt.at())) {
+                    throw new IllegalArgumentException(
+                            spawnAt.at() + " is off the " + width + " by " + height + " grid");
+                }
+            }
+            case Command.Reset _ -> {}
+        }
+    }
+
+    private void drain() {
+        while (!pending.isEmpty()) {
+            Command command = pending.poll();
+            apply(command);
+            log.add(new LoggedCommand(day, command));
+        }
+    }
+
+    private void apply(Command command) {
+        switch (command) {
+            case Command.Spawn spawn -> {
+                Species kind = speciesNamed(spawn.species());
+                for (int i = 0; i < spawn.count(); i++) {
+                    place(kind, new GridPosition(random.nextInt(width), random.nextInt(height)));
+                }
+            }
+            case Command.SpawnAt spawnAt -> place(speciesNamed(spawnAt.species()), spawnAt.at());
+            case Command.Reset reset -> start(reset.seed());
+        }
+    }
+
+    private void place(Species kind, GridPosition at) {
+        Spawn spawn = new Spawn(kind.baseline(), kind);
+        Entity entity = new Entity(
+                nextId++,
+                kind,
+                kind.baseline(),
+                at,
+                kind.brain().map(brain -> brain.apply(spawn)),
+                kind.parts().stream().map(part -> part.apply(spawn)).toList());
+        entities.put(entity.id(), entity);
+        grid.place(entity.id(), at);
+    }
+
+    private Species speciesNamed(String name) {
+        Species found = species.get(name);
+        if (found == null) {
+            throw new IllegalArgumentException("this world knows no species named " + name);
+        }
+        return found;
     }
 
     private void start(long newSeed) {
