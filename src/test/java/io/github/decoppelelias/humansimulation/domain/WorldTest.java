@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.random.RandomGeneratorFactory;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 
@@ -170,5 +171,49 @@ class WorldTest {
         for (int i = 0; i < 10; i++) {
             assertThat(world.advance()).isEqualTo(fresh.advance());
         }
+    }
+
+    @Test
+    void eachBrainIsHandedWhatItsSenseSeesAndTheGridsDirections() {
+        List<Perception> perceptions = new ArrayList<>();
+        List<Options> options = new ArrayList<>();
+        World world = new World(5, 5, 1, List.of(TestSpecies.recorder(perceptions, options)));
+        world.submit(new Command.SpawnAt("recorder", new GridPosition(2, 2)));
+        world.submit(new Command.SpawnAt("recorder", new GridPosition(3, 2)));
+        world.advance();
+
+        assertThat(perceptions).extracting(perception -> perception.self().id()).containsExactly(0, 1);
+        Perception first = perceptions.getFirst();
+        assertThat(first.tiles()).hasSize(5);
+        assertThat(first.tiles())
+                .filteredOn(tile -> tile.dx() == 1 && tile.dy() == 0)
+                .singleElement()
+                .satisfies(tile -> assertThat(tile.entities())
+                        .extracting(Perception.EntityView::id)
+                        .containsExactly(1));
+        assertThat(options)
+                .allSatisfy(offered -> assertThat(offered.directions())
+                        .extracting(Direction::name)
+                        .containsExactly("north", "east", "south", "west"));
+    }
+
+    @Test
+    void theDaysOrderIsAPermutationShuffledFromIdOrder() {
+        List<Decision> byId = IntStream.range(0, 10)
+                .mapToObj(id -> new Decision(id, new Intent.Idle()))
+                .toList();
+        int stillInIdOrder = 0;
+        for (long seed = 0; seed < 20; seed++) {
+            List<Decision> order = World.dayOrder(
+                    byId, RandomGeneratorFactory.of("L64X128MixRandom").create(seed));
+            assertThat(order).containsExactlyInAnyOrderElementsOf(byId);
+            assertThat(order)
+                    .isEqualTo(World.dayOrder(
+                            byId, RandomGeneratorFactory.of("L64X128MixRandom").create(seed)));
+            if (order.equals(byId)) {
+                stillInIdOrder++;
+            }
+        }
+        assertThat(stillInIdOrder).isZero();
     }
 }

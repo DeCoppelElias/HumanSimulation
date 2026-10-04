@@ -46,7 +46,7 @@ public final class World {
     public DayReport advance() {
         drain();
         List<Decision> decisions = decide();
-        resolve(dayOrder(decisions));
+        resolve(dayOrder(decisions, random));
         day++;
         return new DayReport(snapshot(), census());
     }
@@ -82,7 +82,7 @@ public final class World {
     }
 
     /** Shuffled from id order with the world's generator, so the draw replays. */
-    private List<Decision> dayOrder(List<Decision> decisions) {
+    static List<Decision> dayOrder(List<Decision> decisions, RandomGenerator random) {
         List<Decision> order = new ArrayList<>(decisions);
         Collections.shuffle(order, random);
         return order;
