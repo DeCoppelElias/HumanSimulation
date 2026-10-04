@@ -20,6 +20,22 @@ class GridTest {
     }
 
     @Test
+    void rejectsAGridWithMoreTilesThanAnIntCounts() {
+        assertThatThrownBy(() -> new Grid(65_536, 65_536)).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void withinRejectsANegativeRange() {
+        assertThatThrownBy(() -> new Grid(5, 5).within(new GridPosition(2, 2), -1))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void withinCopesWithARangeFarLargerThanTheGrid() {
+        assertThat(new Grid(3, 2).within(new GridPosition(0, 0), 100_000)).hasSize(6);
+    }
+
+    @Test
     void stepsOneTileInADirection() {
         Grid grid = new Grid(5, 5);
         GridPosition centre = new GridPosition(2, 2);

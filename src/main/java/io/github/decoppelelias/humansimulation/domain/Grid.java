@@ -20,10 +20,16 @@ final class Grid {
         if (width < 1 || height < 1) {
             throw new IllegalArgumentException("a grid needs at least one tile, got " + width + " by " + height);
         }
+        int tiles;
+        try {
+            tiles = Math.multiplyExact(width, height);
+        } catch (ArithmeticException e) {
+            throw new IllegalArgumentException("a " + width + " by " + height + " grid has too many tiles", e);
+        }
         this.width = width;
         this.height = height;
-        this.occupants = new ArrayList<>(width * height);
-        for (int i = 0; i < width * height; i++) {
+        this.occupants = new ArrayList<>(tiles);
+        for (int i = 0; i < tiles; i++) {
             occupants.add(new TreeSet<>());
         }
     }
@@ -41,23 +47,31 @@ final class Grid {
     }
 
     List<GridPosition> within(GridPosition centre, int range) {
+        if (range < 0) {
+            throw new IllegalArgumentException("a range cannot be negative, got " + range);
+        }
+        long reach = (long) range * range;
         List<GridPosition> found = new ArrayList<>();
-        for (int dy = -range; dy <= range; dy++) {
-            for (int dx = -range; dx <= range; dx++) {
-                GridPosition at = new GridPosition(centre.x() + dx, centre.y() + dy);
-                if (dx * dx + dy * dy <= range * range && contains(at)) {
+        for (long y = Math.max(0, (long) centre.y() - range);
+                y <= Math.min(height - 1, (long) centre.y() + range);
+                y++) {
+            for (long x = Math.max(0, (long) centre.x() - range);
+                    x <= Math.min(width - 1, (long) centre.x() + range);
+                    x++) {
+                GridPosition at = new GridPosition((int) x, (int) y);
+                if (squaredDistance(centre, at) <= reach) {
                     found.add(at);
                 }
             }
         }
-        found.sort(Comparator.comparingInt((GridPosition at) -> squaredDistance(centre, at))
+        found.sort(Comparator.comparingLong((GridPosition at) -> squaredDistance(centre, at))
                 .thenComparingInt(GridPosition::y)
                 .thenComparingInt(GridPosition::x));
         return found;
     }
 
     List<GridPosition> tiles() {
-        List<GridPosition> tiles = new ArrayList<>(width * height);
+        List<GridPosition> tiles = new ArrayList<>(occupants.size());
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 tiles.add(new GridPosition(x, y));
@@ -85,9 +99,9 @@ final class Grid {
         return occupants.get(at.y() * width + at.x());
     }
 
-    private static int squaredDistance(GridPosition a, GridPosition b) {
-        int dx = a.x() - b.x();
-        int dy = a.y() - b.y();
+    private static long squaredDistance(GridPosition a, GridPosition b) {
+        long dx = (long) a.x() - b.x();
+        long dy = (long) a.y() - b.y();
         return dx * dx + dy * dy;
     }
 }

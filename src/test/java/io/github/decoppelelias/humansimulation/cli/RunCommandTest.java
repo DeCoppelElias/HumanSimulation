@@ -67,6 +67,12 @@ class RunCommandTest {
     }
 
     @Test
+    void aGridTooLargeToCountIsAUsageError() {
+        assertThat(run("--days", "1", "--width", "65536", "--height", "65536").exitCode())
+                .isEqualTo(CommandLine.ExitCode.USAGE);
+    }
+
+    @Test
     void aSpawnOfZeroIsAUsageError() {
         assertThat(run("--days", "1", "--spawn", "rabbit=0").exitCode()).isEqualTo(CommandLine.ExitCode.USAGE);
     }
