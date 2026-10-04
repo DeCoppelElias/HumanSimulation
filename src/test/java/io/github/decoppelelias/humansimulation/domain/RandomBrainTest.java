@@ -61,6 +61,30 @@ class RandomBrainTest {
     }
 
     @Test
+    void neverPicksADistanceWhoseWeightIsZero() {
+        RandomGenerator highestRoll = new RandomGenerator() {
+            @Override
+            public long nextLong() {
+                return 0;
+            }
+
+            @Override
+            public int nextInt(int bound) {
+                return 0;
+            }
+
+            @Override
+            public double nextDouble() {
+                return Math.nextDown(1.0);
+            }
+        };
+        RandomBrain brain = new RandomBrain(List.of(0.6, 0.4 - 1e-10, 0.0));
+        assertThat(brain.decide(NOTHING, FOUR_WAYS, highestRoll))
+                .isInstanceOfSatisfying(
+                        Intent.Move.class, move -> assertThat(move.distance()).isEqualTo(2));
+    }
+
+    @Test
     void drawsDistancesInProportionToTheStepDistribution() {
         RandomBrain brain = new RandomBrain(List.of(0.6, 0.3, 0.1));
         RandomGenerator random = seeded();

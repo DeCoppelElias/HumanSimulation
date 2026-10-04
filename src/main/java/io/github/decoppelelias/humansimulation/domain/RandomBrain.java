@@ -22,12 +22,17 @@ final class RandomBrain implements Brain {
 
     private int distance(double roll) {
         double cumulative = 0;
+        int lastWeighted = 1;
         for (int i = 0; i < steps.size(); i++) {
             cumulative += steps.get(i);
+            if (steps.get(i) > 0) {
+                lastWeighted = i + 1;
+            }
             if (roll < cumulative) {
                 return i + 1;
             }
         }
-        return steps.size();
+        // A genome's weights may sum to a hair under one, leaving rolls past the last bucket.
+        return lastWeighted;
     }
 }
