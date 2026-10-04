@@ -1,8 +1,7 @@
 # AGENTS.md
 
-Java Swing application that simulates humans searching for food on a 2D grid.
-It was written in September 2022. README.md describes what the application does
-and how to use it.
+Simulation of creatures evolving on a 2D grid, being rebuilt from a 2022 Swing
+application. README.md says what it does today and how to run it.
 
 ## Where to find things
 
@@ -41,7 +40,6 @@ An agent that does not load skills can read them directly.
 - `auditing-docs` to check the documents against each other.
 - `grilling` to settle what an entry or idea leaves open, one question at a
   time, before planning it.
-- `gui-smoke-test` to verify the Swing app, see below.
 
 A new idea goes in `docs/ideas/` without asking, in the format its README gives.
 Ask Elias before promoting an idea, changing an accepted decision, touching the
@@ -70,23 +68,21 @@ The pre-commit hook and CI run `docs-check.py`.
 
 ## Layout
 
-- `src/main/java/` `Main` and `Application` at the root, then
-  `SimulationApplication/` (the model), `GuiPackage/` (the Swing UI, with
-  `GuiController` between the panels and the model), and `DataAnalytics/`
-  (population counts and the JFreeChart line chart).
-- `src/test/java/Test/` JUnit tests.
-- `src/main/resources/` `Human.png` and `Food.jpg`, loaded with
-  `getResource("/Human.png")`, so they have to stay at the classpath root.
+- `src/main/java/io/github/decoppelelias/humansimulation/` `Main` at the root,
+  `domain/` the model, one flat package with the public `World` and the values
+  that cross its boundary, and `cli/` the picocli `run` command.
+- `src/test/java/` mirrors those packages, so tests reach package-private types.
 
 ## Build and run
 
     ./mvnw verify     compile, check formatting, run tests
     ./mvnw package    also build target/HumanSimulation.jar
-    java -jar target/HumanSimulation.jar
+    java -jar target/HumanSimulation.jar run --seed 42 --days 100
 
-Java 21. No `mvn` on PATH is needed, the wrapper fetches it. `jfreechart:1.5.3`
-and `junit-jupiter:6.1.3` are pinned in `pom.xml`, and the enforcer plugin fails
-the build on a version range or a snapshot. Let Dependabot propose upgrades.
+Java 25, and every compiler warning fails the build. No `mvn` on PATH is needed,
+the wrapper fetches it. Dependencies are pinned in `pom.xml`, and the enforcer
+plugin fails the build on a version range or a snapshot. Let Dependabot propose
+upgrades.
 
 CI runs `./mvnw -B verify` on Linux and Windows, on pushes to `master` and on
 pull requests. A `v*` tag builds the jar and attaches it to a GitHub Release,
@@ -105,45 +101,29 @@ commented-out code, and no long block where a clause would do.
     python tools/comment-check.py --staged
 
 Enable it as a pre-commit hook with `git config core.hooksPath .githooks`, once
-per clone. It checks staged files only, so 2022 comments are left alone until
-you edit that file.
+per clone. It checks staged files only.
 
 ## Formatting
 
-Spotless with palantir-java-format, ratcheted against `origin/master`, so only
-files you actually change get formatted. Run `./mvnw spotless:apply` on your own
-changes.
-
-Never format the whole tree. That would rewrite every Java file and move
-`git blame` off the 2022 commits, which is what the ratchet exists to prevent.
-
-`ResourceLoadingTest` guards the packaging contract, not the simulation: the
-icons have to stay directly under `src/main/resources` or `GridPanel` fails at
-runtime while everything still compiles.
+Spotless with palantir-java-format checks every Java file in `./mvnw verify`.
+Run `./mvnw spotless:apply` before committing.
 
 ## Before writing tests
 
 Write the test first, run it, and see it fail for the reason it names before
-writing the code that makes it pass. `docs/decisions/0012` says why.
+writing the code that makes it pass. `docs/decisions/0012` says why. When the
+code already exists, break it on purpose, watch the test fail, and restore it.
 
-`GridWorld` owns the one `RandomGenerator` every behaviour class draws from;
-construct it via `new GridWorld(width, height, new Random(seed))` for a
-reproducible run, or use `TestWorlds.seeded` in `src/test/java/Test/`.
-`DeterminismTest` guards that a seeded run replays exactly. Build test humans
-through `TestWorlds` rather than by hand: each `Human` constructor calls
-`movementBehaviour.setHuman(this)`, so two humans sharing one
-`MovementBehaviour` or `FoodBehaviour` instance end up pointing at each
-other's state.
+Assertions use AssertJ. A world for a test is `new World(width, height, seed,
+species)`, which owns the one generator everything draws from, so a seeded test
+replays exactly. `TestSpecies.walker(intent)` gives a species whose brain always
+returns one intent, for testing the resolver. Test a brain by handing it a
+`Perception` and an `Options`, with no world.
+
+`DeterminismTest` replays a seed and a command log in one process, and
+`ReplayAcrossProcessesTest` runs two JVMs. `DomainBoundaryTest` fails when the
+domain depends on anything outside itself and `java.base`.
 
 `v1.0-original-2022` and the `original-2022` branch hold the 2022 version, with
 the old IntelliJ files, the flat `src/` layout and a committed jar. Both are
 immutable. Land changes on top of `master`.
-
-## GUI smoke test
-
-There is no automated GUI test suite. To verify a change that touches
-`GuiPackage/` or `GuiController`, or to check a reported GUI bug against the
-current build rather than guessing from source, use the `gui-smoke-test`
-skill (`.claude/skills/gui-smoke-test/`), which drives the real app with
-`tools/gui-smoke-test/GuiRobotHarness.java` and `java.awt.Robot` and
-screenshots what actually renders.

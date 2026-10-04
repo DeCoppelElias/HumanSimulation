@@ -1,51 +1,30 @@
 # HumanSimulation
 [![CI](https://github.com/DeCoppelElias/HumanSimulation/actions/workflows/ci.yml/badge.svg)](https://github.com/DeCoppelElias/HumanSimulation/actions/workflows/ci.yml)
 
-This is a simple java application where you can simulate humans searching for food. Each human has a different behaviour and will create variations on that behaviour when creating children. With this application, you can play around with different evoirements and test which behaviour will perform best.  
+A world you watch evolve. Rabbits wander a grid today. Later versions let them
+eat, breed and pass varied behaviour to their children, so the population
+drifts toward whatever works. `DESIGN.md` says where it is going and
+`docs/roadmap.md` how far it has got.
 
-# Running it
-Download the jar from the [releases page](https://github.com/DeCoppelElias/HumanSimulation/releases) and start it with `java -jar HumanSimulation.jar`. You need Java 21 or newer.  
+The 2022 version, a Swing app of humans looking for food, is on the
+`v1.0-original-2022` tag.
 
-To build it yourself, no Maven install is needed. The wrapper fetches it:  
+## Building
 
-    ./mvnw package
-    java -jar target/HumanSimulation.jar
+Java 25. No Maven install is needed, since the wrapper fetches it.
 
-`./mvnw verify` compiles, checks formatting and runs the tests.  
+    ./mvnw verify     compile, check formatting, run the tests
+    ./mvnw package    also build target/HumanSimulation.jar
 
-# Screenshots
-The simulation running with 30 humans and 150 food on a 20x20 grid. The population grows at first, then starves back down to the humans that are best at finding food.  
+## Running
 
-![The simulation running](screenshots/simulation.gif)
+There is no window yet. `run` advances a seeded world and prints its census as
+JSON Lines, one line per day.
 
-Clicking a human shows its behaviour values in the info panel and highlights its view range.  
+    java -jar target/HumanSimulation.jar run --seed 42 --days 100
+    {"seed":42,"day":1,"population":{"rabbit":10}}
+    {"seed":42,"day":2,"population":{"rabbit":10}}
 
-![Info panel](screenshots/human-info.png)
-
-The human population graph.  
-
-![Population graph](screenshots/population-graph.png)
-
-# Features
-- Adding humans and food to a 2d grid world.  
-- Advancing time and viewing the behaviour of the humans in the 2d grid world.  
-- Changing up the parameters of the grid world and humans (ex. choosing how much the humans need to eat and how often).  
-- Creating a simple graph that shows the amount of humans as time goes on.  
-- A information panel that displays information about all grid world entities or grid world entities at a certain position.  
-
-# Tutorial
-Say you want to simulate 5 humans in a gridworld. First add the humans by clicking the 'Add' button and after that you can choose to spawn humans randomly troughout the grid or choose the position yourself by clicking the 'Add Human Position' button and then clicking a certain cell in the grid.  
-The 'Add Food Random' and 'Add Food Position' buttons work the same as their human counterpart. These can be used to create some extra food on the map manually.  
-  
-Now you can start advancing time. You can do this by pressing the 'Advance' button and then choosing the 'Advance Time' button (advances time one day) or the 'Automatic' button (start advancing time automatically). To stop advancing automatically you just need to press the 'Automatic' button again. You can also increase or decrease the automatic speed by pressing one of the other buttons.  
-  
-If at any time you want to view the stats of a human, you can click the human in the grid world. The information about the human is displayed in the info screen. If there are multiple grid world entities on the position you clicked, they will all be displayed. You can also sort all information by either days survived of current food reserves.  
-  
-You can also change the parameters of the grid world and humans. This means that you can change the amount humans eat, the frequency humans eat, the amount of food humans need to breed, the frequency humans will try to breed, the amount of food generates automatically and the frequency of food spawns. First press the 'Grid World' button and then you can freely change the variables. After you change the variables, don't forget to press apply!  
-Here you can also display all current alive humans if you want.   
-   
-Lastly you can create a simple graph of the amount of humans each day by clicking the 'Statistics' button and then clicking the 'Display Human Population Graph' button. You can also reset the statistics whenever you want.  
-
-# What I learned
-- I learned a lot about creating a GUI with java swing.
-- I learned a lot about creating a complex system to simulate behaviours in a changing envoirement.
+`--days` is required. `--seed` defaults to one drawn from the clock, `--width`
+and `--height` to 20, and `--spawn rabbit=10` sets the starting population. The
+same seed prints the same lines.
