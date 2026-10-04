@@ -21,12 +21,17 @@ contenders, so when several foods tie, which one a creature collects falls out
 of hash enumeration order. Which creature wins a contested food is already a
 stated rule using the seeded generator, so that half is sound today.
 
+The 2022 code builds its generator as `new Random(seed)`. Java's other way, the
+platform default generator, could change in a later release and silently alter
+every recorded run. Naming an algorithm whose output for a seed the Java
+specification fixes rules that out, and `L64X128MixRandom` is faster and
+statistically stronger than `Random`.
+
 ## Decision
 
 The world owns one random generator, passed to everything that draws from it. No
-class constructs its own. It is built by naming its algorithm, `L64X128MixRandom`,
-whose output for a seed the Java specification fixes, rather than taking the
-platform default, which a later Java release could change.
+class constructs its own. It is built by naming its algorithm,
+`L64X128MixRandom`.
 
 Entities are held sorted by id, and asking the grid what stands on a tile
 returns occupants in ascending id order. Every system iterates in ascending id

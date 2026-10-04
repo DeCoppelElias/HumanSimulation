@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-03. Revised 2026-09-27.
+Accepted, 2026-09-03. Revised 2026-10-04.
 
 ## Context
 
@@ -48,11 +48,13 @@ public interface Brain extends Component {
 }
 ```
 
-A move carries a direction and a distance rather than a delta, matching the step
-distribution over distances one to three and making the walked path unambiguous.
-`Intent` is sealed, so a switch with no default branch fails to compile when a
-case is missing. `Brain` defaults its own key and offers no views, since a brain
-shows only in what it does, so an implementation supplies only the decision. The
+A move's distance is at least one, checked when it is built, per
+[0022](0022-warnings-fail-the-build-and-nothing-is-null.md). A move carries a
+direction and a distance rather than a delta, matching the step distribution
+over distances one to three and making the walked path unambiguous. `Intent` is
+sealed, so a switch with no default branch fails to compile when a case is
+missing. `Brain` defaults its own key and offers no views, since a brain shows
+only in what it does, so an implementation supplies only the decision. The
 perception's shape is [0013](0013-perception-is-one-type.md).
 
 The resolve step owns legality.

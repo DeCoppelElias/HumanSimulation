@@ -26,13 +26,14 @@ Status: not started.
 The first commit deletes the 2022 code, its tests, and the Swing smoke-test
 skill with its tool under `tools/gui-smoke-test/`, and the pom loses JFreeChart,
 the headless test property and its Swing description. The build moves to Java
-25, compiles with every warning as an error, formats every file with no
-Spotless ratchet, and adds AssertJ and picocli, per
-[0022](decisions/0022-warnings-fail-the-build-and-nothing-is-null.md). The README
-is replaced with a short one saying what the project is becoming, how to build
-it and how to use `run`. `AGENTS.md` follows the tree from then on. Everything
-new lives under `io.github.decoppelelias.humansimulation`, with the domain as
-one flat package, `run` in `.cli` and `Main` at the root, per
+25, in the pom and in both workflows' `java-version`, compiles with every
+warning as an error, formats every file with no Spotless ratchet, and adds
+AssertJ and picocli, per
+[0022](decisions/0022-warnings-fail-the-build-and-nothing-is-null.md). The
+README is replaced with a short one saying what the project is becoming, how to
+build it and how to use `run`. `AGENTS.md` follows the tree from then on.
+Everything new lives under `io.github.decoppelelias.humansimulation`, with the
+domain as one flat package, `run` in `.cli` and `Main` at the root, per
 [0007](decisions/0007-state-leaves-as-a-snapshot-commands-go-in.md).
 
 A world with a four-direction grid that owns distance, and `Entity`, `Species`,
@@ -58,10 +59,11 @@ Commands cover spawning by count at random tiles or at a position, and resetting
 the world with a new seed. A reset leaves the world exactly as constructing it
 with that seed would. The day counter counts days completed, so a new world is
 on day 0, and a snapshot from `applyPending` keeps the current day. The world
-has `submit` and `applyPending`, and no paused state. Its command log is kept in memory, and `DeterminismTest` replays a
-seed plus a log into a second world and compares the snapshots. A census row per
-day replaces the population counting that parses display strings. A `jdeps`
-test fails when the domain depends on anything outside itself and `java.base`.
+has `submit` and `applyPending`, and no paused state. Its command log is kept in
+memory, and `DeterminismTest` replays a seed plus a log into a second world and
+compares the snapshots. A census row per day replaces the population counting
+that parses display strings. A `jdeps` test fails when the domain depends on
+anything outside itself and `java.base`.
 
 `run --seed --days` advances one world and prints its census as JSON Lines, per
 [0021](decisions/0021-agents-drive-worlds-over-http-and-run.md).
@@ -92,7 +94,8 @@ See [0002](decisions/0002-replace-the-model-layer-in-place.md),
 [0014](decisions/0014-resolve-order-comes-from-a-speed-gene.md),
 [0015](decisions/0015-geometry-lives-in-the-grid.md),
 [0017](decisions/0017-every-number-is-a-setting-or-a-gene.md),
-[0021](decisions/0021-agents-drive-worlds-over-http-and-run.md).
+[0021](decisions/0021-agents-drive-worlds-over-http-and-run.md),
+[0022](decisions/0022-warnings-fail-the-build-and-nothing-is-null.md).
 
 ## 2. Serving worlds over HTTP
 
@@ -104,7 +107,8 @@ unguessable id under a small cap and closed by deleting them. Each world has one
 executor thread that advances it at the playback rate, with play, pause and the
 rate as requests. Snapshots and census rows stream over Server-Sent Events,
 where a slow viewer skips stale snapshots and never census rows. The adapter
-keeps each world's census history, and a statistics reset clears it.
+keeps each world's census history, and a statistics reset clears it, as does a
+world reset, since its day numbers start again.
 `serve --no-browser` takes `--port 0`, prints a ready line with the port, and
 exits when idle, per
 [0021](decisions/0021-agents-drive-worlds-over-http-and-run.md). JUnit covers
@@ -118,8 +122,7 @@ stream is written without a slow viewer stalling the world, with a bounded
 census queue per viewer and the history copied and subscribed in one step; a
 heartbeat on a paused world's stream; the ready line's schema, with logging on
 stderr and `run`'s stdout holding only JSON Lines; what idle means and its
-default; binding to 127.0.0.1 by default; that a world reset starts the
-adapter's census history afresh, since its day numbers start again; a read-only
+default; binding to 127.0.0.1 by default; a read-only
 endpoint returning a world's seed and command log, so a watched run can be
 reproduced; the cap on worlds and what a request past it gets back; and
 whether the page shows one world per tab or lets a viewer switch between their
@@ -165,6 +168,7 @@ between tiles when you press play, fade in when spawned, and show a count where
 they share a tile, beside the population chart and the current seed.
 
 Depends on entry 2. See
+[0007](decisions/0007-state-leaves-as-a-snapshot-commands-go-in.md),
 [0014](decisions/0014-resolve-order-comes-from-a-speed-gene.md),
 [0020](decisions/0020-the-interface-is-a-web-page.md).
 
@@ -257,7 +261,9 @@ step distribution stays valid, view range is inherited and varied, a view range
 never drops below one, and a zero breeding interval is rejected.
 
 Then the parameters panel, which 2022 also had, generated from declared
-settings, with editing a setting as a command.
+settings, with editing a setting as a command. This entry's grill settles what
+a world reset does with edited settings: keeping them means the new log no
+longer replays from the seed alone, and reverting them loses the edits.
 
 On the page: a newborn appears on its parent's tile, the population grows and
 shrinks on its own, and a settings panel changes any declared number while the

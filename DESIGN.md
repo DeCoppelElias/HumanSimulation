@@ -249,11 +249,12 @@ The core knows nothing about the interface, and no simulation rule lives above
 the core. A run with no browser behaves exactly like a watched one.
 
 State leaves as a snapshot of the whole world each day: the seed, the day
-number, the grid, and for each tile its fields and what stands on it with the values worth
-drawing. Commands are the only way in, covering spawning, resetting, editing a
-species' settings, and anything else the interface initiates. They queue and
-drain at the start of a day. The interface never reaches into the model. A
-command is checked before it changes anything, and a bad one changes nothing.
+number, the grid, and for each tile its fields and what stands on it with the
+values worth drawing. Commands are the only way in, covering spawning,
+resetting, editing a species' settings, and anything else the interface
+initiates. They queue and drain at the start of a day. The interface never
+reaches into the model. A command is checked before it changes anything, and a
+bad one changes nothing.
 
 The day number counts days completed, so a new world is on day 0. A reset with
 a seed leaves the world exactly as building it with that seed would, starting
@@ -270,13 +271,14 @@ thread-safe and does not need to be.
 Population counts come from a census row the world produces each day, one row
 per day with no gaps. The history of rows belongs to whoever reads them, so
 resetting the statistics is something an adapter does to its own history and
-not a command.
+not a command. A world reset starts the history afresh, since its days start
+again at 0.
 
 The core lives in the package `io.github.decoppelelias.humansimulation.domain`
 and depends only on itself and `java.base`. A test runs `jdeps` over the
-compiled classes and fails on anything else. The package is flat. The world and
-the values crossing the boundary are public and the rest is package-private, so
-nothing outside it can reach past the world.
+compiled classes and fails on anything else. The package is flat. The world,
+what builds it and the values crossing the boundary are public and the rest is
+package-private, so nothing outside it can reach past the world.
 
 The web adapter serves the interface and an HTTP API, and holds worlds by an id
 nobody can guess. The browser draws what the snapshots say and animates between

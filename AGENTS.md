@@ -47,6 +47,14 @@ A new idea goes in `docs/ideas/` without asking, in the format its README gives.
 Ask Elias before promoting an idea, changing an accepted decision, touching the
 roadmap's order, or pushing, merging or tagging. `docs/decisions/0019` says why.
 
+Each workflow skill has an `evals/` scenario. After editing a skill, run its
+scenario on a fresh agent and check the result against the pass criteria there.
+
+    python tools/docs-check.py         links, indexes and status lines
+    python tools/test_docs_check.py    its tests
+
+The pre-commit hook and CI run `docs-check.py`.
+
 ## Branches
 
 - A roadmap entry is built on its own branch off `master`, named
@@ -59,14 +67,6 @@ roadmap's order, or pushing, merging or tagging. `docs/decisions/0019` says why.
 - `master` always holds finished work, never half an entry.
 
 `docs/decisions/0002` says why.
-
-Each workflow skill has an `evals/` scenario. After editing a skill, run its
-scenario on a fresh agent and check the result against the pass criteria there.
-
-    python tools/docs-check.py         links, indexes and status lines
-    python tools/test_docs_check.py    its tests
-
-The pre-commit hook and CI run `docs-check.py`.
 
 ## Layout
 

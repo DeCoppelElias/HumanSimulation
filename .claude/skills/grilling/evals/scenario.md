@@ -35,3 +35,12 @@ Passed. It read the 2022 code entry 5 replaces as well as the docs, opened with
 eight gaps, ordered its questions so the first answer fed the second, and wrote
 each question to stand alone inside a question box, opening with what the last
 answer settled. It wrote nothing.
+
+## With the skill, 2026-10-04, after the step for reading deleted code changed
+
+Passed on every point. It read entry 5, its decisions and the 2022 food code,
+opened with eight gaps, and asked three single-topic questions, each saying
+what the last one settled, with context and a recommendation. It checked the
+new instruction for reading deleted 2022 code by running the same command
+against the flat layout's `src/Main.java`, which found the deleting commit and
+read the file back.

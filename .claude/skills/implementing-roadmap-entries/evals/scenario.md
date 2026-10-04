@@ -39,3 +39,11 @@ and the retrospective proposals.
 Run against entry 2, now numbered 5. Passed on every point. It grilled only the
 open details, stopped first because entry 1 is not done, and found two unclear
 lines in entry 2, which were then fixed.
+## With the skill, 2026-10-04, after branch-per-entry replaced the rebuild branch
+
+Passed on every point. It branched off `master` as `entry-1-minimal-loop`,
+treated "ship it" as the go for a local merge and push only after verification,
+the criteria walk, review, the docs and README and the retrospective, and said
+it would leave the branch unmerged with a note if review raised a design
+choice. It also stopped first to ask about merging the unmerged docs branch
+into `master` before branching.

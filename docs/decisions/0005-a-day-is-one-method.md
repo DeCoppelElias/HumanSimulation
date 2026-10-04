@@ -34,6 +34,11 @@ line you can point at. An event bus makes a day a cascade to trace, and the
 guarantee that nothing is applied until every brain has decided cannot be
 stated in a pure bus without re-imposing phases on top of it.
 
+Taking the census and the snapshot before advancing the counter was the first
+order. The first completed day then reported day 0, the number shown was the
+day about to run, and a snapshot taken while paused would disagree with the
+last report.
+
 ## Decision
 
 A day is one method on the world. The fixed steps are ordinary calls in that

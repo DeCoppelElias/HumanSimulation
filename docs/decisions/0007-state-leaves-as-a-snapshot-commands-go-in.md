@@ -71,17 +71,20 @@ The core is the domain of a hexagonal architecture and lives in the package
 itself and `java.base`: no web framework, no JSON library, no AWT and no adapter
 package. No simulation rule lives outside it.
 
-The domain is one flat package. The world and the values that cross the
-boundary, the commands, the snapshot, the census row and the day's report, are
-public, and everything else is package-private, so the compiler holds the rule
-from [0003](0003-entities-carry-components.md) that nothing inside the aggregate
-changes except through the world. The command line adapter lives in `.cli` and
-the web adapter in `.web`, and `Main` sits in the root package.
-Commands are its inbound port, and the snapshot and the census are its outbound
-ports. The web adapter from [0020](0020-the-interface-is-a-web-page.md) and the
-command line from [0021](0021-agents-drive-worlds-over-http-and-run.md) are on
-the outside, and each one sends commands in and reads snapshots and census rows
-out.
+The domain is one flat package. The world and the values that cross the boundary
+are public: what builds a world, such as its settings, its species and its
+starting population, the commands, the snapshot with the values inside it, the
+census row and the day's report. Everything else is package-private, so the
+compiler holds the rule from [0003](0003-entities-carry-components.md) that
+nothing inside the aggregate changes except through the world. The command line
+adapter lives in `.cli` and the web adapter in `.web`, and `Main` sits in the
+root package.
+
+Commands are the domain's inbound port, and the snapshot and the census are its
+outbound ports. The web adapter from [0020](0020-the-interface-is-a-web-page.md)
+and the command line from [0021](0021-agents-drive-worlds-over-http-and-run.md)
+are on the outside, and each one sends commands in and reads snapshots and
+census rows out.
 
 Advancing a day returns a report holding the day's snapshot and its census row,
 and the caller hands each to whatever reads it. There are no listeners to
@@ -117,11 +120,12 @@ never calls a model method that is not one. A reset carries the seed the new
 world uses, so the log replays it.
 
 A reset with a seed leaves the world exactly as constructing it with that seed
-would: day 0, ids counted from the start again, the starting population drawn
-from the world settings, and a command log whose first entry is the reset. The
+would: day 0, ids counted from the start again, the starting population it was
+built with, and a command log whose first entry is the reset. The
 dimensions, settings and species stay. Ids and day numbers therefore repeat
 across a reset, so a viewer treats a changed seed or a day that goes backwards
-as a new run rather than diffing across it.
+as a new run rather than diffing across it. The reset is recorded in the new
+log at day 0, the day the world it builds starts on.
 
 A command is validated before it changes anything. One that names an id which
 no longer resolves, or a position off the grid, throws and leaves the world as
@@ -129,10 +133,10 @@ it was. The exception is part of the domain's contract, and an adapter turns it
 into an error for whoever sent the command.
 
 Commands queue, and the queue drains at the start of a day, before anything
-decides. Each command is recorded with the day counter's value when it
-drained, which counts days completed, so a run
-reproduces from its seed plus its command log. The log is kept in memory and
-`DeterminismTest` replays it. It is not written to a file.
+decides. Each command is recorded with the day counter's value when it drained,
+which counts days completed, so a run reproduces from its seed plus its command
+log. The log is kept in memory and `DeterminismTest` replays it. It is not
+written to a file.
 
 The world has no paused state. An adapter that is paused submits a command and
 then asks the world to apply what is pending, which drains the queue and
@@ -144,7 +148,8 @@ value at both moments, so the log records the same day either way.
 
 The census row leaves with each day, and its history belongs to the adapter
 that reads it. Resetting the statistics clears that history and is not a
-command.
+command. A world reset starts the history afresh too, since the day numbers
+start again.
 
 Each world is owned by one thread, per
 [0020](0020-the-interface-is-a-web-page.md), and the queue is how commands cross

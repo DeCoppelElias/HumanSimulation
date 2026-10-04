@@ -56,7 +56,8 @@ fixed on `master` after the push instead.
 Replace in place on `master`. Each roadmap entry is built on its own
 short-lived branch, named `entry-N-slug`, and merged into `master` locally once
 it is finished, reviewed and Elias has said go. `master` always holds the last
-finished entry, never half of one.
+finished entry, never half of one. Work outside an entry, such as a change to
+the docs, follows the same rule on a short branch named for what it does.
 
 Build up from zero rather than porting the current model wholesale. The first
 package is thin and complete: a grid, one species, which is the rabbit, a random
