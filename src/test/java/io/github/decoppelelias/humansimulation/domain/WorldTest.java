@@ -151,4 +151,24 @@ class WorldTest {
         List<GridPosition> start = occupied(world.applyPending());
         assertThat(occupied(world.advance().snapshot())).isNotEqualTo(start);
     }
+
+    @Test
+    void aResetLeavesTheWorldAsConstructionWould() {
+        World world = new World(10, 10, 1, RABBITS);
+        world.submit(new Command.Spawn("rabbit", 5));
+        for (int i = 0; i < 3; i++) {
+            world.advance();
+        }
+        world.submit(new Command.Reset(7));
+        World fresh = new World(10, 10, 7, RABBITS);
+
+        assertThat(world.applyPending()).isEqualTo(fresh.snapshot());
+        assertThat(world.log()).containsExactly(new LoggedCommand(0, new Command.Reset(7)));
+
+        world.submit(new Command.Spawn("rabbit", 5));
+        fresh.submit(new Command.Spawn("rabbit", 5));
+        for (int i = 0; i < 10; i++) {
+            assertThat(world.advance()).isEqualTo(fresh.advance());
+        }
+    }
 }
