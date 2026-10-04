@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-27. Revised 2026-10-01.
+Accepted, 2026-09-27. Revised 2026-10-04.
 
 ## Context
 
@@ -27,8 +27,9 @@ Four directions, as the 2022 model has: north, south, east and west.
 
 The grid owns the direction set and the distance function. Nothing outside the
 grid enumerates directions or measures distance. A brain picks a direction from
-what the grid offers or from what it perceives, and asks the grid how far
-something is.
+the ones its options carry, which the grid supplies, per
+[0004](0004-creatures-return-intents.md), and the distances in its perception
+are the grid's.
 
 ## Consequences
 

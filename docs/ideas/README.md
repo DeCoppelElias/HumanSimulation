@@ -36,6 +36,8 @@ that settled it.
   movement finally agree.
 - [Humans](humans.md) the species the project is named for, after rabbits and
   wolves.
+- [Immigration](immigration.md) creatures of a species arriving every few
+  days, the way food does.
 - [Javadoc on the domain](javadoc-on-the-domain.md) short Javadoc on public
   domain types and decision numbers in comments.
 - [Measuring test quality](measuring-test-quality.md) coverage reports, a
@@ -46,6 +48,8 @@ that settled it.
   fixed rules.
 - [Property-based tests](property-based-tests.md) jqwik for the domain's
   invariants, with shrunk counterexamples.
+- [Remove command](remove-command.md) taking an entity out of a running world
+  by id.
 - [Run comparison](run-comparison.md) one shared way for an agent to tell
   whether a variant did better.
 - [Stomach capacity](stomach-capacity.md) a limit on what a creature can hold,

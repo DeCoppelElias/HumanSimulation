@@ -46,9 +46,18 @@ JFreeChart through, because the rest of the build is already on its classpath.
 Running `jdeps` over the compiled classes from a test was tried against the same
 three planted references and caught each one by class.
 
-A reset could leave an empty world, as the 2022 reset did. That is simpler to
-describe, and the reset world then matches no world that construction produces,
-so the first thing anyone does after it is spawn rabbits by hand.
+A world could be built with a starting population, given as counts or
+positions per species, and a reset could restore it. That was the first version
+of this entry, written against the 2022 reset, which left an empty world that
+matched nothing construction produced. It makes the population a construction
+input beside the seed, and it keeps the first creatures out of the command log,
+so the log alone does not say what a run started with. Building every world
+empty removes the mismatch the other way.
+
+A spawn command could carry the `Species` value itself. That is type-safe inside
+Java, and it makes every adapter look the species up before building the
+command, the same lookup written in `run`, the web adapter and the tests. A name
+keeps the command a plain value that reads the same in the log as on the wire.
 
 A snapshot returned by applying pending commands while paused could carry the
 number of the day those commands belong to, the next one. The counter on a
@@ -72,8 +81,8 @@ itself and `java.base`: no web framework, no JSON library, no AWT and no adapter
 package. No simulation rule lives outside it.
 
 The domain is one flat package. The world and the values that cross the boundary
-are public: what builds a world, such as its settings, its species and its
-starting population, the commands, the snapshot with the values inside it, the
+are public: what builds a world, such as its dimensions and its species, the
+commands, the snapshot with the values inside it, the
 census row and the day's report. Everything else is package-private, so the
 compiler holds the rule from [0003](0003-entities-carry-components.md) that
 nothing inside the aggregate changes except through the world. The command line
@@ -119,16 +128,27 @@ species' settings and setting an entity alight are all commands. The interface
 never calls a model method that is not one. A reset carries the seed the new
 world uses, so the log replays it.
 
+A world is built from its width, its height, a seed and the species it knows,
+and starts empty on day 0. Its starting population is spawn commands, which an
+adapter sends when it creates the world and again after a reset, so the seed and
+the command log describe a run from its first creature.
+
+A spawn command names its species by name, which the world checks against the
+species it was built with. Spawning a count places each creature on a tile drawn
+uniformly from the whole grid with the world's generator, independently, so two
+can land on one tile. Spawning at a position places one. Spawns can be sent on
+any day, not only the first.
+
 A reset with a seed leaves the world exactly as constructing it with that seed
-would: day 0, ids counted from the start again, the starting population it was
-built with, and a command log whose first entry is the reset. The
-dimensions, settings and species stay. Ids and day numbers therefore repeat
+would: empty, day 0, ids counted from the start again, and a command log whose
+first entry is the reset. The dimensions, settings and species stay. Ids and day numbers therefore repeat
 across a reset, so a viewer treats a changed seed or a day that goes backwards
 as a new run rather than diffing across it. The reset is recorded in the new
 log at day 0, the day the world it builds starts on.
 
 A command is validated before it changes anything. One that names an id which
-no longer resolves, or a position off the grid, throws and leaves the world as
+no longer resolves, a species the world does not know, a position off the grid,
+or a count below one, throws and leaves the world as
 it was. The exception is part of the domain's contract, and an adapter turns it
 into an error for whoever sent the command.
 
@@ -145,6 +165,15 @@ grid while paused shows the food. That snapshot keeps the current day number,
 since no day completed, and no census row comes with it. Draining then or at the
 start of the next day leaves the world identical, and the counter has the same
 value at both moments, so the log records the same day either way.
+
+A census row holds the day and the population of every species the world knows,
+keyed by species name in name order. A species that has died out stays in the
+row at zero, so a chart line does not break at an extinction. Gene means join
+the row in roadmap entry 6.
+
+```java
+public record CensusRow(int day, Map<String, Integer> population) {}
+```
 
 The census row leaves with each day, and its history belongs to the adapter
 that reads it. Resetting the statistics clears that history and is not a
@@ -187,6 +216,12 @@ becomes reading a gene.
 While the world is running, a command is visibly applied on the next day. At a
 few days a second that reads as immediate, and at one day every ten seconds it
 does not.
+
+A fresh world shows nothing until something spawns into it, so each adapter
+carries its own starting population: `run` takes it as a flag with a default,
+and the page sends it when it creates or resets a world. That number lives in
+an adapter rather than as a declared setting, which is acceptable because it is
+input to a run, not a rule the world reads.
 
 Reproducing a run means keeping the command log, so a bug report is a seed and a
 list of commands rather than a seed. The log is most of a save format, which is

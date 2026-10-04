@@ -166,22 +166,28 @@ described by its seed and its command log.
 
 ### Deciding and applying
 
-A brain turns a perception into an intent. A perception is what one creature can
-see from where it stands: the tiles within its view range by straight-line
-distance, what stands on each, and the components of its own and of those
-things. A brain asks for components by class, so it checks for something edible
-rather than for a string that says so. Each component declares what its carrier
-sees of it and what others in range see, which may be nothing, so a creature can
-read its own reserve while its neighbours cannot, and what one creature can know
-about another is a deliberate choice. Positions in it are relative to the
-creature, and a tile off the grid is simply absent, which is how an edge is
-perceived. An intent is the single action it wants to take this day, one of
-moving in a direction for a distance, breeding, or doing nothing. There is no
-attack until a predator needs one.
+A brain turns a perception and its options into an intent. A perception is what
+one creature can see from where it stands: the tiles within its view range by
+straight-line distance, what stands on each, and the components of its own and
+of those things. A brain asks for components by class, so it checks for
+something edible rather than for a string that says so. Each component declares
+what its carrier sees of it and what others in range see, which may be nothing,
+so a creature can read its own reserve while its neighbours cannot, and what one
+creature can know about another is a deliberate choice. Positions in it are
+relative to the creature, and a tile off the grid is simply absent, which is how
+an edge is perceived. An intent is the single action it wants to take this day,
+one of moving in a direction for a distance, breeding, or doing nothing. There
+is no attack until a predator needs one.
 
 There is one perception type, and what fills it is a component. A species that
 senses differently carries a different sense, the component that builds its
 perception, and every brain still takes the same input.
+
+The options are what the world offers a creature when the day starts: the
+directions the grid has, and later whatever else it can choose between. They
+come from the grid and the creature's components rather than from its sense, so
+a new sense never has to supply them. An option is not a promise, since the
+resolver still decides what happens.
 
 The world resolves intents. A creature says what it wants and the world decides
 what actually happens, so the rules about where you may step and when you may
@@ -221,8 +227,8 @@ does to it.
 
 A day runs these steps in order:
 
-1. Decide. Every entity with a brain is handed a perception and returns an
-   intent. Nothing else changes.
+1. Decide. Every entity with a brain is handed a perception and its options,
+   and returns an intent. Nothing else changes.
 2. Resolve. Each intent is applied against a list of ids fixed at the start,
    since resolving can spawn and remove entities, ordered by the speed gene with
    equal speeds drawn at random. Movement walks one tile at a time and stops
@@ -259,8 +265,8 @@ reaches into the model. A command is checked before it changes anything, and a
 bad one changes nothing.
 
 The day number counts days completed, so a new world is on day 0. A reset with
-a seed leaves the world exactly as building it with that seed would, starting
-population and day 0 included.
+a seed leaves the world exactly as building it with that seed would: empty, and
+on day 0.
 
 Pausing is the adapter's business rather than the world's. A paused adapter
 asks the world to apply what is pending, which drains the queue and returns a
@@ -293,12 +299,15 @@ selecting for anything.
 
 ### Starting a world
 
-A world is built from its dimensions, a seed, its world settings, the set of
-species it knows, and an initial population given as counts or positions per
-species, each member drawn from its species' baseline genome. Everything else
-follows from advancing days. The same construction serves the web interface and
-the `run` command, which is what makes a watched run and a scripted one
-comparable.
+A world is built from its width and height, a seed and the set of species it
+knows, and starts empty. Its starting population is spawn commands, which
+whoever creates the world sends on day 0 and again after a reset, so the seed
+and the command log describe a run from its first creature. A spawn names its
+species, and each member is drawn from its species' baseline genome. Spawning
+works on any day, which is how creatures are added to a running world.
+Everything else follows from advancing days. The same construction serves the
+web interface and the `run` command, which is what makes a watched run and a
+scripted one comparable.
 
 ### Keeping large worlds open
 

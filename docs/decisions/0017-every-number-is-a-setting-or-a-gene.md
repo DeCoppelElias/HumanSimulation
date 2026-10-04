@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-27.
+Accepted, 2026-09-27. Revised 2026-10-04.
 
 ## Context
 
@@ -18,6 +18,14 @@ cannot render an editor for it or keep it in range.
 Typed configuration records per species were the other alternative. A typo would
 not compile, and every species would need its own panel, so adding a setting
 would touch the interface again.
+
+A world's dimensions and its starting population were once meant to be world
+settings. The world reads its dimensions only when it is built, so editing them
+on a living world would need a rule that no other setting has, that the edit
+waits for a reset. And the starting population is input to a run rather than a
+rule the world reads. Both became inputs instead, the dimensions to the world's
+constructor and the starting population as spawn commands an adapter sends, per
+[0007](0007-state-leaves-as-a-snapshot-commands-go-in.md).
 
 ## Decision
 
@@ -49,7 +57,7 @@ appears in the interface with no interface code. Editing one is a command, per
 The breeding interval, the breeding cost, the endowment fraction, the eating
 charge and the charge for speed are all species settings.
 
-A world has settings too, such as grid size and how much food arrives, and they
+A world has settings too, such as how much food arrives and how often, and they
 are declared the same way.
 
 Keys are strings, so a typo is a runtime failure, which this log already accepts

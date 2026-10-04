@@ -31,9 +31,21 @@ but perception happens only in the decide step, before anything can die, so
 nobody would ever see it. What remains is a dead-but-present state that every
 later system has to remember to skip.
 
+A brain also has to know what it may choose between, such as which directions
+exist, and later whom it could attack or whether it can breed today. Three
+homes were considered for that. The perception could carry it, but a sense
+builds the perception, per [0013](0013-perception-is-one-type.md), and a new
+sense would then have to remember to copy in the grid's directions. The brain
+could be handed it at birth through its `Spawn`, which carries a genome and a
+species and not the grid, and every brain test would pass it at construction
+too. Or a brain could infer directions from the neighbouring tiles it
+perceives, which needs no new type, and since a tile off the grid is absent, a
+creature at an edge could never choose to walk into it, moving the edge rule
+from the resolver into the brain.
+
 ## Decision
 
-A brain receives a perception and returns one intent. The world applies it.
+A brain receives a perception and the day's options, and returns one intent. The world applies it.
 
 ```java
 public sealed interface Intent {
@@ -44,9 +56,20 @@ public sealed interface Intent {
 
 public interface Brain extends Component {
     default Class<? extends Component> key() { return Brain.class; }
-    Intent decide(Perception perception, RandomGenerator random);
+    Intent decide(Perception perception, Options options, RandomGenerator random);
 }
+
+public record Options(List<Direction> directions) {}
 ```
+
+`Options` is what the world offers a creature when the day starts, built from
+the grid and the creature's own components, and kept apart from what it
+senses. A new sense never touches it, and a new capability never touches a
+sense. It starts with the grid's directions in a fixed order, per
+[0015](0015-geometry-lives-in-the-grid.md). Breeding and attack targets join it
+when those intents are built, and a network brain reads it as a fixed encoding
+of its outputs. An option offered at dawn is not a promise: the resolver still
+decides what happens, and a move can be blocked by something that moved first.
 
 A move's distance is at least one, checked when it is built, per
 [0022](0022-warnings-fail-the-build-and-nothing-is-null.md). A move carries a

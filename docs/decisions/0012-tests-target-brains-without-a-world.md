@@ -47,7 +47,7 @@ everything, and quietly stop selecting for anything.
 Development is test-driven. A rule's test is written first, run, and seen to fail
 for the reason it names before the code that makes it pass exists. Tests drive
 the domain through its own surface, commands in and snapshots out, or a brain
-handed a perception, and never through an adapter.
+handed a perception and its options, and never through an adapter.
 
 Determinism and grid geometry get fresh tests against the new types, since no
 2022 code survives, per [0002](0002-replace-the-model-layer-in-place.md).
@@ -61,8 +61,8 @@ the production packages, so they can reach package-private types. There is no
 coverage or mutation tooling.
 
 Behaviour mechanics are rewritten against the new units. A brain is tested by
-handing it a perception and asserting the intent it returns, with no world at
-all.
+handing it a perception and its options and asserting the intent it returns,
+with no world at all.
 
 Eight of the nine regression rules become acceptance criteria on the package
 that reintroduces each rule, from

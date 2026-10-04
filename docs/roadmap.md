@@ -42,30 +42,38 @@ and `GeneSpec.Simplex` declarations when it is built. Mutation waits for entry
 6. The day's six steps (decide, resolve, feed, metabolise, world processes,
 clean up) run in order, and `advance()` returns the day's snapshot and census
 row together. Rabbit is the one species. Its brain picks uniformly among the
-grid's directions plus `Idle`, and rolls a `Move`'s distance from its step
-distribution. The resolver walks a move a tile at a time and stops at the edge.
-The day's order is a shuffle over id order, which is already the rule for
-entities without a speed gene. The decide step builds a `Perception` through
-the default circular sense, even though the random brain ignores it.
+directions its `Options` carry plus `Idle`, and rolls a `Move`'s distance from
+its step distribution. The resolver walks a move a tile at a time and stops at
+the edge. The day's order is a shuffle over id order, which is already the rule
+for entities without a speed gene. The decide step hands each brain a
+`Perception`, built through the default circular sense even though the random
+brain ignores it, and an `Options` holding the grid's directions, per
+[0004](decisions/0004-creatures-return-intents.md).
 
-The numbers this needs have a declared home from the start. `Setting` arrives
-with its first shape, a bounded scalar with a default, for the world's grid
-size, 20 by 20, and starting population, 10 rabbits. Rabbit's species carries a
-baseline genome: view range 3, bounded 1 to 10, and a step distribution of 0.6,
-0.3 and 0.1 over distances one to three, bounded to lengths one to three. Every
-rabbit gets it unchanged, since there is no mutation yet.
+A world is built from a width, a height, a seed and its species, and starts
+empty. Rabbit's species carries a baseline genome: view range 3, bounded 1 to 10
+with a mutation size of 1, and a step distribution of 0.6, 0.3 and 0.1 over
+distances one to three, bounded to lengths one to three with a mutation size of
+0.2. The mutation sizes are the 2022 ones, and nothing reads them until entry 6.
+Every rabbit gets the baseline unchanged, since there is no mutation yet.
+`Setting` waits for entry 5, the first time a rule reads one, so a species
+carries no settings until then.
 
-Commands cover spawning by count at random tiles or at a position, and resetting
-the world with a new seed. A reset leaves the world exactly as constructing it
-with that seed would. The day counter counts days completed, so a new world is
-on day 0, and a snapshot from `applyPending` keeps the current day. The world
-has `submit` and `applyPending`, and no paused state. Its command log is kept in
-memory, and `DeterminismTest` replays a seed plus a log into a second world and
-compares the snapshots. A census row per day replaces the population counting
-that parses display strings. A `jdeps` test fails when the domain depends on
-anything outside itself and `java.base`.
+Commands cover spawning by count at random tiles or at a position, naming the
+species, and resetting the world with a new seed. A count places each rabbit on
+a tile drawn independently from the whole grid. A reset leaves the world exactly
+as constructing it with that seed would: empty, on day 0. The day counter counts
+days completed, so a new world is on day 0, and a snapshot from `applyPending`
+keeps the current day. The world has `submit` and `applyPending`, and no paused
+state. Its command log is kept in memory, and `DeterminismTest` replays a seed
+plus a log into a second world and compares the snapshots. A census row per day
+replaces the population counting that parses display strings. A `jdeps` test
+fails when the domain depends on anything outside itself and `java.base`.
 
-`run --seed --days` advances one world and prints its census as JSON Lines, per
+`run --days` advances one world and prints its census as JSON Lines, one line
+per day from day 1, such as `{"seed":42,"day":1,"population":{"rabbit":10}}`.
+`--seed` defaults to the clock, `--width` and `--height` to 20, and `--spawn
+rabbit=10` gives the starting population, which a given `--spawn` replaces, per
 [0021](decisions/0021-agents-drive-worlds-over-http-and-run.md).
 
 2022 features that come back here: random wandering with an idle chance of one
@@ -79,7 +87,7 @@ process passes every test inside one, per
 
 Regression rules that land here: the census covers every recorded day, movement
 never walks off the step distribution, and every command validates before it
-mutates anything, removing an entity included.
+mutates anything.
 
 On the screen: nothing in a browser yet. `run --seed 42 --days 100` prints one
 line per day with the rabbit count, and the same seed prints the same lines,
@@ -152,13 +160,14 @@ The frontend is React with TypeScript and Vite, built into the jar by
 `frontend-maven-plugin`, and `serve` opens it in the browser. A PixiJS canvas
 draws the grid with a rabbit sprite from a CC0 asset pack, glides each rabbit
 between its tiles by diffing snapshots by id, fades rabbits in and out, and
-shows a count on a tile holding more than one, drawing the lowest-id occupant.
-A snapshot whose seed changed or whose day went backwards starts a new run, so
-nothing glides across a reset.
-The controls are step, play and pause, and playback rate; spawning rabbits by
-count and by clicking a tile; resetting the world, which draws a new seed from
-the clock and shows it; and the population chart with a statistics reset.
-Vitest covers the frontend's diffing, gliding and fading.
+shows a count on a tile holding more than one, drawing the lowest-id occupant. A
+snapshot whose seed changed or whose day went backwards starts a new run, so
+nothing glides across a reset. The controls are step, play and pause, and
+playback rate; spawning rabbits by count and by clicking a tile; resetting the
+world, which draws a new seed from the clock and shows it; creating or resetting
+a world sends the starting spawns, ten rabbits, since a world starts empty; and
+the population chart with a statistics reset. Vitest covers the frontend's
+diffing, gliding and fading.
 
 2022 features that come back here: spawning by count and by click, stepping and
 automatic play with a rate, resetting the world, and the population graph with
@@ -208,8 +217,11 @@ holds a reserve its carrier can see and its neighbours cannot. The feed step
 takes every edible on the tile, and the metabolise step charges on an interval
 and removes anything whose reserve falls below zero. Intervals and charges join
 the settings as species settings, and how much food arrives and how often join
-as world settings, with bounds that reject non-positive values. That is where
-the regression rule rejecting a zero eating interval lands.
+as world settings, with bounds that reject non-positive values. `Setting`
+arrives here with its first shape, which this entry's grill settles. That is
+where the regression rule rejecting a zero eating interval lands, and the rule
+that removing an entity validates before it mutates, since starvation is the
+first thing that removes one.
 
 Rabbit gets the fixed-rules brain that approaches the nearest edible. Its rule
 set is a design decision per
@@ -269,7 +281,8 @@ never drops below one, and a zero breeding interval is rejected.
 Then the parameters panel, which 2022 also had, generated from declared
 settings, with editing a setting as a command. This entry's grill settles what
 a world reset does with edited settings: keeping them means the new log no
-longer replays from the seed alone, and reverting them loses the edits.
+longer replays from the seed alone, and reverting them loses the edits. It also
+settles which settings can only be set when a world is created.
 
 On the page: a newborn appears on its parent's tile, the population grows and
 shrinks on its own, and a settings panel changes any declared number while the
@@ -299,9 +312,11 @@ The entry is done when mutating runs reliably outlast or outnumber the control,
 the brain's genes drift the same way across seeds, and speed settles short of
 its bound. This entry's grill turns each of those into a number, such as
 mutation winning in at least eight of ten seeds by day 1000, and sets a timebox
-for tuning. Getting there is tuning the default settings and food pressure until
-differences between rabbits matter. If behaviour stays dull, widen what a rabbit
-perceives or can do before reaching for the network brain, per `DESIGN.md`.
+for tuning. It also settles whether a gene's mutation size can be overridden
+like a setting, since tuning it should not need a rebuild. Getting there is
+tuning the default settings and food pressure until differences between rabbits
+matter. If behaviour stays dull, widen what a rabbit perceives or can do before
+reaching for the network brain, per `DESIGN.md`.
 
 On the page: nothing new is required. What changes is behaviour you can see,
 such as rabbits heading for food more directly after a few hundred days than at

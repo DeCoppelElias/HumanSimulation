@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-27.
+Accepted, 2026-09-27. Revised 2026-10-04.
 
 ## Context
 
@@ -77,6 +77,11 @@ compile.
 `self` carries the own view of every component the perceiver has. An
 `EntityView` carries only the components that offer a seen view. Neither carries
 genes, because a brain built from its `Spawn` already closed over its own.
+
+A perception holds what a creature senses and nothing about what it may do.
+The directions it can move in, and later whatever else it can choose between,
+arrive beside it as options, per [0004](0004-creatures-return-intents.md), so a
+new sense never has to supply them.
 
 Positions are relative to the perceiver, and no absolute position appears
 anywhere in a perception. A tile outside the grid is absent from the list, which

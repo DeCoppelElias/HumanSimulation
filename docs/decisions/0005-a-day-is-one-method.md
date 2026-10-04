@@ -64,8 +64,9 @@ DayReport advance() {
 Commands drain first, per
 [0007](0007-state-leaves-as-a-snapshot-commands-go-in.md). Then:
 
-1. Decide. Every entity with a brain gets a perception and returns an intent,
-   collected as a list of decisions. Nothing in the world changes.
+1. Decide. Every entity with a brain gets a perception and its options, and
+   returns an intent, collected as a list of decisions. Nothing in the world
+   changes.
 2. Resolve. Apply each decision in the day's order, under the legality rules in
    [0004](0004-creatures-return-intents.md). Movement walks a tile at a time.
    Breeding checks the interval and the reserve, spends the cost and spawns a

@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-10-01.
+Accepted, 2026-10-01. Revised 2026-10-04.
 
 ## Context
 
@@ -42,6 +42,17 @@ The jar has three entry points. `serve` is the default and opens the browser.
 `serve --no-browser` runs the same HTTP API with no page, for an agent. `run
 --seed 42 --days 500` advances one world headless and prints its census as JSON
 Lines, one object per day.
+
+`run` takes `--days`, which is required, and `--seed`, which defaults to one
+drawn from the clock. `--width` and `--height` default to 20. `--spawn
+rabbit=10` gives a starting population, can be repeated once per species, and
+defaults to ten rabbits, and any `--spawn` given replaces that default rather
+than adding to it. Each line is a census row with the seed added, since batch
+runs put many seeds into one stream and a line should stand on its own:
+
+    {"seed":42,"day":1,"population":{"rabbit":10}}
+
+The first line is day 1, since applying the starting spawns completes no day.
 
 For an agent, `serve --no-browser` accepts `--port 0`, picks a free port, and
 prints one JSON line with the port once it accepts requests. It exits on its own
