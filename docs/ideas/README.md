@@ -24,16 +24,28 @@ that settled it.
   edible behind.
 - [Diet](diet.md) which edibles a creature accepts, needed once a predator
   exists.
+- [Domain subpackages](domain-subpackages.md) splitting the flat domain
+  package by topic once it grows hard to navigate.
 - [Drawing a stacked tile](drawing-a-stacked-tile.md) a way to show every
   occupant of a shared tile.
+- [Error Prone](error-prone.md) failing the build on bug patterns javac does
+  not warn about.
+- [Golden-run test](golden-run-test.md) pinning a seeded run's output across
+  builds, left out for its overhead.
 - [Hexagonal grid](hexagonal-grid.md) six equidistant neighbours, so sight and
   movement finally agree.
 - [Humans](humans.md) the species the project is named for, after rabbits and
   wolves.
+- [Javadoc on the domain](javadoc-on-the-domain.md) short Javadoc on public
+  domain types and decision numbers in comments.
+- [Measuring test quality](measuring-test-quality.md) coverage reports, a
+  coverage threshold, or mutation testing.
 - [MCP server](mcp-server.md) an agent drives a world through typed tools
   over stdio.
 - [Network brain](network-brain.md) the second brain, warm-started from the
   fixed rules.
+- [Property-based tests](property-based-tests.md) jqwik for the domain's
+  invariants, with shrunk counterexamples.
 - [Run comparison](run-comparison.md) one shared way for an agent to tell
   whether a variant did better.
 - [Stomach capacity](stomach-capacity.md) a limit on what a creature can hold,
