@@ -79,10 +79,15 @@ The pre-commit hook and CI run `docs-check.py`.
     ./mvnw package    also build target/HumanSimulation.jar
     java -jar target/HumanSimulation.jar run --seed 42 --days 100
 
-Java 25, and every compiler warning fails the build. No `mvn` on PATH is needed,
-the wrapper fetches it. Dependencies are pinned in `pom.xml`, and the enforcer
-plugin fails the build on a version range or a snapshot. Let Dependabot propose
-upgrades.
+Java 25, and every compiler warning fails the build. After deleting, moving or
+renaming a class, run `./mvnw clean verify`, since stale classes left in
+`target/` keep compiling and running otherwise. Write Java source with a file
+tool rather than a shell heredoc, which on this Windows setup has collapsed a
+doubled backslash into one and silently changed string literals.
+
+No `mvn` on PATH is needed, the wrapper fetches it. Dependencies are pinned in
+`pom.xml`, and the enforcer plugin fails the build on a version range or a
+snapshot. Let Dependabot propose upgrades.
 
 CI runs `./mvnw -B verify` on Linux and Windows, on pushes to `master` and on
 pull requests. A `v*` tag builds the jar and attaches it to a GitHub Release,

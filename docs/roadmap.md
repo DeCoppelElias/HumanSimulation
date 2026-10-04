@@ -21,7 +21,7 @@ carries, as acceptance lines. A 2022 feature left out on purpose is in
 
 ## 1. Minimal loop
 
-Status: not started.
+Status: done.
 
 The first commit deletes the 2022 code, its tests, and the Swing smoke-test
 skill with its tool under `tools/gui-smoke-test/`, and the pom loses JFreeChart,
@@ -39,15 +39,16 @@ domain as one flat package, `run` in `.cli` and `Main` at the root, per
 A world with a four-direction grid that owns distance, and `Entity`, `Species`,
 `Component` and a `Genome` whose values are checked against `GeneSpec.Scalar`
 and `GeneSpec.Simplex` declarations when it is built. Mutation waits for entry
-6. The day's six steps (decide, resolve, feed, metabolise, world processes,
-clean up) run in order, and `advance()` returns the day's snapshot and census
-row together. Rabbit is the one species. Its brain picks uniformly among the
-directions its `Options` carry plus `Idle`, and rolls a `Move`'s distance from
-its step distribution. The resolver walks a move a tile at a time and stops at
-the edge. The day's order is a shuffle over id order, which is already the rule
-for entities without a speed gene. The decide step hands each brain a
-`Perception`, built through the default circular sense even though the random
-brain ignores it, and an `Options` holding the grid's directions, per
+6. A day decides, orders, resolves and takes its census, in that order, and
+`advance()` returns the day's snapshot and census row together. Feed, metabolise
+and the world processes join the day in entry 5, where they first do something.
+Rabbit is the one species. Its brain picks uniformly among the directions its
+`Options` carry plus `Idle`, and rolls a `Move`'s distance from its step
+distribution. The resolver walks a move a tile at a time and stops at the edge.
+The day's order is a shuffle over id order, which is already the rule for
+entities without a speed gene. The decide step hands each brain a `Perception`,
+built through the default circular sense even though the random brain ignores
+it, and an `Options` holding the grid's directions, per
 [0004](decisions/0004-creatures-return-intents.md).
 
 A world is built from a width, a height, a seed and its species, and starts
@@ -82,7 +83,9 @@ stood still, is replaced by walking until blocked.
 
 A second determinism test runs `run` twice with one seed in two separate JVMs
 and compares the output byte for byte, since an iteration order that changes per
-process passes every test inside one, per
+process passes every test inside one. The census in this entry is a rabbit count
+that never changes, so the test also compares every day's full snapshot printed
+by a test-only probe, per
 [0010](decisions/0010-runs-replay-exactly-from-a-seed.md).
 
 Regression rules that land here: the census covers every recorded day, movement
@@ -212,7 +215,8 @@ Depends on entry 3. See
 
 Status: not started.
 
-Grass as an `Edible` entity, and a world process that spawns it. `Metabolism`
+Grass as an `Edible` entity, and a world process that spawns it. The feed and
+metabolise steps and the list of world processes join the day here. `Metabolism`
 holds a reserve its carrier can see and its neighbours cannot. The feed step
 takes every edible on the tile, and the metabolise step charges on an interval
 and removes anything whose reserve falls below zero. Intervals and charges join
