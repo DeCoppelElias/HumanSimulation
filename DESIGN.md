@@ -153,7 +153,9 @@ too. Any index or spatial structure added later has to preserve it. Resolving
 and feeding are the steps whose order is a rule rather than the id: they walk
 one order per day, speed descending with equal speeds drawn at random, so acting
 and eating first is a trait a creature pays for instead of an accident of when
-it spawned.
+it spawned. Nothing loops over a collection whose order is undefined, such as a
+hash map, so two processes given the same seed agree as well as two worlds in
+one.
 
 Deciding finishes before anything is applied, so every creature in a day sees
 the same world.

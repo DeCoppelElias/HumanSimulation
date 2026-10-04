@@ -27,6 +27,15 @@ every recorded run. Naming an algorithm whose output for a seed the Java
 specification fixes rules that out, and `L64X128MixRandom` is faster and
 statistically stronger than `Random`.
 
+Two orders change from one process to the next. `Map.copyOf` randomises its
+iteration order each time the JVM starts, which a draft of
+[0022](0022-warnings-fail-the-build-and-nothing-is-null.md) relied on, and
+[0003](0003-entities-carry-components.md) keys an entity's components by class,
+whose hash differs between processes. Looping over either makes the
+same seed print different output in two processes while every test inside one
+process passes, which is where `DeterminismTest` runs. Checking a single
+process was the alternative to checking two, and it cannot see this.
+
 ## Decision
 
 The world owns one random generator, passed to everything that draws from it. No
@@ -40,6 +49,12 @@ order, except that resolve and feed walk the day's speed order from
 from the id order and the world's generator.
 
 Deciding finishes before anything is applied.
+
+Nothing in the domain iterates a collection whose order is not defined. A map or
+set that is looped over is sorted, or keeps insertion order with insertion in id
+order, and a hash map or hash set is only looked up in. Replay is checked across
+processes as well as within one: a test runs `run` twice with the same seed in
+two separate JVMs and compares the output byte for byte.
 
 ## Consequences
 
