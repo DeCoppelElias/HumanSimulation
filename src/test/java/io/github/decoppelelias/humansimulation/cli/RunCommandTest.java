@@ -73,6 +73,19 @@ class RunCommandTest {
     }
 
     @Test
+    void aSpeciesSpawnedTwiceIsAUsageError() {
+        Result result = run("--days", "1", "--spawn", "rabbit=3", "--spawn", "rabbit=5");
+        assertThat(result.exitCode()).isEqualTo(CommandLine.ExitCode.USAGE);
+        assertThat(result.err()).contains("rabbit");
+    }
+
+    @Test
+    void aSpawnThatIsNotSpeciesEqualsCountIsAUsageError() {
+        assertThat(run("--days", "1", "--spawn", "rabbit").exitCode()).isEqualTo(CommandLine.ExitCode.USAGE);
+        assertThat(run("--days", "1", "--spawn", "rabbit=many").exitCode()).isEqualTo(CommandLine.ExitCode.USAGE);
+    }
+
+    @Test
     void aSpawnOfZeroIsAUsageError() {
         assertThat(run("--days", "1", "--spawn", "rabbit=0").exitCode()).isEqualTo(CommandLine.ExitCode.USAGE);
     }
