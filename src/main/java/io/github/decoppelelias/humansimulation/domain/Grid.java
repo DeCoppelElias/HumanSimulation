@@ -3,6 +3,7 @@ package io.github.decoppelelias.humansimulation.domain;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.TreeSet;
 
 final class Grid {
     private static final List<Direction> DIRECTIONS = List.of(
@@ -13,6 +14,7 @@ final class Grid {
 
     private final int width;
     private final int height;
+    private final List<TreeSet<Integer>> occupants;
 
     Grid(int width, int height) {
         if (width < 1 || height < 1) {
@@ -20,6 +22,10 @@ final class Grid {
         }
         this.width = width;
         this.height = height;
+        this.occupants = new ArrayList<>(width * height);
+        for (int i = 0; i < width * height; i++) {
+            occupants.add(new TreeSet<>());
+        }
     }
 
     List<Direction> directions() {
@@ -58,6 +64,25 @@ final class Grid {
             }
         }
         return tiles;
+    }
+
+    void place(int id, GridPosition at) {
+        tile(at).add(id);
+    }
+
+    void remove(int id, GridPosition at) {
+        tile(at).remove(id);
+    }
+
+    List<Integer> occupants(GridPosition at) {
+        return List.copyOf(tile(at));
+    }
+
+    private TreeSet<Integer> tile(GridPosition at) {
+        if (!contains(at)) {
+            throw new IllegalArgumentException(at + " is off the " + width + " by " + height + " grid");
+        }
+        return occupants.get(at.y() * width + at.x());
     }
 
     private static int squaredDistance(GridPosition a, GridPosition b) {

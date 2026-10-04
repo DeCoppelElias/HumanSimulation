@@ -70,4 +70,24 @@ class GridTest {
                 .containsExactly(
                         new GridPosition(0, 0), new GridPosition(1, 0), new GridPosition(0, 1), new GridPosition(1, 1));
     }
+
+    @Test
+    void occupantsComeBackInIdOrder() {
+        Grid grid = new Grid(3, 3);
+        GridPosition tile = new GridPosition(1, 1);
+        grid.place(7, tile);
+        grid.place(2, tile);
+        grid.place(5, tile);
+        assertThat(grid.occupants(tile)).containsExactly(2, 5, 7);
+
+        grid.remove(5, tile);
+        assertThat(grid.occupants(tile)).containsExactly(2, 7);
+        assertThat(grid.occupants(new GridPosition(0, 0))).isEmpty();
+    }
+
+    @Test
+    void placingOffTheGridThrows() {
+        assertThatThrownBy(() -> new Grid(3, 3).place(1, new GridPosition(3, 0)))
+                .isInstanceOf(IllegalArgumentException.class);
+    }
 }
