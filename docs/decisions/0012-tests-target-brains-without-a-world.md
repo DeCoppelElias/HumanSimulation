@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-03. Revised 2026-10-01.
+Accepted, 2026-09-03. Revised 2026-10-04.
 
 ## Context
 
@@ -21,6 +21,24 @@ changing the code, and that caught a test that would have passed vacuously.
 Writing tests after the code was the alternative. It is faster per change and
 produces tests that confirm whatever the code already does.
 
+Plain JUnit assertions were the alternative to AssertJ. Nearly everything under
+test is a record, whose `equals` and `toString` already make a whole-value
+comparison readable, and AssertJ is one more dependency. It won on how its
+assertions read and on its failure messages for collections and exceptions.
+
+Several rules are invariants over many inputs, such as a move never walking off
+the step distribution. jqwik checks them with generated inputs and shrinks a
+failure to its smallest case. Whether it runs on the JUnit 6 platform was
+unconfirmed, and a seeded loop covers the same rules while replaying a failure
+exactly. It is kept in `docs/ideas/property-based-tests.md`.
+
+Measuring the suite was considered: a coverage report, a coverage threshold, or
+mutation testing. So was a golden-run test pinning a seeded run's output across
+builds. Each adds overhead to changes on a project with one developer, the
+threshold invites tests that assert nothing, and the golden run breaks on every
+intended rule change. They are kept in `docs/ideas/measuring-test-quality.md`
+and `docs/ideas/golden-run-test.md`.
+
 Selection is the part no unit test can see. A rebuild can compile, pass
 everything, and quietly stop selecting for anything.
 
@@ -35,6 +53,12 @@ Determinism and grid geometry get fresh tests against the new types, since no
 2022 code survives, per [0002](0002-replace-the-model-layer-in-place.md).
 Resource loading guarded the 2022 icons at the classpath root and goes with
 them. The web adapter's tests cover what it serves.
+
+Assertions use AssertJ. A rule that holds for every input is tested with a
+seeded loop: a generator built from a fixed seed draws a few thousand cases, and
+the test asserts the rule on each, so a failure replays exactly. Tests mirror
+the production packages, so they can reach package-private types. There is no
+coverage or mutation tooling.
 
 Behaviour mechanics are rewritten against the new units. A brain is tested by
 handing it a perception and asserting the intent it returns, with no world at

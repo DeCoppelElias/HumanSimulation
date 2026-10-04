@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-03. Revised 2026-10-01.
+Accepted, 2026-09-03. Revised 2026-10-04.
 
 ## Context
 
@@ -49,9 +49,9 @@ DayReport advance() {
     feed(order);
     metabolise();
     for (WorldProcess p : processes) p.run(this);
+    day++;
     CensusRow census = takeCensus();
     WorldSnapshot snapshot = snapshot();
-    day++;
     return new DayReport(snapshot, census);
 }
 ```
@@ -71,6 +71,11 @@ Commands drain first, per
    Anything whose reserve falls below zero dies.
 5. World processes, in list order: spawning food, regrowth, fire.
 6. Take one census row, and return it with the snapshot.
+
+The day counter counts days completed, so it rises before the census and the
+snapshot are taken and both carry the number of the day just run. A new world
+is on day 0, and its first `advance()` reports day 1, per
+[0007](0007-state-leaves-as-a-snapshot-commands-go-in.md).
 
 Whatever kills an entity removes it at once, in whichever step that happens.
 

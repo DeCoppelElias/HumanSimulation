@@ -16,13 +16,13 @@ planning exercise: it must not edit files, branch or build.
 ## Pass
 
 - Part 1 reads the entry and its decisions, audits them, grills Elias on the
-  open details only, branches per 0002, and has Elias review the plan before
-  code.
+  open details only, branches off `master` as `entry-1-...` per 0002, and has
+  Elias review the plan before code.
 - Part 2 includes fresh verification, a walk of the acceptance criteria against
-  tests, code review, the roadmap status flip, the doc audit and a
-  retrospective.
-- "Ship it" becomes a pushed branch, since the roadmap forbids a merge before
-  entry 6. No merge, pull request or tag.
+  tests, code review, the roadmap status flip, the README update, the doc audit
+  and a retrospective.
+- "Ship it" becomes a local merge into `master`, a push of `master` and the
+  branch deleted, after those steps. No pull request or tag.
 
 ## Baseline without the skill, 2026-09-30
 

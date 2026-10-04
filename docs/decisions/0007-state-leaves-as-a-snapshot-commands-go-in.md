@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-03. Revised 2026-10-01.
+Accepted, 2026-09-03. Revised 2026-10-04.
 
 ## Context
 
@@ -46,6 +46,19 @@ JFreeChart through, because the rest of the build is already on its classpath.
 Running `jdeps` over the compiled classes from a test was tried against the same
 three planted references and caught each one by class.
 
+A reset could leave an empty world, as the 2022 reset did. That is simpler to
+describe, and the reset world then matches no world that construction produces,
+so the first thing anyone does after it is spawn rabbits by hand.
+
+A snapshot returned by applying pending commands while paused could carry the
+number of the day those commands belong to, the next one. The counter on a
+paused page would then jump forward on a click and stay put on a step.
+
+Subpackages inside the domain, such as one for the grid and one for genomes,
+were considered for its layout. Every type crossing between them has to be
+public, which lets the adapters reach the world's internals as well. Splitting
+later is kept in `docs/ideas/domain-subpackages.md`.
+
 A dependency injection container was considered for wiring the pieces together.
 It buys configuration and scoping for a program with about a dozen
 collaborators, at the cost of startup magic, and `DESIGN.md` rules out framework
@@ -57,6 +70,13 @@ The core is the domain of a hexagonal architecture and lives in the package
 `io.github.decoppelelias.humansimulation.domain`. It depends on nothing but
 itself and `java.base`: no web framework, no JSON library, no AWT and no adapter
 package. No simulation rule lives outside it.
+
+The domain is one flat package. The world and the values that cross the
+boundary, the commands, the snapshot, the census row and the day's report, are
+public, and everything else is package-private, so the compiler holds the rule
+from [0003](0003-entities-carry-components.md) that nothing inside the aggregate
+changes except through the world. The command line adapter lives in `.cli` and
+the web adapter in `.web`, and `Main` sits in the root package.
 Commands are its inbound port, and the snapshot and the census are its outbound
 ports. The web adapter from [0020](0020-the-interface-is-a-web-page.md) and the
 command line from [0021](0021-agents-drive-worlds-over-http-and-run.md) are on
@@ -77,14 +97,14 @@ reaches everything that draws from it, per
 it builds the world and the adapters and connects them, and nothing else
 constructs either. There is no container.
 
-Each day the world produces an immutable snapshot of everything: the day
-number, the grid dimensions, and for each tile its scalar fields and the
+Each day the world produces an immutable snapshot of everything: the seed, the
+day number, the grid dimensions, and for each tile its scalar fields and the
 entities standing on it with their species, sprite key and the values worth
 displaying. The viewer is a person rather than a creature, so the audience rules
 in [0013](0013-perception-is-one-type.md) do not limit what the snapshot shows.
 
 ```java
-public record WorldSnapshot(int day, int width, int height, List<TileView> tiles) {
+public record WorldSnapshot(long seed, int day, int width, int height, List<TileView> tiles) {
     public record TileView(GridPosition at, Map<String, Double> fields, List<EntityView> entities) {}
     public record EntityView(
             int id, String species, String spriteKey, Map<String, Double> info) {}
@@ -96,16 +116,31 @@ species' settings and setting an entity alight are all commands. The interface
 never calls a model method that is not one. A reset carries the seed the new
 world uses, so the log replays it.
 
+A reset with a seed leaves the world exactly as constructing it with that seed
+would: day 0, ids counted from the start again, the starting population drawn
+from the world settings, and a command log whose first entry is the reset. The
+dimensions, settings and species stay. Ids and day numbers therefore repeat
+across a reset, so a viewer treats a changed seed or a day that goes backwards
+as a new run rather than diffing across it.
+
+A command is validated before it changes anything. One that names an id which
+no longer resolves, or a position off the grid, throws and leaves the world as
+it was. The exception is part of the domain's contract, and an adapter turns it
+into an error for whoever sent the command.
+
 Commands queue, and the queue drains at the start of a day, before anything
-decides. Each command is recorded with the day it applied on, so a run
+decides. Each command is recorded with the day counter's value when it
+drained, which counts days completed, so a run
 reproduces from its seed plus its command log. The log is kept in memory and
 `DeterminismTest` replays it. It is not written to a file.
 
 The world has no paused state. An adapter that is paused submits a command and
 then asks the world to apply what is pending, which drains the queue and
 returns a new snapshot without advancing the day, so clicking food onto the
-grid while paused shows the food. Draining then or at the start of the same day
-leaves the world identical, so the log records the same day either way.
+grid while paused shows the food. That snapshot keeps the current day number,
+since no day completed, and no census row comes with it. Draining then or at the
+start of the next day leaves the world identical, and the counter has the same
+value at both moments, so the log records the same day either way.
 
 The census row leaves with each day, and its history belongs to the adapter
 that reads it. Resetting the statistics clears that history and is not a

@@ -23,8 +23,8 @@ checklist.
    (REQUIRED SUB-SKILL), and apply its result before planning. Settled choices
    are not reopened. A gap that turns out to be a design choice goes through
    the changing-decisions skill.
-4. Branch as the roadmap says. Per 0002, the rebuild lives on one branch until
-   entry 6 merges it to `master`.
+4. Branch off `master` as `entry-N-slug`, per 0002 and the Branches section of
+   `AGENTS.md`.
 5. Write the plan with superpowers:writing-plans. It lists every acceptance
    criterion in the entry, regression rules included, next to the task that
    meets it. Elias reviews the plan before any code.
@@ -48,6 +48,8 @@ shorten the list.
    superpowers:receiving-code-review on what comes back.
 4. Documents:
    - the entry's status in `docs/roadmap.md` becomes `done`;
+   - `README.md` describes what the entry built, such as a new command or
+     what the page now shows;
    - an idea this entry built becomes `Status: built, [NNNN](../decisions/NNNN-slug.md).`,
      linking the entry that settled it;
    - a choice made during the work goes through changing-decisions;
@@ -55,9 +57,10 @@ shorten the list.
 5. Retrospective. Anything an agent got wrong twice during the entry becomes an
    `AGENTS.md` line, a skill edit (rerun that skill's `evals/` scenario), or a
    check in `tools/`. Tell Elias which, and why.
-6. superpowers:finishing-a-development-branch. Push, merge, open a PR or tag
-   only when Elias says so. If the roadmap forbids a merge yet, "ship it" means
-   push the branch.
+6. superpowers:finishing-a-development-branch, with the choice already made:
+   once Elias says go, merge the branch into `master` locally, push `master`
+   and delete the branch. "Ship it" after the steps above is that go. No pull
+   request, and no tag unless he asks for one.
 
 If the session ends before the entry does, use the handoff skill. The plan is
 gitignored and does not travel between machines.

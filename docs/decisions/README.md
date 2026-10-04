@@ -60,3 +60,6 @@ costs, and what the concrete type shapes are.
 - [0021](0021-agents-drive-worlds-over-http-and-run.md) Agents drive worlds over
   the HTTP API with no browser, and through a `run` command printing JSON
   Lines.
+- [0022](0022-warnings-fail-the-build-and-nothing-is-null.md) Warnings fail
+  the build and nothing is null: Java 25, lint as errors, values that validate
+  themselves, picocli, and formatting without a ratchet.

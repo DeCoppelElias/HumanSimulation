@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-03. Revised 2026-09-27.
+Accepted, 2026-09-03. Revised 2026-10-04.
 
 ## Context
 
@@ -24,7 +24,9 @@ stated rule using the seeded generator, so that half is sound today.
 ## Decision
 
 The world owns one random generator, passed to everything that draws from it. No
-class constructs its own.
+class constructs its own. It is built by naming its algorithm, `L64X128MixRandom`,
+whose output for a seed the Java specification fixes, rather than taking the
+platform default, which a later Java release could change.
 
 Entities are held sorted by id, and asking the grid what stands on a tile
 returns occupants in ascending id order. Every system iterates in ascending id

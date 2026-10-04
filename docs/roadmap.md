@@ -10,10 +10,10 @@ Entries are added as they're planned and their status is flipped as they land.
 Read `docs/decisions/` alongside this: a decision log entry explains why
 something is shaped the way it is, this says whether it exists yet.
 
-The rebuild happens on the `rebuild` branch, per
-[0002](decisions/0002-replace-the-model-layer-in-place.md). `master` keeps the
-2022 application until entry 6 lands, the first one worth switching to. The
-2022 inspection features wait for entry 9.
+Each entry is built on its own branch and merged into `master` when it is
+finished, per [0002](decisions/0002-replace-the-model-layer-in-place.md), so
+`master` holds the last finished entry. The 2022 application stays on the
+`v1.0-original-2022` tag. Its inspection features wait for entry 9.
 
 Each entry lists the 2022 features it brings back and the regression rules it
 carries, as acceptance lines. A 2022 feature left out on purpose is in
@@ -24,9 +24,16 @@ carries, as acceptance lines. A 2022 feature left out on purpose is in
 Status: not started.
 
 The first commit deletes the 2022 code, its tests, and the Swing smoke-test
-skill with its tool under `tools/gui-smoke-test/`. `AGENTS.md` follows the tree
-from then on. Everything new lives under
-`io.github.decoppelelias.humansimulation`.
+skill with its tool under `tools/gui-smoke-test/`, and the pom loses JFreeChart,
+the headless test property and its Swing description. The build moves to Java
+25, compiles with every warning as an error, formats every file with no
+Spotless ratchet, and adds AssertJ and picocli, per
+[0022](decisions/0022-warnings-fail-the-build-and-nothing-is-null.md). The README
+is replaced with a short one saying what the project is becoming, how to build
+it and how to use `run`. `AGENTS.md` follows the tree from then on. Everything
+new lives under `io.github.decoppelelias.humansimulation`, with the domain as
+one flat package, `run` in `.cli` and `Main` at the root, per
+[0007](decisions/0007-state-leaves-as-a-snapshot-commands-go-in.md).
 
 A world with a four-direction grid that owns distance, and `Entity`, `Species`,
 `Component` and a `Genome` whose values are checked against `GeneSpec.Scalar`
@@ -48,8 +55,10 @@ baseline genome: view range 3, bounded 1 to 10, and a step distribution of 0.6,
 rabbit gets it unchanged, since there is no mutation yet.
 
 Commands cover spawning by count at random tiles or at a position, and resetting
-the world with a new seed. The world has `submit` and `applyPending`, and no
-paused state. Its command log is kept in memory, and `DeterminismTest` replays a
+the world with a new seed. A reset leaves the world exactly as constructing it
+with that seed would. The day counter counts days completed, so a new world is
+on day 0, and a snapshot from `applyPending` keeps the current day. The world
+has `submit` and `applyPending`, and no paused state. Its command log is kept in memory, and `DeterminismTest` replays a
 seed plus a log into a second world and compares the snapshots. A census row per
 day replaces the population counting that parses display strings. A `jdeps`
 test fails when the domain depends on anything outside itself and `java.base`.
@@ -62,8 +71,8 @@ in five. The 2022 edge handling, which rerolled a move up to ten times and then
 stood still, is replaced by walking until blocked.
 
 Regression rules that land here: the census covers every recorded day, movement
-never walks off the step distribution, and removing an entity validates before
-it mutates anything.
+never walks off the step distribution, and every command validates before it
+mutates anything, removing an entity included.
 
 On the screen: nothing in a browser yet. `run --seed 42 --days 100` prints one
 line per day with the rabbit count, and the same seed prints the same lines.
@@ -109,10 +118,12 @@ stream is written without a slow viewer stalling the world, with a bounded
 census queue per viewer and the history copied and subscribed in one step; a
 heartbeat on a paused world's stream; the ready line's schema, with logging on
 stderr and `run`'s stdout holding only JSON Lines; what idle means and its
-default; binding to 127.0.0.1 by default; whether a reset restarts the day count
-and clears the history; which day number a snapshot from `applyPending`
-carries; a read-only endpoint returning a world's seed and command log, so a
-watched run can be reproduced; and running CI on the `rebuild` branch.
+default; binding to 127.0.0.1 by default; that a world reset starts the
+adapter's census history afresh, since its day numbers start again; a read-only
+endpoint returning a world's seed and command log, so a watched run can be
+reproduced; the cap on worlds and what a request past it gets back; and
+whether the page shows one world per tab or lets a viewer switch between their
+own worlds.
 
 On the screen: an agent starts `serve --no-browser --port 0`, reads the port
 from the ready line, and with `curl` creates a world, spawns rabbits, advances
@@ -133,6 +144,8 @@ The frontend is React with TypeScript and Vite, built into the jar by
 draws the grid with a rabbit sprite from a CC0 asset pack, glides each rabbit
 between its tiles by diffing snapshots by id, fades rabbits in and out, and
 shows a count on a tile holding more than one, drawing the lowest-id occupant.
+A snapshot whose seed changed or whose day went backwards starts a new run, so
+nothing glides across a reset.
 The controls are step, play and pause, and playback rate; spawning rabbits by
 count and by clicking a tile; resetting the world, which draws a new seed from
 the clock and shows it; and the population chart with a statistics reset.
@@ -223,7 +236,7 @@ Depends on entry 3. See
 [0017](decisions/0017-every-number-is-a-setting-or-a-gene.md),
 [0018](decisions/0018-brain-computation-model-and-warm-starting.md).
 
-## 6. Breeding and switchover
+## 6. Breeding and settings
 
 Status: not started.
 
@@ -243,9 +256,8 @@ Regression rules that land here: the step variation is not integer divided, the
 step distribution stays valid, view range is inherited and varied, a view range
 never drops below one, and a zero breeding interval is rejected.
 
-Then what the switchover needs: the parameters panel, which 2022 also had,
-generated from declared settings, with editing a setting as a command. The
-branch merges to `master`.
+Then the parameters panel, which 2022 also had, generated from declared
+settings, with editing a setting as a command.
 
 On the page: a newborn appears on its parent's tile, the population grows and
 shrinks on its own, and a settings panel changes any declared number while the
@@ -373,6 +385,10 @@ deploy workflow put it on Fly.io.
 API tests cover that a second session can neither see nor delete the first's
 worlds, that the cap refuses a new world once reached, and that an abandoned
 world is removed after its timeout.
+
+Details to settle in this entry's grill: how many worlds a session may hold, the
+cap across sessions and the idle timeout, sized against what a world costs in
+memory and threads; and what the page shows a visitor when a cap is reached.
 
 On the screen: the link opens the page with a fresh world, and two browsers
 opening it each get their own.

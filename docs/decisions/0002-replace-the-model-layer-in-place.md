@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-03. Revised 2026-10-01.
+Accepted, 2026-09-03. Revised 2026-10-04.
 
 ## Context
 
@@ -37,10 +37,26 @@ standards the rebuild follows. And the interface moved to the web in
 [0020](0020-the-interface-is-a-web-page.md), which leaves the panels and the
 chart nothing to attach to.
 
+Rebuilding on one long-lived `rebuild` branch, merged to `master` at roadmap
+entry 6, was the plan until entry 1 was about to start. It kept a working
+application on `master` for anyone who cloned it. Nobody does: there are no
+other collaborators, and the 2022 version stays reachable on the
+`v1.0-original-2022` tag and the `original-2022` branch. What the branch cost
+was real. CI built only `master` and pull requests, so pushes to it went
+unbuilt, the roadmap and skills had to explain which branch to use, and it had
+already drifted from `master` before any code landed.
+
+A pull request per entry was the alternative to merging locally. CI would
+build the branch on both platforms before it reached `master`. Elias works
+alone and prefers speed, so a failure on the platform not tested locally is
+fixed on `master` after the push instead.
+
 ## Decision
 
-Replace in place, on a branch, with `master` holding a working application until
-the switchover lands.
+Replace in place on `master`. Each roadmap entry is built on its own
+short-lived branch, named `entry-N-slug`, and merged into `master` locally once
+it is finished, reviewed and Elias has said go. `master` always holds the last
+finished entry, never half of one.
 
 Build up from zero rather than porting the current model wholesale. The first
 package is thin and complete: a grid, one species, which is the rabbit, a random
@@ -81,5 +97,9 @@ The rabbit's sprite comes from a CC0 asset pack until a dedicated art pass. The
 project keeps its name while its first species is not a human, and humans wait
 in `docs/ideas/humans.md`.
 
-The application is broken on the branch for as long as the rebuild takes.
-Growing vertically keeps the window short.
+`master` has no graphical interface from entry 1 until the browser arrives in
+entry 3, only the `run` command. The README says so, and the 2022 application
+is one tag away. Growing vertically keeps the window short.
+
+CI runs on the push to `master`, after the merge, so a failure shows there
+rather than before it lands.

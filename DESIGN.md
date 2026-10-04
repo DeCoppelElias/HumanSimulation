@@ -86,6 +86,10 @@ Collaborators are injected by constructor, and `Main` wires everything by hand.
 Development is test-driven. A test is written and seen to fail before the code
 that makes it pass.
 
+Values are valid by construction. A value checks itself when it is built and
+throws if it is wrong, nothing is ever null, and absence is an empty optional
+or collection. Every compiler warning fails the build.
+
 ### What the world is made of
 
 A world holds a grid, an ordered collection of entities, one random generator
@@ -244,11 +248,16 @@ returns the day's report, which holds its snapshot and census row.
 The core knows nothing about the interface, and no simulation rule lives above
 the core. A run with no browser behaves exactly like a watched one.
 
-State leaves as a snapshot of the whole world each day: the day number, the
-grid, and for each tile its fields and what stands on it with the values worth
+State leaves as a snapshot of the whole world each day: the seed, the day
+number, the grid, and for each tile its fields and what stands on it with the values worth
 drawing. Commands are the only way in, covering spawning, resetting, editing a
 species' settings, and anything else the interface initiates. They queue and
-drain at the start of a day. The interface never reaches into the model.
+drain at the start of a day. The interface never reaches into the model. A
+command is checked before it changes anything, and a bad one changes nothing.
+
+The day number counts days completed, so a new world is on day 0. A reset with
+a seed leaves the world exactly as building it with that seed would, starting
+population and day 0 included.
 
 Pausing is the adapter's business rather than the world's. A paused adapter
 asks the world to apply what is pending, which drains the queue and returns a
@@ -265,7 +274,9 @@ not a command.
 
 The core lives in the package `io.github.decoppelelias.humansimulation.domain`
 and depends only on itself and `java.base`. A test runs `jdeps` over the
-compiled classes and fails on anything else.
+compiled classes and fails on anything else. The package is flat. The world and
+the values crossing the boundary are public and the rest is package-private, so
+nothing outside it can reach past the world.
 
 The web adapter serves the interface and an HTTP API, and holds worlds by an id
 nobody can guess. The browser draws what the snapshots say and animates between

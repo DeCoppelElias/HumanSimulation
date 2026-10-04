@@ -47,6 +47,19 @@ A new idea goes in `docs/ideas/` without asking, in the format its README gives.
 Ask Elias before promoting an idea, changing an accepted decision, touching the
 roadmap's order, or pushing, merging or tagging. `docs/decisions/0019` says why.
 
+## Branches
+
+- A roadmap entry is built on its own branch off `master`, named
+  `entry-N-slug`, such as `entry-1-minimal-loop`.
+- Other work, such as a docs change, gets a short branch named for what it
+  does, such as `docs/standards-grill`.
+- When the work is finished and reviewed and Elias says go, merge it into
+  `master` locally, push `master`, and delete the branch. There are no pull
+  requests. CI runs on the push.
+- `master` always holds finished work, never half an entry.
+
+`docs/decisions/0002` says why.
+
 Each workflow skill has an `evals/` scenario. After editing a skill, run its
 scenario on a fresh agent and check the result against the pass criteria there.
 

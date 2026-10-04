@@ -15,9 +15,10 @@ each other, before anything is planned or written.
 ## Before the first question
 
 1. Read the roadmap entry or idea, every decision it links, the matching
-   sections of `DESIGN.md`, and the code it will replace or touch. Once the
-   rebuild has deleted the 2022 code it is still on `master` and the
-   `v1.0-original-2022` tag, so read it with `git show master:<path>`.
+   sections of `DESIGN.md`, and the code it will replace or touch. Once roadmap
+   entry 1 has deleted the 2022 code, read it from the commit before the
+   deletion: `git log --diff-filter=D --format=%h -1 -- src/main/java/Main.java`
+   names the deleting commit, and `git show <that>^:<path>` reads a file.
 2. List the choices left open. Answer every question the code or the docs can
    answer by reading them, and never ask it.
 3. Note gaps: rules with no entry to land in, docs that disagree, a workflow or
