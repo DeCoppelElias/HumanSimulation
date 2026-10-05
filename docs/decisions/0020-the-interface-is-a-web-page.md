@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-10-01.
+Accepted, 2026-10-01. Revised 2026-10-05.
 
 ## Context
 
@@ -50,6 +50,18 @@ rejects, a slower start and more memory, for a server that needs a few routes
 and one stream. Javalin, at version 7 on Jetty 12 when this was decided, is a
 thin layer that `Main` constructs by hand.
 
+A queue of census rows per viewer was the first shape of the stream. The
+world's thread would add each day's row to every viewer's queue, a writer per
+viewer would drain it, and a viewer too far behind would be disconnected. It
+guarantees delivery from the server, at the cost of a queue size to choose, a
+rule for closing slow viewers, and joining that has to copy the history and
+subscribe in one step. The history the adapter keeps already lets a reader
+repair a gap, which makes the guarantee unnecessary.
+
+A server that listens on every interface, Javalin's default, lets anyone on the
+same network drive its worlds, and the API has no notion of who is calling
+until hosting adds one.
+
 ## Decision
 
 The core stays Java and depends only on `java.base`. Everything lives under
@@ -73,14 +85,20 @@ see arrive as events on the day's report.
 
 Each world has one executor thread that owns it. A timer on that thread
 advances the world at the playback rate, and request handlers only hand work to
-it. A viewer that falls behind gets the latest snapshot rather than a backlog.
-Census rows are never dropped, since the chart needs every day, and the adapter
-keeps their history so a reloaded page restores the chart.
+it, so the thread never waits on the network. Each viewer holds only the
+latest day's event, its snapshot with that day's census row, overwritten when a
+newer one arrives, so a slow viewer skips days instead of slowing the world.
+The adapter keeps every census row, and a viewer that sees a gap in day numbers
+fetches the missing rows from that history, so the chart never loses a day and
+a reloaded page restores it. A comment line every 15 seconds keeps a quiet
+stream open.
 
 Worlds are addressed by an id of 128 random bits from `SecureRandom`, drawn
 apart from the world's seeded generator so replay is unaffected, and the number
-of worlds is capped. A world is closed by deleting it. There is no endpoint that
-stops the process.
+of worlds is capped. The server lists the worlds it holds and keeps each one
+until it is deleted, so a person can always go back to a world while the server
+runs. There is no endpoint that stops the process. The server listens on
+`127.0.0.1` unless told otherwise.
 
 `java -jar` runs the server locally and opens the browser. Hosting it is roadmap
 entry 11, which adds sessions, ownership, clean-up of abandoned worlds and a

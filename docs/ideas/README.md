@@ -54,3 +54,5 @@ that settled it.
   whether a variant did better.
 - [Stomach capacity](stomach-capacity.md) a limit on what a creature can hold,
   which makes how much to eat a decision.
+- [World persistence](world-persistence.md) a server's worlds surviving a
+  restart.

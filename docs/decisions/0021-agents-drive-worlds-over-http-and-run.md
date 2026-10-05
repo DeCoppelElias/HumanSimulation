@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-10-01. Revised 2026-10-04.
+Accepted, 2026-10-01. Revised 2026-10-05.
 
 ## Context
 
@@ -36,6 +36,23 @@ stay available whenever the domain's public surface is kept small. A Python
 bridge in the Gymnasium style serves reinforcement learning, which `DESIGN.md`
 rules out.
 
+How a server ends had several cases to cover: an agent driving a world step by
+step, an agent leaving an experiment to run, a person clicking or only
+watching, and a person letting a world play for a day and checking back. One
+idle rule for every server either kills the world a person left playing
+overnight or leaves a forgotten agent server running for good. Counting a
+playing world as activity keeps the forgotten server alive whenever its last
+world was left playing. Pausing worlds on idle saves CPU and stops the run an
+agent deliberately left going. Splitting the rule by who starts the server
+covers every case, since an agent's background process is invisible and a
+person's runs in a terminal they can see.
+
+Playing at a high rate and pausing on time was the alternative to skipping
+ahead. It overshoots the day the agent meant to stop at, so an intervention
+lands on a different day each time, and the agent has to poll to know when the
+world got there. Raising the rate's ceiling to agent speeds would also let a
+person's slider pick speeds no page can draw.
+
 ## Decision
 
 The jar has three entry points. `serve` is the default and opens the browser.
@@ -54,11 +71,28 @@ runs put many seeds into one stream and a line should stand on its own:
 
 The first line is day 1, since applying the starting spawns completes no day.
 
-For an agent, `serve --no-browser` accepts `--port 0`, picks a free port, and
-prints one JSON line with the port once it accepts requests. It exits on its own
-after a configurable idle period. An agent closes a world it is finished with
-by deleting it, per [0020](0020-the-interface-is-a-web-page.md), and has no way
-to stop the process over HTTP.
+`serve` accepts `--port 0`, picks a free port, and prints one line on stdout
+once it accepts requests, such as
+`{"event":"ready","url":"http://127.0.0.1:54321","port":54321}`. Logging goes
+to stderr, so stdout holds only machine-readable lines for both commands.
+`--host` changes the address it listens on and `--max-worlds` the cap on
+worlds.
+
+The two modes end differently. `serve --no-browser` is an agent's and quits
+after 10 minutes without a request or an open stream, and a playing world does
+not keep it alive. `serve` with the browser may be a person's and never quits
+or deletes a world: after 24 hours without a request or a stream it pauses any
+playing world, which waits where it was. `--idle-minutes` adjusts either, and 0
+turns it off. An agent closes a world it is finished with by deleting it, per
+[0020](0020-the-interface-is-a-web-page.md), and has no way to stop the process
+over HTTP.
+
+An agent skips ahead by stepping a paused world a number of days at once, up to
+10,000 per request, and gets the last day's report back. Every day's census row
+stays in the history. That makes a perturbation experiment, such as running 500
+days, adding wolves and running 500 more, a few requests that each stop at an
+exact day. The playback rate stays bounded for watching, at 0.5 to 10 days a
+second.
 
 Worlds are addressed by id, so one server holds several, such as a control and a
 variant side by side.
