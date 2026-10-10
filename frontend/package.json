@@ -1,0 +1,32 @@
+{
+    "name": "humansimulation",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "tsc && vite build",
+        "check": "eslint . --max-warnings 0 && prettier --check .",
+        "test": "vitest run",
+        "format": "prettier --write ."
+    },
+    "dependencies": {
+        "pixi.js": "8.21.0",
+        "react": "19.3.0",
+        "react-dom": "19.3.0",
+        "uplot": "1.6.32"
+    },
+    "devDependencies": {
+        "@eslint/js": "10.0.1",
+        "@types/react": "19.3.0",
+        "@types/react-dom": "19.3.0",
+        "@vitejs/plugin-react": "6.1.1",
+        "eslint": "10.11.0",
+        "eslint-plugin-react-hooks": "7.1.1",
+        "globals": "17.12.0",
+        "prettier": "3.9.9",
+        "typescript": "6.0.3",
+        "typescript-eslint": "8.70.1",
+        "vite": "8.3.1",
+        "vitest": "5.0.2"
+    }
+}
