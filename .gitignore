@@ -10,5 +10,9 @@
 # Maven build output
 /target/
 
-# IntelliJ project files, the pom is the source of truth
+# Editor project files, the pom is the source of truth
 /.idea/
+/.vscode/
+
+# Python bytecode from the tools
+__pycache__/
