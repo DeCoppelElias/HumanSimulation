@@ -65,7 +65,7 @@ public final class ServeCommand implements Callable<Integer> {
 
     @Override
     public Integer call() throws InterruptedException {
-        int minutes = idleMinutes.orElse(noBrowser ? AGENT_IDLE_MINUTES : PERSON_IDLE_MINUTES);
+        int minutes = idleMinutes(noBrowser, idleMinutes);
         if (minutes < 0) {
             throw new ParameterException(spec.commandLine(), "--idle-minutes cannot be negative, got " + minutes);
         }
@@ -95,5 +95,9 @@ public final class ServeCommand implements Callable<Integer> {
         app.stop();
         worlds.closeAll();
         return CommandLine.ExitCode.OK;
+    }
+
+    static int idleMinutes(boolean noBrowser, Optional<Integer> given) {
+        return given.orElse(noBrowser ? AGENT_IDLE_MINUTES : PERSON_IDLE_MINUTES);
     }
 }
