@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-10-04.
+Accepted, 2026-10-04. Revised 2026-10-10.
 
 ## Context
 
@@ -44,6 +44,14 @@ Javadoc on every public domain type, with decision numbers cited in comments,
 was considered. The comment rules and good names are judged enough for now, and
 it is kept in `docs/ideas/javadoc-on-the-domain.md`.
 
+Roadmap entry 3 adds a TypeScript frontend, built inside the Maven build per
+[0020](0020-the-interface-is-a-web-page.md), and with it a second toolchain the
+Java rules do not reach. npm writes `^` ranges into `package.json` by default,
+which a committed lock pins only until someone regenerates it. A lighter bar was
+considered for TypeScript: type checking and formatting without ESLint, or type
+checking alone. Either leaves the most likely bug in a React page uncaught, a
+value captured stale inside an effect, which ESLint's hooks rules find.
+
 ## Decision
 
 Java 25.
@@ -73,6 +81,21 @@ joins it as a sibling.
 Spotless formats every Java file with palantir-java-format and checks it in
 `./mvnw verify`, with no ratchet.
 
+TypeScript meets the same bar inside `./mvnw verify`. The compiler runs with
+`strict`, `noUnusedLocals` and `noUnusedParameters`, and any error fails the
+build. ESLint runs typescript-eslint's recommended rules and React's hooks
+rules and fails on any warning. Prettier checks formatting, and a `format`
+script applies it, as `spotless:apply` does for Java. `strict` is how the
+frontend handles absence: a value the types allow to be `null` or `undefined`
+is handled where it is read. The no-null rule above is Java's.
+
+Every version is exact. Maven dependencies are pinned in `pom.xml` and the
+enforcer plugin fails the build on a range or a snapshot. The frontend build
+downloads one exact Node version, `package.json` names exact versions with no
+`^` or `~`, `package-lock.json` is committed and the build installs with
+`npm ci`. Dependabot proposes upgrades for both, with npm grouped into one
+weekly pull request.
+
 ## Consequences
 
 Running the jar needs Java 25, which the README states. If palantir-java-format
@@ -94,3 +117,9 @@ Dependabot like the others.
 
 Formatting the whole tree is safe from entry 1 on, since every file in it is
 new.
+
+Jackson writes an empty `Optional` as JSON `null`, so the frontend's types for
+the API allow `null` wherever the server can send one.
+
+A local Node install is never used by the build, so its version does not
+matter.

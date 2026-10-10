@@ -290,7 +290,10 @@ package-private, so nothing outside it can reach past the world.
 
 The web adapter serves the interface and an HTTP API, and holds worlds by an id
 nobody can guess. The browser draws what the snapshots say and animates between
-them. An agent drives worlds over the same API with no browser open.
+them, gliding a creature only between two consecutive days, so a skipped
+stretch shows as its end state rather than as a path nobody walked. The stream
+carries the world's play state beside its days, so every tab shows the same
+controls. An agent drives worlds over the same API with no browser open.
 
 A `run` command advances a seeded world for a given number of days and prints
 the census as JSON Lines, with population and gene means. It is the only thing
