@@ -11,20 +11,21 @@ import org.junit.jupiter.api.Test;
 
 class CommandJsonTest {
     private static CommandJson.Body body(String type) {
-        return new CommandJson.Body(type, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
+        return new CommandJson.Body(
+                Optional.of(type), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
     }
 
     @Test
     void readsASpawn() {
         CommandJson.Body spawn = new CommandJson.Body(
-                "spawn", Optional.of("rabbit"), Optional.of(3), Optional.empty(), Optional.empty());
+                Optional.of("spawn"), Optional.of("rabbit"), Optional.of(3), Optional.empty(), Optional.empty());
         assertThat(CommandJson.toCommand(spawn, () -> 0L)).isEqualTo(new Command.Spawn("rabbit", 3));
     }
 
     @Test
     void readsASpawnAt() {
         CommandJson.Body spawnAt = new CommandJson.Body(
-                "spawnAt",
+                Optional.of("spawnAt"),
                 Optional.of("rabbit"),
                 Optional.empty(),
                 Optional.of(new GridPosition(3, 4)),

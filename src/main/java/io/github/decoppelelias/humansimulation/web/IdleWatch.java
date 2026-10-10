@@ -7,4 +7,8 @@ public final class IdleWatch {
     public IdleWatch(Duration limit, LongSupplier nanos, Runnable onIdle) {}
 
     public void touch() {}
+
+    void streamOpened() {}
+
+    void streamClosed() {}
 }

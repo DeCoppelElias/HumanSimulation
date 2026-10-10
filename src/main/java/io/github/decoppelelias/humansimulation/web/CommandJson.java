@@ -10,7 +10,7 @@ import java.util.function.LongSupplier;
 /** A command's JSON: a {@code type} and the fields that type takes. Written in the shape it is read. */
 final class CommandJson {
     record Body(
-            String type,
+            Optional<String> type,
             Optional<String> species,
             Optional<Integer> count,
             Optional<GridPosition> at,
@@ -19,11 +19,12 @@ final class CommandJson {
     private CommandJson() {}
 
     static Command toCommand(Body body, LongSupplier freshSeed) {
-        return switch (body.type()) {
+        String type = required(body.type(), "a type");
+        return switch (type) {
             case "spawn" -> new Command.Spawn(required(body.species(), "species"), required(body.count(), "count"));
             case "spawnAt" -> new Command.SpawnAt(required(body.species(), "species"), required(body.at(), "at"));
             case "reset" -> new Command.Reset(body.seed().orElseGet(freshSeed::getAsLong));
-            default -> throw new IllegalArgumentException("unknown command type " + body.type());
+            default -> throw new IllegalArgumentException("unknown command type " + type);
         };
     }
 
