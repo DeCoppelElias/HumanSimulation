@@ -116,7 +116,7 @@ See [0002](decisions/0002-replace-the-model-layer-in-place.md),
 
 ## 2. Serving worlds over HTTP
 
-Status: not started.
+Status: done.
 
 A Javalin adapter serves an HTTP API, per
 [0020](decisions/0020-the-interface-is-a-web-page.md), listening on `127.0.0.1`

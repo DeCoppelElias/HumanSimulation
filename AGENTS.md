@@ -130,6 +130,11 @@ returns one intent, for testing the resolver. Test a brain by handing it a
 event stream needs `Accept: text/event-stream`, or Javalin answers with an
 empty body.
 
+A test of concurrent code waits for the state it needs, with a latch or a
+condition polled against a deadline, and never assumes which thread gets there
+first. Run blocking test work on its own virtual threads, not the common pool:
+a test that leaves pool threads blocked hangs whichever test runs after it.
+
 `DeterminismTest` replays a seed and a command log in one process, and
 `ReplayAcrossProcessesTest` runs two JVMs. `DomainBoundaryTest` fails when the
 domain depends on anything outside itself and `java.base`.
