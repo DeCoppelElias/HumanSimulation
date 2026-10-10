@@ -100,12 +100,19 @@ public final class Api {
                 WorldHost host = worlds.get(sse.ctx().pathParam("id"));
                 sse.keepAlive();
                 Viewer viewer = new Viewer(sse, keepAlive);
-                host.attach(viewer);
+                // The close callback is in place before the world can see the viewer, so a delete that closes the
+                // stream straight away still balances the count.
                 idle.streamOpened();
                 sse.onClose(() -> {
                     host.detach(viewer);
                     idle.streamClosed();
                 });
+                try {
+                    host.attach(viewer);
+                } catch (RuntimeException e) {
+                    sse.close();
+                    throw e;
+                }
                 Thread.ofVirtual().name("viewer-" + host.id()).start(viewer::run);
             });
 

@@ -58,6 +58,14 @@ class WorldsTest {
                 threads);
         started.await();
         CompletableFuture<Void> deleting = CompletableFuture.runAsync(() -> worlds.delete(busy.id()), threads);
+        CompletableFuture.runAsync(
+                        () -> {
+                            while (worlds.all().contains(busy)) {
+                                Thread.onSpinWait();
+                            }
+                        },
+                        threads)
+                .get(2, TimeUnit.SECONDS);
 
         assertThat(CompletableFuture.supplyAsync(() -> worlds.get(other.id()), threads)
                         .get(2, TimeUnit.SECONDS))
