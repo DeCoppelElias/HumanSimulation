@@ -76,28 +76,48 @@ public final class ServeCommand implements Callable<Integer> {
             throw new ParameterException(spec.commandLine(), e.getMessage());
         }
         CountDownLatch quit = new CountDownLatch(1);
-        Runnable onIdle = noBrowser ? quit::countDown : worlds::pauseAll;
-        IdleWatch idle = new IdleWatch(Duration.ofMinutes(minutes), System::nanoTime, onIdle);
+        IdleWatch idle = new IdleWatch(
+                Duration.ofMinutes(minutes), System::nanoTime, onIdle(noBrowser, quit::countDown, worlds::pauseAll));
         Javalin app = Api.create(worlds, idle, KEEP_ALIVE, System::nanoTime).start(host, port);
         ScheduledExecutorService checks = Executors.newSingleThreadScheduledExecutor(
                 Thread.ofPlatform().daemon().factory());
-        checks.scheduleAtFixedRate(idle::check, IDLE_CHECK_SECONDS, IDLE_CHECK_SECONDS, TimeUnit.SECONDS);
+        checks.scheduleAtFixedRate(
+                () -> {
+                    // A task that throws is never scheduled again, which would end idle checking for good.
+                    try {
+                        idle.check();
+                    } catch (RuntimeException e) {
+                        LOG.warn("The idle check failed", e);
+                    }
+                },
+                IDLE_CHECK_SECONDS,
+                IDLE_CHECK_SECONDS,
+                TimeUnit.SECONDS);
         if (!noBrowser) {
             LOG.info("No page yet: the browser view arrives in a later version. Serving the API.");
         }
         PrintWriter out = spec.commandLine().getOut();
-        out.print("{\"event\":\"ready\",\"url\":" + JsonStrings.quote("http://" + host + ":" + app.port())
-                + ",\"port\":" + app.port() + "}\n");
+        out.print(readyLine(host, app.port()) + "\n");
         out.flush();
         quit.await();
         LOG.info("Quitting after {} idle minutes.", minutes);
         checks.shutdownNow();
-        app.stop();
         worlds.closeAll();
+        app.stop();
         return CommandLine.ExitCode.OK;
     }
 
     static int idleMinutes(boolean noBrowser, Optional<Integer> given) {
         return given.orElse(noBrowser ? AGENT_IDLE_MINUTES : PERSON_IDLE_MINUTES);
+    }
+
+    static Runnable onIdle(boolean noBrowser, Runnable quit, Runnable pauseAll) {
+        return noBrowser ? quit : pauseAll;
+    }
+
+    static String readyLine(String host, int port) {
+        String address = host.contains(":") ? "[" + host + "]" : host;
+        return "{\"event\":\"ready\",\"url\":" + JsonStrings.quote("http://" + address + ":" + port) + ",\"port\":"
+                + port + "}";
     }
 }

@@ -3,12 +3,15 @@ package io.github.decoppelelias.humansimulation.web;
 import io.github.decoppelelias.humansimulation.domain.Command;
 import io.github.decoppelelias.humansimulation.domain.WorldSnapshot;
 import io.javalin.Javalin;
+import io.javalin.http.Context;
 import io.javalin.json.JavalinJackson3;
 import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.LongSupplier;
 import tools.jackson.core.JacksonException;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.json.JsonMapper;
 
 public final class Api {
     private static final int DEFAULT_SIDE = 20;
@@ -19,20 +22,24 @@ public final class Api {
 
     private record StepRequest(Optional<Integer> days) {}
 
-    private record RateRequest(double daysPerSecond) {}
+    private record RateRequest(Optional<Double> daysPerSecond) {}
 
     private Api() {}
 
     public static Javalin create(Worlds worlds, IdleWatch idle, Duration keepAlive, LongSupplier freshSeed) {
+        JsonMapper mapper = JavalinJackson3.defaultMapper()
+                .rebuild()
+                .enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+                .build();
         return Javalin.create(config -> {
             config.startup.showJavalinBanner = false;
-            config.jsonMapper(new JavalinJackson3());
+            config.jsonMapper(new JavalinJackson3(mapper, false));
             config.routes.before(ctx -> idle.touch());
 
             config.routes.post("/worlds", ctx -> {
                 CreateRequest request = ctx.body().isBlank()
                         ? new CreateRequest(Optional.empty(), Optional.empty(), Optional.empty())
-                        : ctx.bodyAsClass(CreateRequest.class);
+                        : body(ctx, CreateRequest.class);
                 WorldHost host = worlds.create(
                         request.width().orElse(DEFAULT_SIDE),
                         request.height().orElse(DEFAULT_SIDE),
@@ -52,13 +59,13 @@ public final class Api {
             });
 
             config.routes.post("/worlds/{id}/commands", ctx -> {
-                Command command = CommandJson.toCommand(ctx.bodyAsClass(CommandJson.Body.class), freshSeed);
+                Command command = CommandJson.toCommand(body(ctx, CommandJson.Body.class), freshSeed);
                 worlds.get(ctx.pathParam("id")).submit(command).ifPresentOrElse(ctx::json, () -> ctx.status(202));
             });
             config.routes.post("/worlds/{id}/step", ctx -> {
                 int days = ctx.body().isBlank()
                         ? 1
-                        : ctx.bodyAsClass(StepRequest.class).days().orElse(1);
+                        : body(ctx, StepRequest.class).days().orElse(1);
                 ctx.json(worlds.get(ctx.pathParam("id")).step(days));
             });
             config.routes.post(
@@ -67,10 +74,12 @@ public final class Api {
             config.routes.post(
                     "/worlds/{id}/pause",
                     ctx -> ctx.json(worlds.get(ctx.pathParam("id")).pause()));
-            config.routes.put(
-                    "/worlds/{id}/rate",
-                    ctx -> ctx.json(worlds.get(ctx.pathParam("id"))
-                            .rate(ctx.bodyAsClass(RateRequest.class).daysPerSecond())));
+            config.routes.put("/worlds/{id}/rate", ctx -> {
+                double daysPerSecond = body(ctx, RateRequest.class)
+                        .daysPerSecond()
+                        .orElseThrow(() -> new IllegalArgumentException("the rate needs daysPerSecond"));
+                ctx.json(worlds.get(ctx.pathParam("id")).rate(daysPerSecond));
+            });
             config.routes.get("/worlds/{id}/census", ctx -> {
                 int from = Optional.ofNullable(ctx.queryParam("from"))
                         .map(Integer::parseInt)
@@ -84,16 +93,19 @@ public final class Api {
             config.routes.get(
                     "/worlds/{id}/log",
                     ctx -> ctx.json(worlds.get(ctx.pathParam("id")).log()));
+
+            // Javalin commits the stream's headers before its handler runs, so an unknown world is refused here.
+            config.routes.before("/worlds/{id}/events", ctx -> worlds.get(ctx.pathParam("id")));
             config.routes.sse("/worlds/{id}/events", sse -> {
                 WorldHost host = worlds.get(sse.ctx().pathParam("id"));
                 sse.keepAlive();
                 Viewer viewer = new Viewer(sse, keepAlive);
+                host.attach(viewer);
                 idle.streamOpened();
                 sse.onClose(() -> {
                     host.detach(viewer);
                     idle.streamClosed();
                 });
-                host.attach(viewer);
                 Thread.ofVirtual().name("viewer-" + host.id()).start(viewer::run);
             });
 
@@ -108,5 +120,13 @@ public final class Api {
             config.routes.exception(
                     IllegalArgumentException.class, (e, ctx) -> ctx.status(400).json(Map.of("error", e.getMessage())));
         });
+    }
+
+    /** A JSON {@code null} body binds to no object, and Javalin's Kotlin signature throws on it, so it is refused first. */
+    private static <T> T body(Context ctx, Class<T> type) {
+        if (ctx.body().strip().equals("null")) {
+            throw new IllegalArgumentException("the body must be a JSON object");
+        }
+        return ctx.bodyAsClass(type);
     }
 }

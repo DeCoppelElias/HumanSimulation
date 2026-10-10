@@ -14,12 +14,14 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 class ServeCommandTest {
     private static final Pattern READY =
             Pattern.compile("\\{\"event\":\"ready\",\"url\":\"http://127\\.0\\.0\\.1:(\\d+)\",\"port\":(\\d+)}");
 
     @Test
+    @Timeout(30)
     void printsAReadyLineOnStdoutAndServesTheApi() throws Exception {
         Process process = new ProcessBuilder(List.of(
                         Path.of(System.getProperty("java.home"), "bin", "java").toString(),

@@ -14,6 +14,8 @@ that settled it.
 
 - [Aggression at contested food](aggression-at-contested-food.md) the 2022 food
   contest, left out of the rebuild on purpose.
+- [Bounded census history](bounded-census-history.md) keeping a playing world's
+  history from growing without limit.
 - [Brain library](brain-library.md) saving genomes you like and loading them
   into a later run.
 - [Brain memory](brain-memory.md) a brain that keeps a chosen target from one

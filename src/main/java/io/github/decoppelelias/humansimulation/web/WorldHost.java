@@ -17,13 +17,19 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** One world and the thread that owns it. Everything that touches the world runs on that thread. */
 final class WorldHost {
+    private static final Logger LOG = LoggerFactory.getLogger(WorldHost.class);
+
     static final double MIN_RATE = 0.5;
     static final double MAX_RATE = 10;
     static final double DEFAULT_RATE = 2;
@@ -45,8 +51,10 @@ final class WorldHost {
     private volatile WorldSnapshot latest;
     private volatile boolean playing;
     private volatile double daysPerSecond = DEFAULT_RATE;
+    private final AtomicBoolean closing = new AtomicBoolean();
     private Optional<ScheduledFuture<?>> timer = Optional.empty();
     private boolean resetPending;
+    private boolean closed;
 
     WorldHost(String id, int width, int height, long seed, List<Species> species) {
         this.id = id;
@@ -191,18 +199,34 @@ final class WorldHost {
     }
 
     void close() {
+        if (!closing.compareAndSet(false, true)) {
+            return;
+        }
         call(() -> {
             playing = false;
             cancelTimer();
             viewers.forEach(Viewer::close);
+            closed = true;
             return 0;
         });
-        thread.shutdownNow();
+        // Tasks already queued still run, and find the world closed instead of waiting forever.
+        thread.shutdown();
     }
 
     <T> T call(Callable<T> task) {
+        Future<T> result;
         try {
-            return thread.submit(task).get();
+            result = thread.submit(() -> {
+                if (closed) {
+                    throw gone();
+                }
+                return task.call();
+            });
+        } catch (RejectedExecutionException e) {
+            throw gone();
+        }
+        try {
+            return result.get();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             throw new IllegalStateException(e);
@@ -214,9 +238,24 @@ final class WorldHost {
         }
     }
 
+    private ApiException gone() {
+        return new ApiException(404, "no world " + id);
+    }
+
     private void schedule() {
         long period = Math.round(1_000_000_000 / daysPerSecond);
-        timer = Optional.of(thread.scheduleAtFixedRate(this::advance, period, period, TimeUnit.NANOSECONDS));
+        timer = Optional.of(thread.scheduleAtFixedRate(this::tick, period, period, TimeUnit.NANOSECONDS));
+    }
+
+    /** A timer task that throws is silently never run again, so a failed day pauses the world instead. */
+    private void tick() {
+        try {
+            advance();
+        } catch (RuntimeException e) {
+            LOG.error("World {} stopped playing after a day failed", id, e);
+            playing = false;
+            cancelTimer();
+        }
     }
 
     private void cancelTimer() {

@@ -49,10 +49,13 @@ final class Viewer {
                     client.sendComment("keepalive");
                     continue;
                 }
+                // The host flags a reset before it offers the first day after it, so taking the event first and
+                // the flag second never sends that day ahead of its reset.
+                Optional<StreamEvent> event = slot.getAndSet(Optional.empty());
                 if (censusReset.getAndSet(false)) {
                     client.sendEvent("censusReset", Map.of());
                 }
-                slot.getAndSet(Optional.empty()).ifPresent(this::send);
+                event.ifPresent(this::send);
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();

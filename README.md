@@ -50,5 +50,5 @@ read it back:
 `GET /worlds/ID` is the current snapshot, `POST .../play` and `.../pause` run
 it on a timer, and `GET .../events` streams each day. `docs/roadmap.md` lists
 every route. With `--no-browser` the server quits after 10 minutes without a
-request, and without it never quits. It listens on `127.0.0.1` unless `--host`
+request or an open stream, and without it never quits. It listens on `127.0.0.1` unless `--host`
 says otherwise.

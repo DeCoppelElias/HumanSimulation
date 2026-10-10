@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,12 +20,15 @@ import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
 
 class ApiTest {
+    private record OpenStream(List<String> lines, CompletableFuture<Void> ended, Stream<String> body) {}
+
+    private Worlds worlds;
     private Javalin app;
     private HttpTestClient client;
 
     @BeforeEach
     void start() {
-        Worlds worlds = new Worlds(3, List.of(Rabbit.species()));
+        worlds = new Worlds(3, List.of(Rabbit.species()));
         IdleWatch idle = new IdleWatch(Duration.ZERO, System::nanoTime, () -> {});
         app = Api.create(worlds, idle, Duration.ofMillis(200), System::nanoTime).start("127.0.0.1", 0);
         client = new HttpTestClient(app.port());
@@ -31,6 +36,7 @@ class ApiTest {
 
     @AfterEach
     void stop() {
+        worlds.closeAll();
         app.stop();
     }
 
@@ -269,29 +275,98 @@ class ApiTest {
     @Test
     void theStreamSendsSnapshotsDaysAndKeepalives() {
         String id = newWorld();
+        OpenStream stream = openStream(id);
+        awaitLine(stream.lines(), "event: snapshot");
+        client.post("/worlds/" + id + "/step", "{\"days\":3}");
+        awaitLine(stream.lines(), "event: day");
+        await(stream.lines(), line -> line.startsWith("data: ") && line.contains("\"census\":{\"day\":3"));
+        client.delete("/worlds/" + id + "/census");
+        awaitLine(stream.lines(), "event: censusReset");
+        awaitLine(stream.lines(), ": keepalive");
+        stream.body().close();
+    }
+
+    @Test
+    void deletingAWorldEndsItsStream() throws Exception {
+        String id = newWorld();
+        OpenStream stream = openStream(id);
+        awaitLine(stream.lines(), "event: snapshot");
+        client.delete("/worlds/" + id);
+        stream.ended().get(3, TimeUnit.SECONDS);
+    }
+
+    @Test
+    void theStreamOfAnUnknownWorldIs404() throws Exception {
+        HttpRequest request = HttpRequest.newBuilder(client.uri("/worlds/nope/events"))
+                .header("Accept", "text/event-stream")
+                .build();
+        HttpResponse<String> response = client.http().send(request, HttpResponse.BodyHandlers.ofString());
+        assertThat(response.statusCode()).isEqualTo(404);
+    }
+
+    @Test
+    void aJsonNullBodyIs400() {
+        String id = newWorld();
+        assertThat(client.post("/worlds", "null").status()).isEqualTo(400);
+        assertThat(command(id, "null").status()).isEqualTo(400);
+        assertThat(client.post("/worlds/" + id + "/step", "null").status()).isEqualTo(400);
+        assertThat(client.put("/worlds/" + id + "/rate", "null").status()).isEqualTo(400);
+    }
+
+    @Test
+    void aMisspelledFieldIs400() {
+        HttpTestClient.Response response = client.post("/worlds", "{\"seed\":1,\"widht\":5}");
+        assertThat(response.status()).isEqualTo(400);
+        assertThat(response.json().get("error").asString()).contains("widht");
+    }
+
+    @Test
+    void aRateWithoutDaysPerSecondNamesTheField() {
+        String id = newWorld();
+        HttpTestClient.Response response = client.put("/worlds/" + id + "/rate", "{}");
+        assertThat(response.status()).isEqualTo(400);
+        assertThat(response.json().get("error").asString()).contains("daysPerSecond");
+    }
+
+    @Test
+    void aCommandOnAPlayingWorldLandsTheNextDay() throws InterruptedException {
+        String id = newWorld();
+        client.put("/worlds/" + id + "/rate", "{\"daysPerSecond\":10}");
+        client.post("/worlds/" + id + "/play", "");
+        assertThat(spawn(id, 2).status()).isEqualTo(202);
+        long deadline = System.nanoTime() + 3_000_000_000L;
+        while (client.get("/worlds/" + id).json().findValues("spriteKey").size() < 2 && System.nanoTime() < deadline) {
+            Thread.sleep(50);
+        }
+        client.post("/worlds/" + id + "/pause", "");
+        assertThat(client.get("/worlds/" + id).json().findValues("spriteKey")).hasSize(2);
+    }
+
+    private OpenStream openStream(String id) {
         List<String> lines = new CopyOnWriteArrayList<>();
         HttpRequest request = HttpRequest.newBuilder(client.uri("/worlds/" + id + "/events"))
                 .header("Accept", "text/event-stream")
-                .GET()
                 .build();
-        CompletableFuture<HttpResponse<Stream<String>>> stream =
-                client.http().sendAsync(request, HttpResponse.BodyHandlers.ofLines());
-        Thread.ofVirtual().start(() -> stream.join().body().forEach(lines::add));
-        awaitLine(lines, "event: snapshot");
-        client.post("/worlds/" + id + "/step", "{\"days\":3}");
-        awaitLine(lines, "event: day");
-        client.delete("/worlds/" + id + "/census");
-        awaitLine(lines, "event: censusReset");
-        awaitLine(lines, ": keepalive");
-        stream.cancel(true);
+        Stream<String> body = client.http()
+                .sendAsync(request, HttpResponse.BodyHandlers.ofLines())
+                .join()
+                .body();
+        CompletableFuture<Void> ended = new CompletableFuture<>();
+        Thread.ofVirtual().start(() -> {
+            body.forEach(lines::add);
+            ended.complete(null);
+        });
+        return new OpenStream(lines, ended, body);
     }
 
     private static void awaitLine(List<String> lines, String start) {
+        await(lines, line -> line.startsWith(start));
+    }
+
+    private static void await(List<String> lines, Predicate<String> wanted) {
         long deadline = System.nanoTime() + 3_000_000_000L;
-        while (lines.stream().noneMatch(line -> line.startsWith(start))) {
-            assertThat(System.nanoTime())
-                    .as("a line starting " + start + " in " + lines)
-                    .isLessThan(deadline);
+        while (lines.stream().noneMatch(wanted)) {
+            assertThat(System.nanoTime()).as("a wanted line in " + lines).isLessThan(deadline);
             Thread.onSpinWait();
         }
     }

@@ -48,9 +48,14 @@ public final class Worlds {
         return host;
     }
 
-    synchronized void delete(String id) {
-        get(id).close();
-        byId.remove(id);
+    /** Closes outside the lock, since closing waits for the world's thread, which may be busy stepping. */
+    void delete(String id) {
+        WorldHost host;
+        synchronized (this) {
+            host = get(id);
+            byId.remove(id);
+        }
+        host.close();
     }
 
     synchronized List<WorldHost> all() {
@@ -58,7 +63,13 @@ public final class Worlds {
     }
 
     public void pauseAll() {
-        all().forEach(WorldHost::pause);
+        for (WorldHost host : all()) {
+            try {
+                host.pause();
+            } catch (ApiException closedMeanwhile) {
+                // Deleted after the list was taken; there is nothing left to pause.
+            }
+        }
     }
 
     public void closeAll() {
