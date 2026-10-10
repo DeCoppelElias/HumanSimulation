@@ -111,6 +111,14 @@ class ApiTest {
     }
 
     @Test
+    void servesThePageAtTheRoot() {
+        HttpTestClient.Response page = client.get("/?world=abc");
+        assertThat(page.status()).isEqualTo(200);
+        assertThat(page.body()).contains("<title>test page</title>");
+        assertThat(client.get("/worlds").status()).isEqualTo(200);
+    }
+
+    @Test
     void unknownWorldIs404() {
         HttpTestClient.Response response = client.get("/worlds/nope");
         assertThat(response.status()).isEqualTo(404);

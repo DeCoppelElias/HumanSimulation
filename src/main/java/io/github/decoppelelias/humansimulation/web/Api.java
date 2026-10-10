@@ -4,6 +4,7 @@ import io.github.decoppelelias.humansimulation.domain.Command;
 import io.github.decoppelelias.humansimulation.domain.WorldSnapshot;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
+import io.javalin.http.staticfiles.Location;
 import io.javalin.json.JavalinJackson3;
 import java.time.Duration;
 import java.util.Map;
@@ -36,6 +37,14 @@ public final class Api {
                 .build();
         return Javalin.create(config -> {
             config.startup.showJavalinBanner = false;
+            // A jar built with -Pskip-frontend has no page and serves the API alone.
+            if (Api.class.getResource("/public/index.html") != null) {
+                config.staticFiles.add(files -> {
+                    files.hostedPath = "/";
+                    files.directory = "/public";
+                    files.location = Location.CLASSPATH;
+                });
+            }
             config.jsonMapper(new JavalinJackson3(mapper, false));
             config.routes.before(ctx -> idle.touch());
 
