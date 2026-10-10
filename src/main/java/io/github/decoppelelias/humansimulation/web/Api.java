@@ -16,6 +16,9 @@ import tools.jackson.databind.json.JsonMapper;
 public final class Api {
     private static final int DEFAULT_SIDE = 20;
 
+    /** The largest whole number a browser holds exactly, so a seed the page shows is the seed the world has. */
+    public static final long MAX_SEED = (1L << 53) - 1;
+
     private record CreateRequest(Optional<Integer> width, Optional<Integer> height, Optional<Long> seed) {}
 
     private record Created(String id, WorldSnapshot snapshot) {}
@@ -43,7 +46,7 @@ public final class Api {
                 WorldHost host = worlds.create(
                         request.width().orElse(DEFAULT_SIDE),
                         request.height().orElse(DEFAULT_SIDE),
-                        request.seed().orElseGet(freshSeed::getAsLong));
+                        request.seed().map(Api::checkSeed).orElseGet(freshSeed::getAsLong));
                 ctx.status(201).json(new Created(host.id(), host.snapshot()));
             });
             config.routes.get(
@@ -128,6 +131,14 @@ public final class Api {
             config.routes.exception(
                     IllegalArgumentException.class, (e, ctx) -> ctx.status(400).json(Map.of("error", e.getMessage())));
         });
+    }
+
+    /** Only a seed a client sent is checked; one the server draws is its own. */
+    static long checkSeed(long seed) {
+        if (seed > MAX_SEED || seed < -MAX_SEED) {
+            throw new IllegalArgumentException("a seed is at most " + MAX_SEED + " either way, got " + seed);
+        }
+        return seed;
     }
 
     /** A JSON {@code null} body binds to no object, and Javalin's Kotlin signature throws on it, so it is refused first. */

@@ -74,6 +74,19 @@ class ApiTest {
     }
 
     @Test
+    void aSeedBeyondTwoToThe53Is400() {
+        assertThat(client.post("/worlds", "{\"seed\":9007199254740992}").status())
+                .isEqualTo(400);
+        assertThat(client.post("/worlds", "{\"seed\":-9007199254740992}").status())
+                .isEqualTo(400);
+        assertThat(client.post("/worlds", "{\"seed\":9007199254740991}").status())
+                .isEqualTo(201);
+        String id = newWorld();
+        assertThat(command(id, "{\"type\":\"reset\",\"seed\":9007199254740992}").status())
+                .isEqualTo(400);
+    }
+
+    @Test
     void rejectsASideAbove25() {
         HttpTestClient.Response response = client.post("/worlds", "{\"width\":26}");
         assertThat(response.status()).isEqualTo(400);

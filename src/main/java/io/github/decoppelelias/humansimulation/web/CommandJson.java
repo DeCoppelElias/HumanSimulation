@@ -23,7 +23,7 @@ final class CommandJson {
         return switch (type) {
             case "spawn" -> new Command.Spawn(required(body.species(), "species"), required(body.count(), "count"));
             case "spawnAt" -> new Command.SpawnAt(required(body.species(), "species"), required(body.at(), "at"));
-            case "reset" -> new Command.Reset(body.seed().orElseGet(freshSeed::getAsLong));
+            case "reset" -> new Command.Reset(body.seed().map(Api::checkSeed).orElseGet(freshSeed::getAsLong));
             default -> throw new IllegalArgumentException("unknown command type " + type);
         };
     }

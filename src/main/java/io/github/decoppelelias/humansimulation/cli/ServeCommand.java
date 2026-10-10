@@ -78,7 +78,8 @@ public final class ServeCommand implements Callable<Integer> {
         CountDownLatch quit = new CountDownLatch(1);
         IdleWatch idle = new IdleWatch(
                 Duration.ofMinutes(minutes), System::nanoTime, onIdle(noBrowser, quit::countDown, worlds::pauseAll));
-        Javalin app = Api.create(worlds, idle, KEEP_ALIVE, System::nanoTime).start(host, port);
+        Javalin app = Api.create(worlds, idle, KEEP_ALIVE, () -> seedFromClock(System.nanoTime()))
+                .start(host, port);
         ScheduledExecutorService checks = Executors.newSingleThreadScheduledExecutor(
                 Thread.ofPlatform().daemon().factory());
         checks.scheduleAtFixedRate(
@@ -113,6 +114,10 @@ public final class ServeCommand implements Callable<Integer> {
 
     static Runnable onIdle(boolean noBrowser, Runnable quit, Runnable pauseAll) {
         return noBrowser ? quit : pauseAll;
+    }
+
+    static long seedFromClock(long nanos) {
+        return nanos & Api.MAX_SEED;
     }
 
     static String readyLine(String host, int port) {
