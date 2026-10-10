@@ -70,7 +70,8 @@ The pre-commit hook and CI run `docs-check.py`.
 
 - `src/main/java/io/github/decoppelelias/humansimulation/` `Main` at the root,
   `domain/` the model, one flat package with the public `World` and the values
-  that cross its boundary, and `cli/` the picocli `run` command.
+  that cross its boundary, `web/` the Javalin API that `serve` starts, and
+  `cli/` the picocli `run` and `serve` commands.
 - `src/test/java/` mirrors those packages, so tests reach package-private types.
 
 ## Build and run
@@ -124,6 +125,10 @@ species)`, which owns the one generator everything draws from, so a seeded test
 replays exactly. `TestSpecies.walker(intent)` gives a species whose brain always
 returns one intent, for testing the resolver. Test a brain by handing it a
 `Perception` and an `Options`, with no world.
+
+`ApiTest` drives a running server through `HttpTestClient`. A request for the
+event stream needs `Accept: text/event-stream`, or Javalin answers with an
+empty body.
 
 `DeterminismTest` replays a seed and a command log in one process, and
 `ReplayAcrossProcessesTest` runs two JVMs. `DomainBoundaryTest` fails when the

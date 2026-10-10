@@ -28,3 +28,27 @@ JSON Lines, one line per day.
 `--days` is required. `--seed` defaults to one drawn from the clock, `--width`
 and `--height` to 20, and `--spawn rabbit=10` sets the starting population. The
 same seed prints the same lines.
+
+## Serving
+
+`serve` holds worlds behind an HTTP API, for an agent today and for the page
+once it exists. It prints one line on stdout when it is ready and logs to
+stderr.
+
+    java -jar target/HumanSimulation.jar serve --no-browser --port 0
+    {"event":"ready","url":"http://127.0.0.1:63214","port":63214}
+
+A world starts empty and paused. Create one, spawn rabbits, step it ahead and
+read it back:
+
+    curl -X POST localhost:63214/worlds -d '{"seed":42}'
+    curl -X POST localhost:63214/worlds/ID/commands -d '{"type":"spawn","species":"rabbit","count":10}'
+    curl -X POST localhost:63214/worlds/ID/step -d '{"days":500}'
+    curl localhost:63214/worlds/ID/census?from=498
+    curl localhost:63214/worlds/ID/log
+
+`GET /worlds/ID` is the current snapshot, `POST .../play` and `.../pause` run
+it on a timer, and `GET .../events` streams each day. `docs/roadmap.md` lists
+every route. With `--no-browser` the server quits after 10 minutes without a
+request, and without it never quits. It listens on `127.0.0.1` unless `--host`
+says otherwise.
