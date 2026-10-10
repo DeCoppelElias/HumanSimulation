@@ -1,6 +1,7 @@
 package io.github.decoppelelias.humansimulation;
 
 import io.github.decoppelelias.humansimulation.cli.RunCommand;
+import io.github.decoppelelias.humansimulation.cli.ServeCommand;
 import picocli.CommandLine;
 import picocli.CommandLine.Model.CommandSpec;
 import picocli.CommandLine.Spec;
@@ -8,7 +9,7 @@ import picocli.CommandLine.Spec;
 @CommandLine.Command(
         name = "humansimulation",
         mixinStandardHelpOptions = true,
-        subcommands = RunCommand.class,
+        subcommands = {RunCommand.class, ServeCommand.class},
         description = "A grid world you watch evolve.")
 public final class Main implements Runnable {
     @Spec

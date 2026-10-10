@@ -15,13 +15,12 @@ final class CensusLine {
                 .append(",\"population\":{");
         String separator = "";
         for (Map.Entry<String, Integer> entry : row.population().entrySet()) {
-            line.append(separator).append(quote(entry.getKey())).append(':').append(entry.getValue());
+            line.append(separator)
+                    .append(JsonStrings.quote(entry.getKey()))
+                    .append(':')
+                    .append(entry.getValue());
             separator = ",";
         }
         return line.append("}}").toString();
-    }
-
-    private static String quote(String text) {
-        return '"' + text.replace("\\", "\\\\").replace("\"", "\\\"") + '"';
     }
 }

@@ -57,6 +57,10 @@ public final class Worlds {
         return new ArrayList<>(byId.values());
     }
 
+    public void pauseAll() {
+        all().forEach(WorldHost::pause);
+    }
+
     public void closeAll() {
         all().forEach(WorldHost::close);
     }
