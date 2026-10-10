@@ -5,7 +5,10 @@ import io.github.decoppelelias.humansimulation.web.Api;
 import io.github.decoppelelias.humansimulation.web.IdleWatch;
 import io.github.decoppelelias.humansimulation.web.Worlds;
 import io.javalin.Javalin;
+import java.awt.Desktop;
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URI;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
@@ -14,6 +17,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -94,12 +98,12 @@ public final class ServeCommand implements Callable<Integer> {
                 IDLE_CHECK_SECONDS,
                 IDLE_CHECK_SECONDS,
                 TimeUnit.SECONDS);
-        if (!noBrowser) {
-            LOG.info("No page yet: the browser view arrives in a later version. Serving the API.");
-        }
         PrintWriter out = spec.commandLine().getOut();
         out.print(readyLine(host, app.port()) + "\n");
         out.flush();
+        if (!noBrowser) {
+            showPage(pageAddress(host, app.port()), desktopBrowser(), LOG::info);
+        }
         quit.await();
         LOG.info("Quitting after {} idle minutes.", minutes);
         checks.shutdownNow();
@@ -114,6 +118,29 @@ public final class ServeCommand implements Callable<Integer> {
 
     static Runnable onIdle(boolean noBrowser, Runnable quit, Runnable pauseAll) {
         return noBrowser ? quit : pauseAll;
+    }
+
+    static URI pageAddress(String host, int port) {
+        String browsable = host.equals("0.0.0.0") || host.equals("::") ? "127.0.0.1" : host;
+        String address = browsable.contains(":") ? "[" + browsable + "]" : browsable;
+        return URI.create("http://" + address + ":" + port + "/");
+    }
+
+    static void showPage(URI page, Optional<Consumer<URI>> browser, Consumer<String> log) {
+        browser.ifPresentOrElse(open -> open.accept(page), () -> log.accept("Open " + page + " to watch."));
+    }
+
+    static Optional<Consumer<URI>> desktopBrowser() {
+        if (!Desktop.isDesktopSupported() || !Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
+            return Optional.empty();
+        }
+        return Optional.of(page -> {
+            try {
+                Desktop.getDesktop().browse(page);
+            } catch (IOException e) {
+                LOG.warn("Could not open a browser. Open {} to watch.", page, e);
+            }
+        });
     }
 
     static long seedFromClock(long nanos) {
