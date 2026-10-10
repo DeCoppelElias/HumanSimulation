@@ -21,14 +21,17 @@ class WorldHostTest {
     @Timeout(10)
     void oneStepAtATime() throws Exception {
         WorldHost host = host();
+        CountDownLatch started = new CountDownLatch(1);
         CountDownLatch release = new CountDownLatch(1);
         ExecutorService threads = Executors.newVirtualThreadPerTaskExecutor();
         CompletableFuture<Integer> blocker = CompletableFuture.supplyAsync(
                 () -> host.call(() -> {
+                    started.countDown();
                     release.await();
                     return 0;
                 }),
                 threads);
+        started.await();
         CompletableFuture<Integer> first =
                 CompletableFuture.supplyAsync(() -> host.step(1).census().day(), threads);
         while (!host.stepping()) {

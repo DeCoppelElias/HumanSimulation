@@ -109,9 +109,10 @@ public final class Api {
                 });
                 try {
                     host.attach(viewer);
-                } catch (RuntimeException e) {
+                } catch (ApiException deletedMeanwhile) {
+                    // The stream's headers are already sent, so ending it is the only answer left.
                     sse.close();
-                    throw e;
+                    return;
                 }
                 Thread.ofVirtual().name("viewer-" + host.id()).start(viewer::run);
             });
