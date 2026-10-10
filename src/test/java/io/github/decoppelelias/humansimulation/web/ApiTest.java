@@ -287,6 +287,38 @@ class ApiTest {
     }
 
     @Test
+    void theStreamSendsThePlayStateOnAttachAndOnEveryChange() {
+        String id = newWorld();
+        OpenStream stream = openStream(id);
+        awaitLine(stream.lines(), "event: playState");
+        awaitLine(stream.lines(), "data: {\"playing\":false,\"daysPerSecond\":2.0}");
+        client.put("/worlds/" + id + "/rate", "{\"daysPerSecond\":5}");
+        awaitLine(stream.lines(), "data: {\"playing\":false,\"daysPerSecond\":5.0}");
+        client.post("/worlds/" + id + "/play", "");
+        awaitLine(stream.lines(), "data: {\"playing\":true,\"daysPerSecond\":5.0}");
+        client.post("/worlds/" + id + "/pause", "");
+        awaitLineAfter(
+                stream.lines(),
+                "data: {\"playing\":true,\"daysPerSecond\":5.0}",
+                "data: {\"playing\":false,\"daysPerSecond\":5.0}");
+        stream.body().close();
+    }
+
+    @Test
+    void theIdlePauseReachesTheStream() {
+        String id = newWorld();
+        OpenStream stream = openStream(id);
+        client.post("/worlds/" + id + "/play", "");
+        awaitLine(stream.lines(), "data: {\"playing\":true,\"daysPerSecond\":2.0}");
+        worlds.pauseAll();
+        awaitLineAfter(
+                stream.lines(),
+                "data: {\"playing\":true,\"daysPerSecond\":2.0}",
+                "data: {\"playing\":false,\"daysPerSecond\":2.0}");
+        stream.body().close();
+    }
+
+    @Test
     void deletingAWorldEndsItsStream() throws Exception {
         String id = newWorld();
         OpenStream stream = openStream(id);
@@ -361,6 +393,11 @@ class ApiTest {
 
     private static void awaitLine(List<String> lines, String start) {
         await(lines, line -> line.startsWith(start));
+    }
+
+    /** The same play state can be sent twice in one test, so this waits for one after another. */
+    private static void awaitLineAfter(List<String> lines, String earlier, String later) {
+        await(lines, ignored -> lines.contains(earlier) && lines.lastIndexOf(later) > lines.indexOf(earlier));
     }
 
     private static void await(List<String> lines, Predicate<String> wanted) {

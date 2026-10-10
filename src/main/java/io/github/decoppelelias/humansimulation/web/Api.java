@@ -99,7 +99,7 @@ public final class Api {
             config.routes.sse("/worlds/{id}/events", sse -> {
                 WorldHost host = worlds.get(sse.ctx().pathParam("id"));
                 sse.keepAlive();
-                Viewer viewer = new Viewer(sse, keepAlive);
+                Viewer viewer = new Viewer(Viewer.Sink.of(sse), keepAlive);
                 // The close callback is in place before the world can see the viewer, so a delete that closes the
                 // stream straight away still balances the count.
                 idle.streamOpened();
