@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { merge, receive, refreshed, speciesIn, toSeries } from "./census";
+import type { CensusRow } from "./types";
 
 const row = (day: number, rabbit = 10) => ({ day, population: { rabbit } });
 
@@ -47,7 +48,7 @@ describe("the census history", () => {
     });
 
     test("series are a day column and one column per species", () => {
-        const history = [
+        const history: CensusRow[] = [
             { day: 1, population: { rabbit: 10, wolf: 1 } },
             { day: 2, population: { rabbit: 12 } },
         ];
