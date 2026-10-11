@@ -1,0 +1,31 @@
+export type GridPosition = { x: number; y: number };
+export type EntityView = {
+    id: number;
+    species: string;
+    spriteKey: string;
+    info: Record<string, number>;
+};
+export type TileView = { at: GridPosition; fields: Record<string, number>; entities: EntityView[] };
+export type WorldSnapshot = {
+    seed: number;
+    day: number;
+    width: number;
+    height: number;
+    tiles: TileView[];
+};
+export type CensusRow = { day: number; population: Record<string, number> };
+export type DayReport = { snapshot: WorldSnapshot; census: CensusRow };
+export type PlayState = { playing: boolean; daysPerSecond: number };
+export type WorldSummary = {
+    id: string;
+    width: number;
+    height: number;
+    seed: number;
+    day: number;
+    playing: boolean;
+    population: Record<string, number>;
+};
+export type Command =
+    | { type: "spawn"; species: string; count: number }
+    | { type: "spawnAt"; species: string; at: GridPosition }
+    | { type: "reset"; seed?: number };
