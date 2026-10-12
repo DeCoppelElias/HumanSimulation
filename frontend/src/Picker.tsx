@@ -9,6 +9,7 @@ type Props = { api: Api; onOpen(id: string): void; onError(message: string): voi
 export function Picker({ api, onOpen, onError }: Props) {
     const [worlds, setWorlds] = useState<WorldSummary[]>([]);
     const [seedText, setSeedText] = useState("");
+    const [creating, setCreating] = useState(false);
 
     const refresh = useCallback(() => {
         api.listWorlds().then(setWorlds, (error: unknown) => onError(messageOf(error)));
@@ -21,6 +22,7 @@ export function Picker({ api, onOpen, onError }: Props) {
             onError(seed.reason);
             return;
         }
+        setCreating(true);
         try {
             const created = await api.createWorld(seed.kind === "seed" ? seed.seed : null);
             await api.command(created.id, {
@@ -31,6 +33,8 @@ export function Picker({ api, onOpen, onError }: Props) {
             onOpen(created.id);
         } catch (error) {
             onError(messageOf(error));
+        } finally {
+            setCreating(false);
         }
     };
 
@@ -68,7 +72,9 @@ export function Picker({ api, onOpen, onError }: Props) {
                     onChange={(e) => setSeedText(e.target.value)}
                 />
             </label>
-            <button onClick={() => void create()}>Create a world</button>
+            <button disabled={creating} onClick={() => void create()}>
+                Create a world
+            </button>
         </section>
     );
 }

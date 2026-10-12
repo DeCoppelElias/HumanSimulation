@@ -23,22 +23,32 @@ export class Scene {
     private readonly pool = new Map<number, Sprite>();
     private readonly textures = new Map<string, Texture>();
     private readonly loading = new Set<string>();
+    private readonly failed = new Set<string>();
     private transition: Transition | null = null;
     private started = 0;
     private previous: WorldSnapshot | null = null;
 
-    private constructor(private readonly app: Application) {}
+    private constructor(
+        private readonly app: Application,
+        private readonly onError: (message: string) => void,
+    ) {}
 
     static async create(
         host: HTMLElement,
         width: number,
         height: number,
         onTileClick: (at: GridPosition) => void,
+        onError: (message: string) => void,
     ): Promise<Scene> {
         const app = new Application();
         await app.init({ width: width * TILE, height: height * TILE, background: "#84c669" });
-        const scene = new Scene(app);
-        scene.textures.set("rabbit", await Assets.load<Texture>("/sprites/rabbit.png"));
+        const scene = new Scene(app, onError);
+        try {
+            scene.textures.set("rabbit", await Assets.load<Texture>("/sprites/rabbit.png"));
+        } catch (error) {
+            scene.destroy();
+            throw error;
+        }
         app.stage.addChild(tileLines(width, height), scene.sprites, scene.labels);
         app.stage.eventMode = "static";
         app.stage.hitArea = new Rectangle(0, 0, width * TILE, height * TILE);
@@ -84,7 +94,7 @@ export class Scene {
         for (const placed of frame) {
             const texture = this.texture(placed.spriteKey);
             if (texture === null) {
-                waiting = true;
+                waiting ||= !this.failed.has(placed.spriteKey);
                 continue;
             }
             let sprite = this.pool.get(placed.id);
@@ -131,7 +141,7 @@ export class Scene {
         }
     }
 
-    /** A texture loads once, on first sight of its key; until then that species is not drawn. */
+    /** A texture loads once, on first sight of its key; until then, or if it fails, that species is not drawn. */
     private texture(key: string): Texture | null {
         const loaded = this.textures.get(key);
         if (loaded !== undefined) {
@@ -139,8 +149,12 @@ export class Scene {
         }
         if (!this.loading.has(key)) {
             this.loading.add(key);
-            void Assets.load<Texture>(`/sprites/${key}.png`).then((texture) =>
-                this.textures.set(key, texture),
+            Assets.load<Texture>(`/sprites/${key}.png`).then(
+                (texture) => this.textures.set(key, texture),
+                () => {
+                    this.failed.add(key);
+                    this.onError(`There is no sprite for ${key}, so it is not drawn.`);
+                },
             );
         }
         return null;

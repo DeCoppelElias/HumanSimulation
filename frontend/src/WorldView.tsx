@@ -38,6 +38,7 @@ export function WorldView({ api, id, onLeave, onError }: Props) {
                         .command(id, { type: "spawnAt", species: "rabbit", at })
                         .catch((error: unknown) => onError(messageOf(error)))
                 }
+                onError={onError}
             />
             <Chart history={history} />
             <Controls

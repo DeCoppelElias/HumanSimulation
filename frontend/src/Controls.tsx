@@ -69,7 +69,10 @@ export function Controls({ api, id, play, onError, onLeave }: Props) {
                     value={play.daysPerSecond}
                     onChange={(e) => void run(() => api.rate(id, Number(e.target.value)))}
                 >
-                    {RATES.map((rate) => (
+                    {(RATES.includes(play.daysPerSecond)
+                        ? RATES
+                        : [...RATES, play.daysPerSecond].sort((a, b) => a - b)
+                    ).map((rate) => (
                         <option key={rate} value={rate}>
                             {rate}
                         </option>
