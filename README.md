@@ -29,7 +29,7 @@ hot reload on port 5173, passing API calls to a `serve` on port 7070.
 `serve` opens the page in your browser. Pick a world or create one, with a seed
 or one drawn from the clock, and it starts with ten rabbits on a 20 by 20 grid.
 Play, pause, step, change the speed or fast-forward up to 10,000 days. Click a
-tile to drop a rabbit there. A chart below the grid follows the population. The
+tile to drop a rabbit there. A chart beside the grid follows the population. The
 address holds the world's id, so a reload or a second tab shows the same world.
 
 The rabbit sprite is from [Kenney](https://kenney.nl)'s Animal Pack Remastered,

@@ -152,10 +152,10 @@ compiling it to the browser with TeaVM available.
 
 Smooth movement needs no change to the domain, because snapshots already carry
 ids. It is smooth for every day a viewer sees, and a stretch the viewer skipped
-shows as its end state.
+shows as its end state. A hop animation or a death effect wants events, which
+are an additive field on the report rather than a new channel.
 
 Only visible tabs hold a connection, so the six-connection limit binds only
 with six pages on screen. A world left playing in a tab hidden for the idle
 period from [0021](0021-agents-drive-worlds-over-http-and-run.md) gets paused,
-since a hidden tab no longer counts as watching. A hop animation or a death effect wants events, which are an additive field
-on the report rather than a new channel.
+since a hidden tab no longer counts as watching.

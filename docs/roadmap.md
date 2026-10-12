@@ -169,7 +169,7 @@ Depends on entry 1. See
 
 ## 3. Watching in a browser
 
-Status: not started.
+Status: done.
 
 The frontend is React with TypeScript and Vite in `frontend/`, built into the
 jar by `frontend-maven-plugin` through `target/classes/public`, so nothing it
@@ -185,8 +185,8 @@ warnings, Prettier's check and Vitest. `-Pskip-frontend` skips all of it for
 Java-only work and is never used in CI or the release.
 `tools/comment-check.py` covers `.ts` and `.tsx`.
 
-A PixiJS canvas draws the grid with a rabbit sprite and a ground tile from a
-Kenney CC0 pack, with its licence beside the files. It diffs snapshots by id,
+A PixiJS canvas draws the grid with a rabbit sprite from a Kenney CC0 pack, with
+its licence beside the file, on a flat green ground with faint tile lines. It diffs snapshots by id,
 fades rabbits in and out, and shows a count on a tile holding more than one,
 drawing the lowest-id occupant. A rabbit glides between its tiles only when the
 day went up by exactly one, over one day at the playback rate, or 300 ms for a
