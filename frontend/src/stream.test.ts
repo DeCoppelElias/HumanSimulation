@@ -42,7 +42,8 @@ class FakeVisibility implements Visibility {
 function recorder() {
     const seen: string[] = [];
     const handlers: StreamHandlers = {
-        snapshot: (snapshot) => seen.push(`snapshot ${snapshot.day}`),
+        snapshot: (snapshot, first) =>
+            seen.push(`snapshot ${snapshot.day}${first ? " first" : ""}`),
         day: (report) => seen.push(`day ${report.census.day}`),
         playState: (state) => seen.push(`playing ${state.playing}`),
         censusReset: () => seen.push("censusReset"),
@@ -69,7 +70,38 @@ describe("the world's stream", () => {
         sources[0].emit("snapshot", { snapshot: { day: 4 } });
         sources[0].emit("day", { snapshot: { day: 5 }, census: { day: 5, population: {} } });
         sources[0].emit("censusReset", {});
-        expect(seen).toEqual(["playing true", "snapshot 4", "day 5", "censusReset"]);
+        expect(seen).toEqual(["playing true", "snapshot 4 first", "day 5", "censusReset"]);
+    });
+
+    test("only the first snapshot of each connection is marked first", () => {
+        const sources: FakeSource[] = [];
+        const { seen, handlers } = recorder();
+        const visibility = new FakeVisibility();
+        openWorldStream("w1", handlers, sourcesInto(sources), visibility);
+        sources[0].emit("snapshot", { snapshot: { day: 4 } });
+        sources[0].emit("snapshot", { snapshot: { day: 4 } });
+        visibility.set(true);
+        visibility.set(false);
+        sources[1].emit("snapshot", { snapshot: { day: 9 } });
+        expect(seen).toEqual(["snapshot 4 first", "snapshot 4", "snapshot 9 first"]);
+    });
+
+    test("a connection the browser reopens starts with a first snapshot again", () => {
+        const sources: FakeSource[] = [];
+        const { seen, handlers } = recorder();
+        openWorldStream("w1", handlers, sourcesInto(sources), new FakeVisibility());
+        sources[0].emit("snapshot", { snapshot: { day: 4 } });
+        sources[0].readyState = 0;
+        sources[0].onerror?.(new Event("error"));
+        sources[0].readyState = 1;
+        sources[0].emit("snapshot", { snapshot: { day: 7 } });
+        expect(seen).toEqual(["snapshot 4 first", "snapshot 7 first"]);
+    });
+
+    test("the world's id is encoded in the stream's address", () => {
+        const sources: FakeSource[] = [];
+        openWorldStream("a/b c", recorder().handlers, sourcesInto(sources), new FakeVisibility());
+        expect(sources[0].url).toBe("/worlds/a%2Fb%20c/events");
     });
 
     test("a hidden tab closes its stream and opens a new one when shown", () => {

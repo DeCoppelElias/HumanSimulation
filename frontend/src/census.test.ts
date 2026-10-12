@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { merge, receive, refreshed, speciesIn, toSeries } from "./census";
+import { firstGap, merge, receive, refreshed, speciesIn, toSeries } from "./census";
 import type { CensusRow } from "./types";
 
 const row = (day: number, rabbit = 10) => ({ day, population: { rabbit } });
@@ -45,6 +45,16 @@ describe("the census history", () => {
 
     test("a refresh after a statistics reset with no rows yet drops what was held", () => {
         expect(refreshed([row(1), row(2)], [], 2)).toEqual([]);
+    });
+
+    test("the first gap is the first day missing between two held rows", () => {
+        expect(firstGap([row(1), row(2), row(5), row(6), row(9)])).toBe(3);
+        expect(firstGap([row(1), row(2), row(3)])).toBeNull();
+        expect(firstGap([])).toBeNull();
+    });
+
+    test("a history starting after day 1 has no gap, since a statistics reset starts it there", () => {
+        expect(firstGap([row(40), row(41)])).toBeNull();
     });
 
     test("series are a day column and one column per species", () => {

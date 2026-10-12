@@ -1,7 +1,8 @@
 import type { DayReport, PlayState, WorldSnapshot } from "./types";
 
 export type StreamHandlers = {
-    snapshot(snapshot: WorldSnapshot): void;
+    /** `first` marks the snapshot a connection opens with, after which anything sent while away is lost. */
+    snapshot(snapshot: WorldSnapshot, first: boolean): void;
     day(report: DayReport): void;
     playState(state: PlayState): void;
     censusReset(): void;
@@ -32,15 +33,18 @@ export function openWorldStream(
     let source: EventSourceLike | null = null;
 
     const connect = () => {
-        const opened = createSource(`/worlds/${id}/events`);
-        opened.addEventListener("snapshot", (event) =>
-            handlers.snapshot(JSON.parse(event.data).snapshot),
-        );
+        const opened = createSource(`/worlds/${encodeURIComponent(id)}/events`);
+        let first = true;
+        opened.addEventListener("snapshot", (event) => {
+            handlers.snapshot(JSON.parse(event.data).snapshot, first);
+            first = false;
+        });
         opened.addEventListener("day", (event) => handlers.day(JSON.parse(event.data)));
         opened.addEventListener("playState", (event) => handlers.playState(JSON.parse(event.data)));
         opened.addEventListener("censusReset", () => handlers.censusReset());
         // The browser retries a dropped connection by itself and closes only on an HTTP error, such as a 404.
         opened.onerror = () => {
+            first = true;
             if (opened.readyState === CLOSED) {
                 handlers.gone();
             }

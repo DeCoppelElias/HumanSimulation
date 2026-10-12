@@ -36,6 +36,16 @@ export function refreshed(history: CensusRow[], rows: CensusRow[], day: number):
     );
 }
 
+/** Only holes between held rows count: a history that starts late was cleared there by a statistics reset. */
+export function firstGap(history: CensusRow[]): number | null {
+    for (let index = 1; index < history.length; index++) {
+        if (history[index].day > history[index - 1].day + 1) {
+            return history[index - 1].day + 1;
+        }
+    }
+    return null;
+}
+
 export function speciesIn(history: CensusRow[]): string[] {
     return [...new Set(history.flatMap((row) => Object.keys(row.population)))].sort();
 }
