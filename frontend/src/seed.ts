@@ -1,3 +1,5 @@
+export const STARTING_RABBITS = 10;
+
 export type SeedInput =
     { kind: "clock" } | { kind: "seed"; seed: number } | { kind: "invalid"; reason: string };
 
