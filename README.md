@@ -16,10 +16,29 @@ Java 25. No Maven install is needed, since the wrapper fetches it.
     ./mvnw verify     compile, check formatting, run the tests
     ./mvnw package    also build target/HumanSimulation.jar
 
+The page is built from `frontend/` in the same run. The build downloads its own
+Node into `target/`, so none is needed on PATH. `-Pskip-frontend` builds the
+Java alone, and that jar serves the API without a page. While working on the
+page, `./mvnw frontend:npm "-Dfrontend.npm.arguments=run dev"` serves it with
+hot reload on port 5173, passing API calls to a `serve` on port 7070.
+
+## Watching
+
+    java -jar target/HumanSimulation.jar serve
+
+`serve` opens the page in your browser. Pick a world or create one, with a seed
+or one drawn from the clock, and it starts with ten rabbits on a 20 by 20 grid.
+Play, pause, step, change the speed or fast-forward up to 10,000 days. Click a
+tile to drop a rabbit there. A chart below the grid follows the population. The
+address holds the world's id, so a reload or a second tab shows the same world.
+
+The rabbit sprite is from [Kenney](https://kenney.nl)'s Animal Pack Remastered,
+CC0.
+
 ## Running
 
-There is no window yet. `run` advances a seeded world and prints its census as
-JSON Lines, one line per day.
+`run` advances a seeded world without a page and prints its census as JSON
+Lines, one line per day.
 
     java -jar target/HumanSimulation.jar run --seed 42 --days 100
     {"seed":42,"day":1,"population":{"rabbit":10}}
@@ -31,9 +50,9 @@ same seed prints the same lines.
 
 ## Serving
 
-`serve` holds worlds behind an HTTP API, for an agent today and for the page
-once it exists. It prints one line on stdout when it is ready and logs to
-stderr.
+`serve` holds worlds behind an HTTP API, which the page and an agent both use.
+It prints one line on stdout when it is ready and logs to stderr.
+`--no-browser` leaves the browser closed, which is how an agent runs it.
 
     java -jar target/HumanSimulation.jar serve --no-browser --port 0
     {"event":"ready","url":"http://127.0.0.1:63214","port":63214}
