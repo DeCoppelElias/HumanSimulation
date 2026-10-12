@@ -74,6 +74,19 @@ class ApiTest {
     }
 
     @Test
+    void aSeedBeyondTwoToThe53Is400() {
+        assertThat(client.post("/worlds", "{\"seed\":9007199254740992}").status())
+                .isEqualTo(400);
+        assertThat(client.post("/worlds", "{\"seed\":-9007199254740992}").status())
+                .isEqualTo(400);
+        assertThat(client.post("/worlds", "{\"seed\":9007199254740991}").status())
+                .isEqualTo(201);
+        String id = newWorld();
+        assertThat(command(id, "{\"type\":\"reset\",\"seed\":9007199254740992}").status())
+                .isEqualTo(400);
+    }
+
+    @Test
     void rejectsASideAbove25() {
         HttpTestClient.Response response = client.post("/worlds", "{\"width\":26}");
         assertThat(response.status()).isEqualTo(400);
@@ -95,6 +108,14 @@ class ApiTest {
         String first = newWorld();
         String second = newWorld();
         assertThat(client.get("/worlds").json().findValuesAsString("id")).containsExactly(first, second);
+    }
+
+    @Test
+    void servesThePageAtTheRoot() {
+        HttpTestClient.Response page = client.get("/?world=abc");
+        assertThat(page.status()).isEqualTo(200);
+        assertThat(page.body()).contains("<title>test page</title>");
+        assertThat(client.get("/worlds").status()).isEqualTo(200);
     }
 
     @Test
@@ -287,6 +308,38 @@ class ApiTest {
     }
 
     @Test
+    void theStreamSendsThePlayStateOnAttachAndOnEveryChange() {
+        String id = newWorld();
+        OpenStream stream = openStream(id);
+        awaitLine(stream.lines(), "event: playState");
+        awaitLine(stream.lines(), "data: {\"playing\":false,\"daysPerSecond\":2.0}");
+        client.put("/worlds/" + id + "/rate", "{\"daysPerSecond\":5}");
+        awaitLine(stream.lines(), "data: {\"playing\":false,\"daysPerSecond\":5.0}");
+        client.post("/worlds/" + id + "/play", "");
+        awaitLine(stream.lines(), "data: {\"playing\":true,\"daysPerSecond\":5.0}");
+        client.post("/worlds/" + id + "/pause", "");
+        awaitLineAfter(
+                stream.lines(),
+                "data: {\"playing\":true,\"daysPerSecond\":5.0}",
+                "data: {\"playing\":false,\"daysPerSecond\":5.0}");
+        stream.body().close();
+    }
+
+    @Test
+    void theIdlePauseReachesTheStream() {
+        String id = newWorld();
+        OpenStream stream = openStream(id);
+        client.post("/worlds/" + id + "/play", "");
+        awaitLine(stream.lines(), "data: {\"playing\":true,\"daysPerSecond\":2.0}");
+        worlds.pauseAll();
+        awaitLineAfter(
+                stream.lines(),
+                "data: {\"playing\":true,\"daysPerSecond\":2.0}",
+                "data: {\"playing\":false,\"daysPerSecond\":2.0}");
+        stream.body().close();
+    }
+
+    @Test
     void deletingAWorldEndsItsStream() throws Exception {
         String id = newWorld();
         OpenStream stream = openStream(id);
@@ -361,6 +414,11 @@ class ApiTest {
 
     private static void awaitLine(List<String> lines, String start) {
         await(lines, line -> line.startsWith(start));
+    }
+
+    /** The same play state can be sent twice in one test, so this waits for one after another. */
+    private static void awaitLineAfter(List<String> lines, String earlier, String later) {
+        await(lines, ignored -> lines.contains(earlier) && lines.lastIndexOf(later) > lines.indexOf(earlier));
     }
 
     private static void await(List<String> lines, Predicate<String> wanted) {

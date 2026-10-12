@@ -73,12 +73,23 @@ The pre-commit hook and CI run `docs-check.py`.
   that cross its boundary, `web/` the Javalin API that `serve` starts, and
   `cli/` the picocli `run` and `serve` commands.
 - `src/test/java/` mirrors those packages, so tests reach package-private types.
+- `frontend/` the React and TypeScript page, with pure modules in `src/` and a
+  Vitest file beside each. Vite builds it into `target/classes/public`, which
+  Javalin serves at `/`.
 
 ## Build and run
 
     ./mvnw verify     compile, check formatting, run tests
     ./mvnw package    also build target/HumanSimulation.jar
     java -jar target/HumanSimulation.jar run --seed 42 --days 100
+    ./mvnw verify -Pskip-frontend    Java only, no page in the jar
+    ./mvnw frontend:npm "-Dfrontend.npm.arguments=run format"    format the frontend
+    ./mvnw frontend:npm "-Dfrontend.npm.arguments=run dev"       Vite with hot reload, beside a running serve
+
+The build downloads its own Node into `target/node`, so none is needed on PATH,
+and `frontend:npm` needs a build to have run once since a `clean`. Vitest strips
+types without checking them, and only `run build` runs `tsc`, so run it after a
+frontend change as well as `test`.
 
 Java 25, and every compiler warning fails the build. After deleting, moving or
 renaming a class, run `./mvnw clean verify`, since stale classes left in
@@ -88,7 +99,9 @@ doubled backslash into one and silently changed string literals.
 
 No `mvn` on PATH is needed, the wrapper fetches it. Dependencies are pinned in
 `pom.xml`, and the enforcer plugin fails the build on a version range or a
-snapshot. Let Dependabot propose upgrades.
+snapshot. npm packages are pinned to exact versions with a committed
+`package-lock.json`, and `npm ci` installs them. Let Dependabot propose upgrades
+for both.
 
 CI runs `./mvnw -B verify` on Linux and Windows, on pushes to `master` and on
 pull requests. A `v*` tag builds the jar and attaches it to a GitHub Release,
@@ -112,7 +125,9 @@ per clone. It checks staged files only.
 ## Formatting
 
 Spotless with palantir-java-format checks every Java file in `./mvnw verify`.
-Run `./mvnw spotless:apply` before committing.
+Run `./mvnw spotless:apply` before committing. Prettier checks the frontend, and
+ESLint fails it on any warning. Run the `format` command above before
+committing.
 
 ## Before writing tests
 
@@ -138,6 +153,11 @@ a test that leaves pool threads blocked hangs whichever test runs after it.
 `DeterminismTest` replays a seed and a command log in one process, and
 `ReplayAcrossProcessesTest` runs two JVMs. `DomainBoundaryTest` fails when the
 domain depends on anything outside itself and `java.base`.
+
+A rule the page follows goes in a pure module under `frontend/src/`, tested
+with Vitest and no DOM. Components, `useWorld.ts` and `scene.ts` stay thin glue
+over those modules. Until roadmap entry 4 builds the page-checking skill, a
+change to what the page shows needs Elias to watch it.
 
 `v1.0-original-2022` and the `original-2022` branch hold the 2022 version, with
 the old IntelliJ files, the flat `src/` layout and a committed jar. Both are

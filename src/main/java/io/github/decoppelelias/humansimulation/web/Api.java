@@ -4,6 +4,7 @@ import io.github.decoppelelias.humansimulation.domain.Command;
 import io.github.decoppelelias.humansimulation.domain.WorldSnapshot;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
+import io.javalin.http.staticfiles.Location;
 import io.javalin.json.JavalinJackson3;
 import java.time.Duration;
 import java.util.Map;
@@ -15,6 +16,9 @@ import tools.jackson.databind.json.JsonMapper;
 
 public final class Api {
     private static final int DEFAULT_SIDE = 20;
+
+    /** The largest whole number a browser holds exactly, so a seed the page shows is the seed the world has. */
+    public static final long MAX_SEED = (1L << 53) - 1;
 
     private record CreateRequest(Optional<Integer> width, Optional<Integer> height, Optional<Long> seed) {}
 
@@ -33,6 +37,14 @@ public final class Api {
                 .build();
         return Javalin.create(config -> {
             config.startup.showJavalinBanner = false;
+            // A jar built with -Pskip-frontend has no page and serves the API alone.
+            if (Api.class.getResource("/public/index.html") != null) {
+                config.staticFiles.add(files -> {
+                    files.hostedPath = "/";
+                    files.directory = "/public";
+                    files.location = Location.CLASSPATH;
+                });
+            }
             config.jsonMapper(new JavalinJackson3(mapper, false));
             config.routes.before(ctx -> idle.touch());
 
@@ -43,7 +55,7 @@ public final class Api {
                 WorldHost host = worlds.create(
                         request.width().orElse(DEFAULT_SIDE),
                         request.height().orElse(DEFAULT_SIDE),
-                        request.seed().orElseGet(freshSeed::getAsLong));
+                        request.seed().map(Api::checkSeed).orElseGet(freshSeed::getAsLong));
                 ctx.status(201).json(new Created(host.id(), host.snapshot()));
             });
             config.routes.get(
@@ -99,7 +111,7 @@ public final class Api {
             config.routes.sse("/worlds/{id}/events", sse -> {
                 WorldHost host = worlds.get(sse.ctx().pathParam("id"));
                 sse.keepAlive();
-                Viewer viewer = new Viewer(sse, keepAlive);
+                Viewer viewer = new Viewer(Viewer.Sink.of(sse), keepAlive);
                 // The close callback is in place before the world can see the viewer, so a delete that closes the
                 // stream straight away still balances the count.
                 idle.streamOpened();
@@ -128,6 +140,14 @@ public final class Api {
             config.routes.exception(
                     IllegalArgumentException.class, (e, ctx) -> ctx.status(400).json(Map.of("error", e.getMessage())));
         });
+    }
+
+    /** Only a seed a client sent is checked; one the server draws is its own. */
+    static long checkSeed(long seed) {
+        if (seed > MAX_SEED || seed < -MAX_SEED) {
+            throw new IllegalArgumentException("a seed is at most " + MAX_SEED + " either way, got " + seed);
+        }
+        return seed;
     }
 
     /** A JSON {@code null} body binds to no object, and Javalin's Kotlin signature throws on it, so it is refused first. */

@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-10-01. Revised 2026-10-05.
+Accepted, 2026-10-01. Revised 2026-10-10.
 
 ## Context
 
@@ -62,6 +62,23 @@ A server that listens on every interface, Javalin's default, lets anyone on the
 same network drive its worlds, and the API has no notion of who is calling
 until hosting adds one.
 
+A page has to show whether its world plays and at what rate, and the state
+changes behind its back: another tab presses play, the idle pause stops a
+world, a day that fails stops its timer. Reading the rate from the world list
+once on load leaves every other tab wrong until it reloads. Polling the list
+fixes that with a lag and steady traffic.
+
+Gliding on every snapshot looks smoothest, and across a gap it draws a path
+that never happened. A slow viewer skips days, a fast-forward jumps thousands,
+and a tab shown again jumps however long it was hidden.
+
+A browser opens at most six connections to one origin over HTTP/1.1, shared by
+every tab, so six pages each holding a stream make a seventh hang without an
+error. HTTP/2 lifts the limit, and browsers speak it only over TLS, which on
+localhost means a self-signed certificate and a warning. One stream shared by
+all tabs through a SharedWorker lifts it too, for much more code. Accepting the
+limit leaves the hang.
+
 ## Decision
 
 The core stays Java and depends only on `java.base`. Everything lives under
@@ -80,8 +97,10 @@ resources, so `./mvnw verify` builds and tests both halves.
 
 The browser animates between snapshots. It diffs consecutive snapshots by
 entity id, glides a moved entity between its two tiles, fades in an id that
-appears and fades out one that is gone. Effects that need more than a diff can
-see arrive as events on the day's report.
+appears and fades out one that is gone. A glide happens only when the day went
+up by exactly one, and lasts one day at the playback rate. Across a bigger jump
+entities snap to their tiles, and the fades still run. Effects that need more
+than a diff can see arrive as events on the day's report.
 
 Each world has one executor thread that owns it. A timer on that thread
 advances the world at the playback rate, and request handlers only hand work to
@@ -92,6 +111,14 @@ The adapter keeps every census row, and a viewer that sees a gap in day numbers
 fetches the missing rows from that history, so the chart never loses a day and
 a reloaded page restores it. A comment line every 15 seconds keeps a quiet
 stream open.
+
+The stream also carries the world's play state, whether it plays and at what
+rate, when a viewer attaches and whenever it changes. A viewer holds it apart
+from the latest day, so a burst of days never overwrites it.
+
+A page closes its stream while its tab is hidden and opens a new one when the
+tab is shown, catching up from the snapshot a new stream starts with and the
+census history.
 
 Worlds are addressed by an id of 128 random bits from `SecureRandom`, drawn
 apart from the world's seeded generator so replay is unaffected, and the number
@@ -124,5 +151,11 @@ If traffic ever makes server costs matter, the `java.base`-only core keeps
 compiling it to the browser with TeaVM available.
 
 Smooth movement needs no change to the domain, because snapshots already carry
-ids. A hop animation or a death effect wants events, which are an additive field
-on the report rather than a new channel.
+ids. It is smooth for every day a viewer sees, and a stretch the viewer skipped
+shows as its end state. A hop animation or a death effect wants events, which
+are an additive field on the report rather than a new channel.
+
+Only visible tabs hold a connection, so the six-connection limit binds only
+with six pages on screen. A world left playing in a tab hidden for the idle
+period from [0021](0021-agents-drive-worlds-over-http-and-run.md) gets paused,
+since a hidden tab no longer counts as watching.

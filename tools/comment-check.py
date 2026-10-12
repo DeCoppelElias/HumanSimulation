@@ -34,6 +34,8 @@ CODE_LIKE = re.compile(r"^\s*(?:[\w.\[\]<>]+\s*[=(].*[;)]|[{}]|</?\w+>)\s*$")
 
 MARKERS = {
     ".java": [("//", None), ("/*", "*/")],
+    ".ts": [("//", None), ("/*", "*/")],
+    ".tsx": [("//", None), ("/*", "*/")],
     ".xml": [(None, None), ("<!--", "-->")],
     ".yml": [("#", None)],
     ".yaml": [("#", None)],
@@ -43,6 +45,9 @@ MARKERS = {
     ".sh": [("#", None)],
     ".py": [("#", None)],
 }
+
+# Languages where `#` is code, such as a TypeScript private field, never a comment.
+SLASH_ONLY = {".java", ".ts", ".tsx"}
 
 
 def comment_lines(path: Path):
@@ -65,7 +70,7 @@ def comment_lines(path: Path):
         if stripped.startswith(("/*", "<!--")):
             in_block = not (stripped.endswith("*/") or stripped.endswith("-->"))
             yield n, strip_markers(stripped)
-        elif stripped.startswith("//") or (suffix != ".java" and stripped.startswith("#")):
+        elif stripped.startswith("//") or (suffix not in SLASH_ONLY and stripped.startswith("#")):
             yield n, strip_markers(stripped)
 
 

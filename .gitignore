@@ -10,6 +10,9 @@
 # Maven build output
 /target/
 
+# npm packages, installed by the build
+/frontend/node_modules/
+
 # Editor project files, the pom is the source of truth
 /.idea/
 /.vscode/

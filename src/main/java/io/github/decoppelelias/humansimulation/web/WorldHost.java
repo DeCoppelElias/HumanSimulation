@@ -132,7 +132,7 @@ final class WorldHost {
                 playing = true;
                 schedule();
             }
-            return state();
+            return publishState();
         });
     }
 
@@ -140,7 +140,7 @@ final class WorldHost {
         return call(() -> {
             playing = false;
             cancelTimer();
-            return state();
+            return publishState();
         });
     }
 
@@ -155,7 +155,7 @@ final class WorldHost {
                 cancelTimer();
                 schedule();
             }
-            return state();
+            return publishState();
         });
     }
 
@@ -189,6 +189,7 @@ final class WorldHost {
     void attach(Viewer viewer) {
         call(() -> {
             viewers.add(viewer);
+            viewer.playState(state());
             viewer.offer(new StreamEvent.Snapshot(latest));
             return 0;
         });
@@ -255,6 +256,7 @@ final class WorldHost {
             LOG.error("World {} stopped playing after a day failed", id, e);
             playing = false;
             cancelTimer();
+            publishState();
         }
     }
 
@@ -286,5 +288,11 @@ final class WorldHost {
 
     private PlayState state() {
         return new PlayState(playing, daysPerSecond);
+    }
+
+    private PlayState publishState() {
+        PlayState state = state();
+        viewers.forEach(viewer -> viewer.playState(state));
+        return state;
     }
 }
