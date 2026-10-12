@@ -97,7 +97,8 @@ and a day counter, and advances one day at a time.
 
 An entity is an id, a position, a species, a genome and a set of components.
 Anything that occupies a tile is an entity: a rabbit, a wolf, a patch of grass,
-a rock, a pile of ash. There is no class per kind of thing.
+a rock, a pile of ash. There is no class per kind of thing. A creature is an
+entity with a brain, so a rabbit is a creature and grass is not.
 
 A species is the recipe for a kind of entity. It carries the name, the sprite
 that draws it, the gene layout its members inherit and the baseline genome the
@@ -118,16 +119,19 @@ cuts across kinds is written once, and every kind that carries it gets the
 behaviour.
 
 A genome holds what varies between individuals of a species and what changes
-between parent and child. The species declares a layout of genes, and each gene
-has one of two shapes: a bounded scalar, or a normalised distribution whose own
-length can change. The second shape exists because the step distribution already
-needs it. A third shape, for a network brain's weights, arrives with that brain.
-Adding an evolvable trait means adding one entry to a layout. The first
+between parent and child. The species declares a layout of genes, and every gene
+today is a bounded scalar. Another shape arrives when a gene needs one, such as
+a network brain's weights. Adding an evolvable trait means adding one entry to a
+layout. Every gene needs a tradeoff, since one that only helps pins to its bound
+and stops varying. The first
 generation starts from the species' baseline genome with mutation applied, so a
 new species begins with working behaviour rather than random values.
 
-The first brain is a fixed set of rules whose parameters are genes. A network
-brain, started from weights that imitate it, comes when those rules run out.
+The first brain is a fixed set of rules whose parameters are genes. A rabbit
+scores every tile it could land on, by how close it would be to grass and to
+other rabbits, with hunger sharpening the pull of grass, and picks one by
+softmax, so better tiles are likelier and a gene sets by how much. A network
+brain, started from the same weights, comes when those rules run out.
 
 The grid owns the shape of the world. It holds what occupies each tile and the
 scalar fields belonging to the location itself, such as elevation or moisture,
@@ -241,7 +245,8 @@ A day runs these steps in order:
    crediting its metabolism. A pile taken is gone, so whoever comes later finds
    nothing.
 4. Metabolise. Reserves are charged on the eating interval and again for the
-   speed the creature carries, and anything whose reserve falls below zero dies.
+   speed and view range the creature carries, and anything whose reserve falls
+   below zero dies. A reserve counts days: by default a creature pays one a day.
 5. World processes, in list order: spawning new food, regrowth, fire.
 6. Clean up. One census row is produced.
 
@@ -249,7 +254,9 @@ A day is one method on the world, and the steps are calls in it. The intents
 and the day's order pass between them as local variables, so an entity holds
 only its own state and nothing from the day outlives it. Only the world
 processes are a list, since that is where new systems get added. The method
-returns the day's report, which holds its snapshot and census row.
+returns the day's report, which holds its snapshot and census row. A world is
+built with its processes, and each declares the world settings it reads, as a
+species declares its own.
 
 ### Boundaries
 
@@ -257,8 +264,9 @@ The core knows nothing about the interface, and no simulation rule lives above
 the core. A run with no browser behaves exactly like a watched one.
 
 State leaves as a snapshot of the whole world each day: the seed, the day
-number, the grid, and for each tile its fields and what stands on it with the
-values worth drawing. Commands are the only way in, covering spawning,
+number, the species the world knows, the grid, and for each tile its fields and
+what stands on it with the values worth drawing, including which of it is a
+creature. Commands are the only way in, covering spawning,
 resetting, editing a species' settings, and anything else the interface
 initiates. They queue and drain at the start of a day. The interface never
 reaches into the model. A command is checked before it changes anything, and a
@@ -302,8 +310,8 @@ selecting for anything.
 
 ### Starting a world
 
-A world is built from its width and height, a seed and the set of species it
-knows, and starts empty. Its starting population is spawn commands, which
+A world is built from its width and height, a seed, the set of species it knows
+and its world processes, and starts empty. Its starting population is spawn commands, which
 whoever creates the world sends on day 0 and again after a reset, so the seed
 and the command log describe a run from its first creature. A spawn names its
 species, and each member is drawn from its species' baseline genome. Spawning

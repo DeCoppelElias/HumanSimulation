@@ -73,8 +73,9 @@ decides what happens, and a move can be blocked by something that moved first.
 
 A move's distance is at least one, checked when it is built, per
 [0022](0022-warnings-fail-the-build-and-nothing-is-null.md). A move carries a
-direction and a distance rather than a delta, matching the step distribution
-over distances one to three and making the walked path unambiguous. `Intent` is
+direction and a distance rather than a delta, matching the landing tiles a
+brain scores per [0023](0023-rabbits-score-the-tiles-they-can-reach.md) and
+making the walked path unambiguous. `Intent` is
 sealed, so a switch with no default branch fails to compile when a case is
 missing. `Brain` defaults its own key and offers no views, since a brain shows
 only in what it does, so an implementation supplies only the decision. The

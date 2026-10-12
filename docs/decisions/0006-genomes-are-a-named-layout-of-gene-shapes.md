@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-03. Revised 2026-09-27.
+Accepted, 2026-09-03. Revised 2026-10-12.
 
 ## Context
 
@@ -10,16 +10,20 @@ Today the genome is constructor parameters. View range threads through three
 constructors, each behaviour class implements its own variation method, and
 adding a trait means editing signatures.
 
-The genome holds more than scalars. The step amount is a normalised distribution
-over step distances whose length itself mutates between one and three, alongside
-plain numbers like view range.
+A second shape, a normalised distribution whose own length mutates, was built
+for the step amount, a distribution over step distances of one to three. It was
+removed when [0023](0023-rabbits-score-the-tiles-they-can-reach.md) made distance
+a choice the brain scores rather than a roll, which left no gene needing a
+distribution. It mutated by shifting weight between two entries and occasionally
+growing or shrinking by one, then renormalising. It comes back when a gene needs
+a distribution, and git holds the implementation.
 
 A record of typed fields per species was the alternative. It gives compile-time
 safety and a typo does not compile. The cost is that generic mutation stops
 existing: every species needs its own mutation method, or one written by
 reflection over record components, which trades the safety back for a runtime
-failure in a less obvious place. A variable-length distribution is also awkward
-in a record, since the bounds on its length have nowhere to live.
+failure in a less obvious place. A gene with its own bounds and mutation size is
+also awkward as a record field, since the bounds have nowhere to live.
 
 A child also needs a starting reserve. A reserve of zero kills it on its first
 metabolism charge unless it has eaten, and it cannot eat on its birth day, per
@@ -37,14 +41,12 @@ that layout and can produce a mutated copy. The entity owns its genome, per
 ```java
 public sealed interface GeneSpec {
     record Scalar(String key, double min, double max, double mutationSize) implements GeneSpec {}
-    record Simplex(String key, int minLength, int maxLength, double mutationSize) implements GeneSpec {}
 }
 ```
 
-A scalar mutates by an offset within its mutation size, clamped to its bounds. A
-simplex mutates by shifting weight between two entries and occasionally growing
-or shrinking by one, then renormalising, which is what the current step
-variation does.
+A scalar mutates by an offset within its mutation size, clamped to its bounds.
+`GeneSpec` stays sealed with one case, so adding a shape is a new case that
+every switch over it has to handle.
 
 Reproduction stays asexual. A child spawns at the parent's position with the
 parent's genome mutated. Its starting reserve is its endowment, a fraction of
@@ -66,11 +68,10 @@ Keys are strings, so a typo is a runtime failure where a field would have been a
 compile error. Reading an unknown key throws, which keeps the failure loud and
 local.
 
-The two shapes cover the current genome exactly. Network weights are not a
-simplex, since they are not normalised and may be negative, so a third shape
-for them arrives with the network brain in
+The scalar covers the current genome exactly. Network weights are a list of
+unbounded numbers, so a shape for them arrives with the network brain in
 [0018](0018-brain-computation-model-and-warm-starting.md). A brain whose
-topology evolves would need the genome to carry a graph, which is a fourth shape
+topology evolves would need the genome to carry a graph, which is another shape
 and real work.
 
 The species carries a baseline genome alongside the layout, and first-generation

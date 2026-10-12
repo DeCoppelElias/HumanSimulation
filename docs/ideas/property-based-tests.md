@@ -10,13 +10,13 @@ breaks it.
 
 ## Why it is interesting
 
-Several rules are statements about every input rather than one example: a move
-never walks off the step distribution, a mutated step distribution stays a
-valid simplex, a view range never drops below one, the census covers every
+Several rules are statements about every input rather than one example: a
+mutated gene stays within its bounds, a softmax pick never lands off the
+candidates, a view range never drops below one, the census covers every
 recorded day. A seeded loop in plain JUnit checks them over thousands of draws
 and replays a failure exactly, but reports it as a seed and an iteration. A
-shrunk counterexample, such as a two-entry simplex with one weight at zero,
-says what is wrong without a debugger.
+shrunk counterexample, such as a gene sitting exactly on its upper bound, says
+what is wrong without a debugger.
 
 ## What it would touch
 

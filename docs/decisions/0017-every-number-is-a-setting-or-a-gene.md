@@ -55,7 +55,7 @@ appears in the interface with no interface code. Editing one is a command, per
 ## Consequences
 
 The breeding interval, the breeding cost, the endowment fraction, the eating
-charge and the charge for speed are all species settings.
+charge and the charges for speed and view range are all species settings.
 
 A world has settings too, such as how much food arrives and how often, and they
 are declared the same way.

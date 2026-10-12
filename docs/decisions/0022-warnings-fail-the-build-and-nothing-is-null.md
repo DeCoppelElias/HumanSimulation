@@ -65,7 +65,7 @@ null.
 
 Values validate themselves in their compact constructors and throw
 `IllegalArgumentException` naming what is wrong, so an invalid `Genome`, a
-simplex that does not sum to one, or a `Move` of distance zero cannot exist. A
+gene value outside its bounds, or a `Move` of distance zero cannot exist. A
 list held by a record is copied with `List.copyOf`, which makes it immutable and
 rejects null elements. A map is copied into an unmodifiable map sorted by key,
 never with `Map.copyOf`, whose iteration order changes from one JVM start to the

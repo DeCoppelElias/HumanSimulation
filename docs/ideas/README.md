@@ -32,6 +32,8 @@ that settled it.
   occupant of a shared tile.
 - [Error Prone](error-prone.md) failing the build on bug patterns javac does
   not warn about.
+- [Gene tradeoffs](gene-tradeoffs.md) a cost of its own for each gene that
+  only helps, instead of a charge against the reserve.
 - [Golden-run test](golden-run-test.md) pinning a seeded run's output across
   builds, left out for its overhead.
 - [Hexagonal grid](hexagonal-grid.md) six equidistant neighbours, so sight and
@@ -48,6 +50,8 @@ that settled it.
   over stdio.
 - [Network brain](network-brain.md) the second brain, warm-started from the
   fixed rules.
+- [Patchy food](patchy-food.md) food arriving near food, so herding has
+  something to gain.
 - [Property-based tests](property-based-tests.md) jqwik for the domain's
   invariants, with shrunk counterexamples.
 - [Remove command](remove-command.md) taking an entity out of a running world
