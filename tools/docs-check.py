@@ -5,8 +5,8 @@ Usage:
     python tools/docs-check.py
 
 Covers links and backticked docs/ paths that resolve, the decision and idea
-indexes, decision numbering and status, idea status and sections, and a status
-on every roadmap entry. Whether DESIGN.md says the same thing as a decision is
+indexes, decision numbering and status, idea status and sections, and the
+roadmap's index, numbering and a status on every entry. Whether DESIGN.md says the same thing as a decision is
 a judgement call and belongs to the auditing-docs skill. Exit code is 1 while
 findings remain.
 """
@@ -24,6 +24,7 @@ INLINE_CODE = re.compile(r"`[^`\n]*`")
 LINK = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
 DOCS_PATH = re.compile(r"`(docs/[\w./-]+\.md)`")
 DECISION_FILE = re.compile(r"^(\d{4})-[\w-]+\.md$")
+ROADMAP_FILE = re.compile(r"^(\d{2})-[\w-]+\.md$")
 STATUS_LINE = re.compile(r"^Status: (.+?)\.?$", re.MULTILINE)
 
 
@@ -110,18 +111,32 @@ def check_ideas(root, findings):
 
 
 def check_roadmap(root, findings):
-    text = (root / "docs/roadmap.md").read_text(encoding="utf-8")
-    entries = re.split(r"^## ", text, flags=re.MULTILINE)[1:]
-    for entry in entries:
-        title = entry.splitlines()[0].strip()
-        status = STATUS_LINE.search(entry)
+    folder = root / "docs/roadmap"
+    index = (folder / "README.md").read_text(encoding="utf-8")
+    seen = {}
+    for path in sorted(folder.glob("*.md")):
+        m = ROADMAP_FILE.match(path.name)
+        if not m:
+            continue
+        number = m.group(1)
+        rel = f"docs/roadmap/{path.name}"
+        if number in seen:
+            findings.append(f"{rel}: number {number} is used twice, also by {seen[number]}")
+        seen[number] = path.name
+
+        text = path.read_text(encoding="utf-8")
+        heading = re.match(r"# (\d+)\. ", text)
+        if not heading or int(heading.group(1)) != int(number):
+            findings.append(f"{rel}:1: heading number does not match the file name")
+        status = STATUS_LINE.search(text)
         if not status:
-            findings.append(f"docs/roadmap.md: {title} has no status line")
+            findings.append(f"{rel}: no status line")
         elif status.group(1) not in ROADMAP_STATUSES:
             findings.append(
-                f"docs/roadmap.md: {title} has status {status.group(1)!r},"
-                f" expected one of {sorted(ROADMAP_STATUSES)}"
+                f"{rel}: status {status.group(1)!r}, expected one of {sorted(ROADMAP_STATUSES)}"
             )
+        if f"({path.name})" not in index:
+            findings.append(f"{rel} is not in docs/roadmap/README.md")
 
 
 def check(root: Path):

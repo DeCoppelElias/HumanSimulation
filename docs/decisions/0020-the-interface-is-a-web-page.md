@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-10-01. Revised 2026-10-10.
+Accepted, 2026-10-01. Revised 2026-10-12.
 
 ## Context
 
@@ -79,6 +79,15 @@ localhost means a self-signed certificate and a warning. One stream shared by
 all tabs through a SharedWorker lifts it too, for much more code. Accepting the
 limit leaves the hang.
 
+A skill that has an agent open the page with Playwright, click the controls and
+check screenshots against the snapshot was planned as its own roadmap entry. It
+catches a blank canvas or a sprite on the wrong tile, which neither Vitest nor
+JUnit sees, and which Elias sees in the first seconds of watching. Its script
+would follow every change to the page's controls through each later entry, and
+it cannot judge how the page looks, so Elias would watch anyway. The upkeep
+outweighed saving one round trip, and it went back to
+`docs/ideas/browser-smoke-test.md`.
+
 ## Decision
 
 The core stays Java and depends only on `java.base`. Everything lives under
@@ -141,8 +150,8 @@ second from anyone who only runs `./mvnw`.
 
 The smoke test that drove Swing with `java.awt.Robot` has nothing to drive.
 Frontend logic is tested with Vitest and the API with JUnit against a running
-Javalin. Checking what renders is a skill an agent runs on demand in a real
-browser, from roadmap entry 4, with Elias judging how it looks.
+Javalin. What renders is checked by Elias watching the page after each change
+to it.
 
 JFreeChart, the Swing panels and the icons at the classpath root go with the
 2022 code.

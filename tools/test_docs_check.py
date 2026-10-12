@@ -35,6 +35,13 @@ Status: idea.
 ## Open questions
 """
 
+ENTRY = """# 1. First
+
+Status: not started.
+
+Text.
+"""
+
 
 class DocsCheckTest(unittest.TestCase):
     def setUp(self):
@@ -48,7 +55,8 @@ class DocsCheckTest(unittest.TestCase):
         )
         self.write("docs/ideas/some-idea.md", IDEA)
         self.write("docs/ideas/README.md", "# Ideas\n\n- [Some idea](some-idea.md)\n")
-        self.write("docs/roadmap.md", "# Roadmap\n\n## 1. First\n\nStatus: not started.\n")
+        self.write("docs/roadmap/01-first.md", ENTRY)
+        self.write("docs/roadmap/README.md", "# Roadmap\n\n1. [First](01-first.md)\n")
 
     def tearDown(self):
         self.tmp.cleanup()
@@ -113,12 +121,28 @@ class DocsCheckTest(unittest.TestCase):
         self.assertFinding("missing section Open questions")
 
     def test_roadmap_entry_without_status(self):
-        self.write("docs/roadmap.md", "# Roadmap\n\n## 1. First\n\nText.\n")
-        self.assertFinding("1. First has no status")
+        self.write("docs/roadmap/01-first.md", "# 1. First\n\nText.\n")
+        self.assertFinding("01-first.md: no status")
 
     def test_roadmap_entry_with_bad_status(self):
-        self.write("docs/roadmap.md", "# Roadmap\n\n## 1. First\n\nStatus: half done.\n")
-        self.assertFinding("1. First has status")
+        self.write("docs/roadmap/01-first.md", ENTRY.replace("not started", "half done"))
+        self.assertFinding("01-first.md: status 'half done'")
+
+    def test_roadmap_entry_not_in_index(self):
+        self.write("docs/roadmap/02-second.md", ENTRY.replace("# 1.", "# 2."))
+        self.assertFinding("02-second.md is not in docs/roadmap/README.md")
+
+    def test_roadmap_heading_number_mismatch(self):
+        self.write("docs/roadmap/01-first.md", ENTRY.replace("# 1.", "# 3."))
+        self.assertFinding("01-first.md:1: heading number")
+
+    def test_duplicate_roadmap_number(self):
+        self.write("docs/roadmap/01-other.md", ENTRY)
+        self.write(
+            "docs/roadmap/README.md",
+            "# Roadmap\n\n1. [First](01-first.md)\n2. [Other](01-other.md)\n",
+        )
+        self.assertFinding("number 01 is used twice")
 
     def test_superpowers_folder_is_skipped(self):
         self.write("docs/superpowers/plans/p.md", "[x](nowhere.md)\n")

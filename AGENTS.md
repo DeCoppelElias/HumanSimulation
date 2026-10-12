@@ -18,9 +18,9 @@ an entry only for a new topic. `docs/decisions/README.md` indexes them.
 before proposing a feature, and put a rejected or deferred one there rather than
 losing it. It is not a roadmap.
 
-`docs/roadmap.md` is the committed build order for the model layer: what is
-planned, in what sequence, and whether each entry is done yet. Read it for
-current status and what comes next. The model layer is being rebuilt, so the
+`docs/roadmap/` is the committed build order for the model layer, one file per
+entry with its status, and `docs/roadmap/README.md` lists them in build order.
+Read it for current status and what comes next. The model layer is being rebuilt, so the
 tree does not match `DESIGN.md` yet.
 
 The work plan under `docs/superpowers/plans/` tracks finer-grained work in
@@ -156,8 +156,7 @@ domain depends on anything outside itself and `java.base`.
 
 A rule the page follows goes in a pure module under `frontend/src/`, tested
 with Vitest and no DOM. Components, `useWorld.ts` and `scene.ts` stay thin glue
-over those modules. Until roadmap entry 4 builds the page-checking skill, a
-change to what the page shows needs Elias to watch it.
+over those modules. A change to what the page shows needs Elias to watch it.
 
 `v1.0-original-2022` and the `original-2022` branch hold the 2022 version, with
 the old IntelliJ files, the flat `src/` layout and a committed jar. Both are

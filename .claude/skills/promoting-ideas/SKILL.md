@@ -17,7 +17,7 @@ covers it.
 
 ## Steps
 
-1. Read the idea file, every decision it links, and `docs/roadmap.md`. Note any
+1. Read the idea file, every decision it links, and `docs/roadmap/`. Note any
    roadmap entry that says it will settle this idea's question.
 2. List the choices adoption forces:
    - each open question in the idea file: answer now, or defer with the roadmap
@@ -32,8 +32,10 @@ covers it.
 4. Apply them:
    - decision changes through the changing-decisions skill (REQUIRED
      SUB-SKILL), which updates `DESIGN.md` too;
-   - the roadmap entry: title, `Status: not started.`, what it builds, what it
-     depends on, and a See list of the decisions and the idea file;
+   - the roadmap entry: a new file in `docs/roadmap/` with the next free
+     number, holding the title, `Status: not started.`, what it builds, what it
+     depends on, and a See list of the decisions and the idea file, plus its
+     line in `docs/roadmap/README.md` at the place in the order Elias chose;
    - any roadmap entry that promised to settle the question, rewritten to say
      where it is settled now;
    - the idea's status line: `Status: planned, roadmap entry N.` The file
