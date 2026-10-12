@@ -44,23 +44,27 @@ export function createApi(fetchFn: typeof fetch = (input, init) => fetch(input, 
                 seed === null ? {} : { seed },
             ),
         deleteWorld: async (id: string) => {
-            await request("DELETE", `/worlds/${id}`);
+            await request("DELETE", world(id));
         },
         command: async (id: string, command: Command): Promise<WorldSnapshot | null> => {
-            const response = await request("POST", `/worlds/${id}/commands`, command);
+            const response = await request("POST", `${world(id)}/commands`, command);
             return response.status === 202 ? null : ((await response.json()) as WorldSnapshot);
         },
-        step: (id: string, days: number) => json<DayReport>("POST", `/worlds/${id}/step`, { days }),
-        play: (id: string) => json<PlayState>("POST", `/worlds/${id}/play`),
-        pause: (id: string) => json<PlayState>("POST", `/worlds/${id}/pause`),
+        step: (id: string, days: number) => json<DayReport>("POST", `${world(id)}/step`, { days }),
+        play: (id: string) => json<PlayState>("POST", `${world(id)}/play`),
+        pause: (id: string) => json<PlayState>("POST", `${world(id)}/pause`),
         rate: (id: string, daysPerSecond: number) =>
-            json<PlayState>("PUT", `/worlds/${id}/rate`, { daysPerSecond }),
+            json<PlayState>("PUT", `${world(id)}/rate`, { daysPerSecond }),
         census: (id: string, from: number) =>
-            json<CensusRow[]>("GET", `/worlds/${id}/census?from=${from}`),
+            json<CensusRow[]>("GET", `${world(id)}/census?from=${from}`),
         resetCensus: async (id: string) => {
-            await request("DELETE", `/worlds/${id}/census`);
+            await request("DELETE", `${world(id)}/census`);
         },
     };
+}
+
+function world(id: string): string {
+    return `/worlds/${encodeURIComponent(id)}`;
 }
 
 async function errorMessage(response: Response): Promise<string> {

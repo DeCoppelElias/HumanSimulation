@@ -52,4 +52,11 @@ describe("the API client", () => {
         await api.createWorld(null);
         expect(calls[0].init?.body).toBe("{}");
     });
+
+    test("the world's id is encoded in the path", async () => {
+        const calls: Call[] = [];
+        const api = createApi(fakeFetch(Response.json([]), calls));
+        await api.census("a/b c", 3);
+        expect(calls[0].url).toBe("/worlds/a%2Fb%20c/census?from=3");
+    });
 });
