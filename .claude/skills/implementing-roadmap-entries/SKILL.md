@@ -1,6 +1,6 @@
 ---
 name: implementing-roadmap-entries
-description: Takes a HumanSimulation roadmap entry from first read to finished and merged, wiring the superpowers planning, TDD, review and branch skills to this project's docs. Use when starting, resuming or finishing an entry in docs/roadmap.md, or when told to "ship", "wrap up" or "merge" roadmap work.
+description: Takes a HumanSimulation roadmap entry from first read to finished and merged, wiring the superpowers planning, TDD, review and branch skills to this project's docs. Use when starting, resuming or finishing an entry in docs/roadmap/, or when told to "ship", "wrap up" or "merge" roadmap work.
 ---
 
 # Implementing roadmap entries
@@ -32,9 +32,8 @@ checklist.
 ## Building
 
 superpowers:test-driven-development for every task, as 0012 requires. Verify
-with `./mvnw verify` and the `run` command once it exists. Until roadmap entry 4
-builds the page-checking skill, a change to what the page shows needs Elias to
-watch it, so say what to look at.
+with `./mvnw verify` and the `run` command. A change to what the page shows
+needs Elias to watch it, so say what to look at.
 
 ## Finishing
 
@@ -47,7 +46,7 @@ shorten the list.
 3. superpowers:requesting-code-review on the branch, then
    superpowers:receiving-code-review on what comes back.
 4. Documents:
-   - the entry's status in `docs/roadmap.md` becomes `done`;
+   - the status line in the entry's file under `docs/roadmap/` becomes `done`;
    - `README.md` describes what the entry built, such as a new command or
      what the page now shows;
    - an idea this entry built becomes `Status: built, [NNNN](../decisions/NNNN-slug.md).`,

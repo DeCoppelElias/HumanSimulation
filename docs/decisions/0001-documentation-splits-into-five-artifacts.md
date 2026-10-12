@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-03. Revised 2026-09-30.
+Accepted, 2026-09-03. Revised 2026-10-12.
 
 ## Context
 
@@ -28,6 +28,11 @@ A section at the end of `DESIGN.md` was considered for ideas. `DESIGN.md` is
 present tense about a system that is meant to exist, so a speculative section
 blurs the one thing that document promises.
 
+The roadmap was first one file under `docs/`, with an entry per section
+numbered in build order. It grew to nearly five hundred lines, and an entry's number
+was both its name and its place, so inserting one meant renumbering every
+"entry N" reference and dropping one left a hole or a renumbering.
+
 ## Decision
 
 Five artifacts with five jobs.
@@ -52,10 +57,13 @@ it is interesting, what it would touch, and open questions. A README indexes
 them. An adopted idea is settled in the entry for its topic, or in a new entry
 if it is a new topic, goes onto the roadmap, and keeps its file.
 
-`docs/roadmap.md`, committed, holds the build order: what is planned, in what
-sequence, and whether each entry is done yet. Status is a field on each entry
-rather than a description of what the code contains, which would duplicate the
-code and go stale the same way.
+`docs/roadmap/`, committed, holds the build order: what is planned, in what
+sequence, and whether each entry is done yet. Each entry is its own file, named
+by a two-digit number and a slug like a decision, and the number is a permanent
+id that is never reused. Its README holds the order as a list of links, so
+adding, dropping or moving an entry touches one file and one line. Status is a
+field on each entry rather than a description of what the code contains, which
+would duplicate the code and go stale the same way.
 
 The work plan, under the gitignored `docs/superpowers/plans/`, tracks the
 finer-grained work in progress for whoever is at the keyboard. It is

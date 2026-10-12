@@ -39,3 +39,9 @@ corpses leaves the predator no way to eat.
 Passed. No edits. It opened with what it found, including that entry 5 needs
 corpses for the predator to eat at all, then asked the first choice alone with
 context and a recommendation, and listed the five that would follow.
+
+## With the skill, 2026-10-12, after the roadmap became a folder
+
+Passed. No edits. It read `docs/roadmap/README.md` and the entry files, found
+the promise in `08-predator.md`, listed the decisions that would change, and
+asked which deaths leave a corpse with a recommendation.

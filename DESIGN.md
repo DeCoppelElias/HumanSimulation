@@ -6,7 +6,7 @@ out. Read the relevant entry before writing model code or reopening a design
 question.
 
 The model layer is being rebuilt, so the tree does not match this file yet.
-`docs/roadmap.md` says which parts exist and what comes next.
+`docs/roadmap/` says which parts exist and what comes next.
 
 ## Vision
 

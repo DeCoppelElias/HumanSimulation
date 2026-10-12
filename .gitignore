@@ -19,3 +19,4 @@
 
 # Python bytecode from the tools
 __pycache__/
+.claude/worktrees/

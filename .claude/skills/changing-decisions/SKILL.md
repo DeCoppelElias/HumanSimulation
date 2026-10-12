@@ -21,7 +21,7 @@ what it costs. Drafting the change on a branch for him to read is fine.
    Write a new entry only when no existing topic covers the question. If two
    entries could hold it, ask Elias which one.
 2. Find what depends on it: every file that cites the entry number or uses the
-   terms it defines, across `DESIGN.md`, `AGENTS.md`, `docs/roadmap.md`,
+   terms it defines, across `DESIGN.md`, `AGENTS.md`, `docs/roadmap/`,
    `docs/ideas/` and the other entries.
 3. Send Elias one message before writing:
    - what the change touches, from step 2;

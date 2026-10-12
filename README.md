@@ -4,7 +4,7 @@
 A world you watch evolve. Rabbits wander a grid today. Later versions let them
 eat, breed and pass varied behaviour to their children, so the population
 drifts toward whatever works. `DESIGN.md` says where it is going and
-`docs/roadmap.md` how far it has got.
+`docs/roadmap/` how far it has got.
 
 The 2022 version, a Swing app of humans looking for food, is on the
 `v1.0-original-2022` tag.
@@ -67,7 +67,7 @@ read it back:
     curl localhost:63214/worlds/ID/log
 
 `GET /worlds/ID` is the current snapshot, `POST .../play` and `.../pause` run
-it on a timer, and `GET .../events` streams each day. `docs/roadmap.md` lists
-every route. With `--no-browser` the server quits after 10 minutes without a
+it on a timer, and `GET .../events` streams each day. `docs/roadmap/02-serving-worlds-over-http.md`
+lists every route. With `--no-browser` the server quits after 10 minutes without a
 request or an open stream, and without it never quits. It listens on `127.0.0.1` unless `--host`
 says otherwise.
