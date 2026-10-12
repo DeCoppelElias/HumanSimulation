@@ -15,7 +15,7 @@ final class TestSpecies {
         List<GeneSpec> layout = List.of(new GeneSpec.Scalar("viewRange", 1, 10, 1.0));
         Genome baseline = new Genome(layout, Map.of("viewRange", 1.0), Map.of());
         Brain brain = (perception, options, random) -> intent;
-        return new Species("walker", "walker", layout, baseline, Optional.of(spawn -> brain), List.of());
+        return new Species("walker", "walker", layout, baseline, Settings.NONE, Optional.of(spawn -> brain), List.of());
     }
 
     /** A species named "recorder", seeing one tile, whose brain idles and keeps every input it is handed. */
@@ -27,6 +27,7 @@ final class TestSpecies {
             options.add(offered);
             return new Intent.Idle();
         };
-        return new Species("recorder", "recorder", layout, baseline, Optional.of(spawn -> brain), List.of());
+        return new Species(
+                "recorder", "recorder", layout, baseline, Settings.NONE, Optional.of(spawn -> brain), List.of());
     }
 }

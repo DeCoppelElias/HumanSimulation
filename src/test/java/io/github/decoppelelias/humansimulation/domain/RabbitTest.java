@@ -37,7 +37,7 @@ class RabbitTest {
         List<GeneSpec> layout = List.of(new GeneSpec.Scalar("viewRange", 1, 10, 1.0));
         Genome other =
                 new Genome(List.of(new GeneSpec.Scalar("viewRange", 1, 5, 1.0)), Map.of("viewRange", 3.0), Map.of());
-        assertThatThrownBy(() -> new Species("odd", "odd", layout, other, Optional.empty(), List.of()))
+        assertThatThrownBy(() -> new Species("odd", "odd", layout, other, Settings.NONE, Optional.empty(), List.of()))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("odd");
     }

@@ -16,6 +16,7 @@ public final class Rabbit {
                 "rabbit",
                 layout,
                 baseline,
+                Settings.NONE,
                 Optional.of(spawn -> new RandomBrain(spawn.genome().simplex("steps"))),
                 List.of());
     }
