@@ -56,4 +56,28 @@ class ViewerTest {
         assertThat(sink.sent.get(0)).startsWith("playState PlayState[playing=false, daysPerSecond=7.0]");
         assertThat(sink.sent.get(1)).startsWith("day Day[snapshot=WorldSnapshot[seed=1, day=3");
     }
+
+    @Test
+    @Timeout(5)
+    void aStatisticsResetKeepsTheWaitingPlayState() {
+        RecordingSink sink = new RecordingSink(2);
+        Viewer viewer = new Viewer(sink, Duration.ofSeconds(10));
+        viewer.playState(new WorldHost.PlayState(true, 2));
+        viewer.censusReset();
+        viewer.run();
+        assertThat(sink.sent).containsExactly("censusReset {}", "playState PlayState[playing=true, daysPerSecond=2.0]");
+    }
+
+    @Test
+    @Timeout(5)
+    void aStatisticsResetKeepsTheWaitingDaysSnapshotButNotItsCensusRow() {
+        RecordingSink sink = new RecordingSink(2);
+        Viewer viewer = new Viewer(sink, Duration.ofSeconds(10));
+        viewer.offer(day(4));
+        viewer.censusReset();
+        viewer.run();
+        assertThat(sink.sent).hasSize(2);
+        assertThat(sink.sent.get(0)).isEqualTo("censusReset {}");
+        assertThat(sink.sent.get(1)).startsWith("snapshot Snapshot[snapshot=WorldSnapshot[seed=1, day=4");
+    }
 }

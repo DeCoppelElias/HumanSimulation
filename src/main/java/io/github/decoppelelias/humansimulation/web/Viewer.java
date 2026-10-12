@@ -74,9 +74,10 @@ final class Viewer {
         wake.release();
     }
 
-    /** Drops any event still waiting, since it belongs to the history the reset cleared. */
+    /** A day still waiting keeps its snapshot and loses its census row, which belongs to the history the reset cleared. */
     void censusReset() {
-        slot.updateAndGet(pending -> new Pending(true, pending.playState(), Optional.empty()));
+        slot.updateAndGet(pending ->
+                new Pending(true, pending.playState(), pending.event().map(Viewer::withoutCensus)));
         wake.release();
     }
 
@@ -104,6 +105,13 @@ final class Viewer {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
+    }
+
+    private static StreamEvent withoutCensus(StreamEvent event) {
+        return switch (event) {
+            case StreamEvent.Day day -> new StreamEvent.Snapshot(day.snapshot());
+            case StreamEvent.Snapshot snapshot -> snapshot;
+        };
     }
 
     private void send(StreamEvent event) {
