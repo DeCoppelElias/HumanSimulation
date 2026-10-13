@@ -198,6 +198,35 @@ class WorldTest {
     }
 
     @Test
+    void eachBrainIsOfferedTheLandingsWithinItsStride() {
+        List<Perception> perceptions = new ArrayList<>();
+        List<Options> options = new ArrayList<>();
+        World world = new World(5, 5, 1, List.of(TestSpecies.recorder(perceptions, options)));
+        world.submit(new Command.SpawnAt("recorder", new GridPosition(0, 0)));
+        world.advance();
+
+        assertThat(options.getFirst().landings())
+                .extracting(landing -> List.of(landing.dx(), landing.dy()))
+                .containsExactly(
+                        List.of(0, 0),
+                        List.of(1, 0),
+                        List.of(2, 0),
+                        List.of(3, 0),
+                        List.of(0, 1),
+                        List.of(0, 2),
+                        List.of(0, 3));
+        assertThat(options.getFirst().landings().getFirst().intent()).isEqualTo(new Intent.Idle());
+        assertThat(options.getFirst().landings().get(3).intent()).isEqualTo(new Intent.Move(TestSpecies.EAST, 3));
+    }
+
+    @Test
+    void aSpeciesWithNoStrideIsOfferedOnlyStaying() {
+        assertThat(World.landings(new Grid(5, 5), new GridPosition(2, 2), Settings.NONE))
+                .extracting(Options.Landing::intent)
+                .containsExactly(new Intent.Idle());
+    }
+
+    @Test
     void theDaysOrderIsAPermutationShuffledFromIdOrder() {
         List<Decision> byId = IntStream.range(0, 10)
                 .mapToObj(id -> new Decision(id, new Intent.Idle()))

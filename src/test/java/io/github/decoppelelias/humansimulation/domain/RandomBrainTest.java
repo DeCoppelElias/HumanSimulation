@@ -11,7 +11,7 @@ import java.util.random.RandomGeneratorFactory;
 import org.junit.jupiter.api.Test;
 
 class RandomBrainTest {
-    private static final Options FOUR_WAYS = new Options(new Grid(3, 3).directions());
+    private static final Options FOUR_WAYS = new Options(new Grid(3, 3).directions(), List.of());
     private static final Perception NOTHING =
             new Perception(new Perception.SelfView(0, ViewParts.own(List.of())), List.of(), Grid::distance);
     private static final int DRAWS = 10_000;
@@ -103,7 +103,7 @@ class RandomBrainTest {
 
     @Test
     void idlesWhenOfferedNoDirections() {
-        Intent intent = new RandomBrain(List.of(1.0)).decide(NOTHING, new Options(List.of()), seeded());
+        Intent intent = new RandomBrain(List.of(1.0)).decide(NOTHING, new Options(List.of(), List.of()), seeded());
         assertThat(intent).isEqualTo(new Intent.Idle());
     }
 

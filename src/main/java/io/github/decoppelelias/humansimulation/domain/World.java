@@ -12,6 +12,7 @@ import java.util.random.RandomGeneratorFactory;
 
 public final class World {
     private static final String ALGORITHM = "L64X128MixRandom";
+    static final String STRIDE = "stride";
 
     private final int width;
     private final int height;
@@ -70,15 +71,37 @@ public final class World {
     }
 
     private List<Decision> decide() {
-        Options options = new Options(grid.directions());
         List<Decision> decisions = new ArrayList<>();
         for (int id : entityIds()) {
             Entity entity = entities.get(id);
-            entity.brain()
-                    .ifPresent(brain -> decisions.add(new Decision(
-                            id, brain.decide(CircularSense.perceive(entity, grid, entities), options, random))));
+            entity.brain().ifPresent(brain -> {
+                Options options = new Options(
+                        grid.directions(),
+                        landings(grid, entity.position(), entity.species().settings()));
+                decisions.add(new Decision(
+                        id, brain.decide(CircularSense.perceive(entity, grid, entities), options, random)));
+            });
         }
         return decisions;
+    }
+
+    /** Staying, then each direction one tile at a time up to the stride, stopping at the edge. */
+    static List<Options.Landing> landings(Grid grid, GridPosition from, Settings settings) {
+        List<Options.Landing> landings = new ArrayList<>();
+        landings.add(new Options.Landing(new Intent.Idle(), 0, 0));
+        int stride = settings.declares(STRIDE) ? settings.whole(STRIDE) : 0;
+        for (Direction direction : grid.directions()) {
+            GridPosition at = from;
+            for (int distance = 1; distance <= stride; distance++) {
+                at = grid.step(at, direction);
+                if (!grid.contains(at)) {
+                    break;
+                }
+                landings.add(new Options.Landing(
+                        new Intent.Move(direction, distance), at.x() - from.x(), at.y() - from.y()));
+            }
+        }
+        return landings;
     }
 
     /** Shuffled from id order with the world's generator, so the draw replays. */

@@ -18,7 +18,7 @@ final class TestSpecies {
         return new Species("walker", "walker", layout, baseline, Settings.NONE, Optional.of(spawn -> brain), List.of());
     }
 
-    /** A species named "recorder", seeing one tile, whose brain idles and keeps every input it is handed. */
+    /** A species named "recorder", seeing one tile and walking up to three, whose brain idles and keeps its inputs. */
     static Species recorder(List<Perception> perceptions, List<Options> options) {
         List<GeneSpec> layout = List.of(new GeneSpec.Scalar("viewRange", 1, 10, 1.0));
         Genome baseline = new Genome(layout, Map.of("viewRange", 1.0), Map.of());
@@ -27,7 +27,7 @@ final class TestSpecies {
             options.add(offered);
             return new Intent.Idle();
         };
-        return new Species(
-                "recorder", "recorder", layout, baseline, Settings.NONE, Optional.of(spawn -> brain), List.of());
+        Settings settings = new Settings(List.of(new Setting.Scalar(World.STRIDE, "Farthest walk.", 1, 5, 1, 3)));
+        return new Species("recorder", "recorder", layout, baseline, settings, Optional.of(spawn -> brain), List.of());
     }
 }
