@@ -13,30 +13,48 @@ class RabbitTest {
     void declaresItsGenesWithBoundsAndMutationSizes() {
         assertThat(Rabbit.species().geneLayout())
                 .containsExactly(
-                        new GeneSpec.Scalar("viewRange", 1, 10, 1.0), new GeneSpec.Simplex("steps", 1, 3, 0.2));
+                        new GeneSpec.Scalar("viewRange", 1, 10, 1.0),
+                        new GeneSpec.Scalar("grassPull", 0, 5, 0.2),
+                        new GeneSpec.Scalar("hungerDrive", 0, 10, 0.4),
+                        new GeneSpec.Scalar("rabbitPull", -2, 2, 0.1),
+                        new GeneSpec.Scalar("whim", 0.05, 5, 0.1));
     }
 
     @Test
     void startsFromItsBaselineGenome() {
-        Genome baseline = Rabbit.species().baseline();
-        assertThat(baseline.scalar("viewRange")).isEqualTo(3.0);
-        assertThat(baseline.simplex("steps")).containsExactly(0.6, 0.3, 0.1);
+        assertThat(Rabbit.species().baseline().scalars())
+                .containsExactly(
+                        Map.entry("grassPull", 1.0),
+                        Map.entry("hungerDrive", 2.0),
+                        Map.entry("rabbitPull", -0.2),
+                        Map.entry("viewRange", 3.0),
+                        Map.entry("whim", 0.5));
     }
 
     @Test
-    void isBornWithARandomBrain() {
+    void declaresItsSettings() {
+        Settings settings = Rabbit.species().settings();
+        assertThat(settings.whole("eatingInterval")).isEqualTo(1);
+        assertThat(settings.number("eatingCharge")).isEqualTo(1);
+        assertThat(settings.number("startingReserve")).isEqualTo(15);
+        assertThat(settings.whole("stride")).isEqualTo(3);
+    }
+
+    @Test
+    void isBornWithAMetabolismAndTheScoringBrain() {
         Species rabbit = Rabbit.species();
-        assertThat(rabbit.name()).isEqualTo("rabbit");
+        Spawn spawn = new Spawn(rabbit.baseline(), rabbit);
         assertThat(rabbit.brain())
-                .hasValueSatisfying(factory -> assertThat(factory.apply(new Spawn(rabbit.baseline(), rabbit)))
-                        .isInstanceOf(RandomBrain.class));
+                .hasValueSatisfying(factory -> assertThat(factory.apply(spawn)).isInstanceOf(ScoringBrain.class));
+        assertThat(rabbit.parts())
+                .singleElement()
+                .satisfies(part -> assertThat(part.apply(spawn)).isInstanceOf(Metabolism.class));
     }
 
     @Test
     void aSpeciesRejectsABaselineOfAnotherLayout() {
         List<GeneSpec> layout = List.of(new GeneSpec.Scalar("viewRange", 1, 10, 1.0));
-        Genome other =
-                new Genome(List.of(new GeneSpec.Scalar("viewRange", 1, 5, 1.0)), Map.of("viewRange", 3.0), Map.of());
+        Genome other = new Genome(List.of(new GeneSpec.Scalar("viewRange", 1, 5, 1.0)), Map.of("viewRange", 3.0));
         assertThatThrownBy(() -> new Species("odd", "odd", layout, other, Settings.NONE, Optional.empty(), List.of()))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("odd");

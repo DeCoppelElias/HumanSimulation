@@ -13,7 +13,7 @@ final class TestSpecies {
     /** A species named "walker", seeing one tile, whose brain always returns the same intent. */
     static Species walker(Intent intent) {
         List<GeneSpec> layout = List.of(new GeneSpec.Scalar("viewRange", 1, 10, 1.0));
-        Genome baseline = new Genome(layout, Map.of("viewRange", 1.0), Map.of());
+        Genome baseline = new Genome(layout, Map.of("viewRange", 1.0));
         Brain brain = (perception, options, random) -> intent;
         return new Species("walker", "walker", layout, baseline, Settings.NONE, Optional.of(spawn -> brain), List.of());
     }
@@ -21,7 +21,7 @@ final class TestSpecies {
     /** A species named "recorder", seeing one tile and walking up to three, whose brain idles and keeps its inputs. */
     static Species recorder(List<Perception> perceptions, List<Options> options) {
         List<GeneSpec> layout = List.of(new GeneSpec.Scalar("viewRange", 1, 10, 1.0));
-        Genome baseline = new Genome(layout, Map.of("viewRange", 1.0), Map.of());
+        Genome baseline = new Genome(layout, Map.of("viewRange", 1.0));
         Brain brain = (perception, offered, random) -> {
             perceptions.add(perception);
             options.add(offered);
