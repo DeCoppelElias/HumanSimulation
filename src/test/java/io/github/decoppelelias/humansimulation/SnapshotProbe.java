@@ -1,6 +1,8 @@
 package io.github.decoppelelias.humansimulation;
 
 import io.github.decoppelelias.humansimulation.domain.Command;
+import io.github.decoppelelias.humansimulation.domain.FoodDrop;
+import io.github.decoppelelias.humansimulation.domain.Grass;
 import io.github.decoppelelias.humansimulation.domain.Rabbit;
 import io.github.decoppelelias.humansimulation.domain.World;
 import java.util.List;
@@ -10,8 +12,14 @@ public final class SnapshotProbe {
     private SnapshotProbe() {}
 
     public static void main(String[] args) {
-        World world = new World(20, 20, Long.parseLong(args[0]), List.of(Rabbit.species()));
+        World world = new World(
+                20,
+                20,
+                Long.parseLong(args[0]),
+                List.of(Grass.species(), Rabbit.species()),
+                List.of(new FoodDrop("grass")));
         world.submit(new Command.Spawn("rabbit", 10));
+        world.submit(new Command.Spawn("grass", 10));
         StringBuilder out = new StringBuilder();
         for (int day = 0; day < Integer.parseInt(args[1]); day++) {
             out.append(world.advance().snapshot()).append('\n');
