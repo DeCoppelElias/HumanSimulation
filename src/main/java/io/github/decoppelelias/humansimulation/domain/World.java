@@ -17,6 +17,7 @@ public final class World {
     private final int width;
     private final int height;
     private final SortedMap<String, Species> species;
+    private final List<WorldProcess> processes;
     private final ArrayDeque<Command> pending = new ArrayDeque<>();
     private final List<LoggedCommand> log = new ArrayList<>();
     private final TreeMap<Integer, Entity> entities = new TreeMap<>();
@@ -27,10 +28,20 @@ public final class World {
     private int day;
 
     public World(int width, int height, long seed, List<Species> species) {
+        this(width, height, seed, species, List.of());
+    }
+
+    public World(int width, int height, long seed, List<Species> species, List<WorldProcess> processes) {
         this.width = width;
         this.height = height;
         this.grid = new Grid(width, height);
         this.species = byName(species);
+        this.processes = List.copyOf(processes);
+        for (WorldProcess process : this.processes) {
+            switch (process) {
+                case FoodDrop drop -> speciesNamed(drop.species());
+            }
+        }
         start(seed);
     }
 
@@ -50,6 +61,7 @@ public final class World {
         resolve(order);
         feed(order);
         metabolise();
+        runProcesses();
         day++;
         return new DayReport(snapshot(), census());
     }
@@ -170,6 +182,23 @@ public final class World {
         }
     }
 
+    private void runProcesses() {
+        for (WorldProcess process : processes) {
+            switch (process) {
+                case FoodDrop drop -> {
+                    Species kind = speciesNamed(drop.species());
+                    for (int i = drop.dropsOn(day + 1); i > 0; i--) {
+                        place(kind, randomTile());
+                    }
+                }
+            }
+        }
+    }
+
+    private GridPosition randomTile() {
+        return new GridPosition(random.nextInt(width), random.nextInt(height));
+    }
+
     private CensusRow census() {
         Map<String, Integer> population = new TreeMap<>();
         for (String name : species.keySet()) {
@@ -212,7 +241,7 @@ public final class World {
             case Command.Spawn spawn -> {
                 Species kind = speciesNamed(spawn.species());
                 for (int i = 0; i < spawn.count(); i++) {
-                    place(kind, new GridPosition(random.nextInt(width), random.nextInt(height)));
+                    place(kind, randomTile());
                 }
             }
             case Command.SpawnAt spawnAt -> place(speciesNamed(spawnAt.species()), spawnAt.at());

@@ -314,4 +314,32 @@ class WorldTest {
                 .extracting(WorldSnapshot.EntityView::id)
                 .containsExactly(1);
     }
+
+    @Test
+    void foodDropsOnTheDaysCompletingItsInterval() {
+        World world = new World(20, 20, 1, List.of(TestSpecies.food()), List.of(new FoodDrop("food")));
+        for (int day = 1; day < 7; day++) {
+            assertThat(world.advance().census().population()).containsEntry("food", 0);
+        }
+        assertThat(world.advance().census().population()).containsEntry("food", 7);
+        for (int day = 8; day < 14; day++) {
+            world.advance();
+        }
+        assertThat(world.advance().census().population()).containsEntry("food", 14);
+    }
+
+    @Test
+    void aWorldWithoutProcessesDropsNothing() {
+        World world = new World(5, 5, 1, List.of(TestSpecies.food()));
+        for (int day = 0; day < 14; day++) {
+            assertThat(world.advance().census().population()).containsEntry("food", 0);
+        }
+    }
+
+    @Test
+    void aDropOfAnUnknownSpeciesIsRejectedOnBuilding() {
+        assertThatThrownBy(() -> new World(5, 5, 1, RABBITS, List.of(new FoodDrop("grass"))))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("grass");
+    }
 }
