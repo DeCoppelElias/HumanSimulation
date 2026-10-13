@@ -199,6 +199,19 @@ public final class World {
         grid.place(entity.id(), at);
     }
 
+    /** Checks everything before changing anything, so a failed removal leaves the world whole. */
+    void remove(int id) {
+        Entity entity = entities.get(id);
+        if (entity == null) {
+            throw new IllegalArgumentException("there is no entity " + id + " to remove");
+        }
+        if (!grid.occupants(entity.position()).contains(id)) {
+            throw new IllegalStateException("entity " + id + " is not on its tile " + entity.position());
+        }
+        entities.remove(id);
+        grid.remove(id, entity.position());
+    }
+
     private Species speciesNamed(String name) {
         Species found = species.get(name);
         if (found == null) {

@@ -245,4 +245,15 @@ class WorldTest {
         }
         assertThat(stillInIdOrder).isZero();
     }
+
+    @Test
+    void removingAnUnknownEntityChangesNothing() {
+        World world = new World(5, 5, 1, RABBITS);
+        world.submit(new Command.Spawn("rabbit", 2));
+        WorldSnapshot before = world.applyPending();
+        assertThatThrownBy(() -> world.remove(7))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("7");
+        assertThat(world.snapshot()).isEqualTo(before);
+    }
 }
