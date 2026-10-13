@@ -46,8 +46,9 @@ public final class World {
 
     public DayReport advance() {
         drain();
-        List<Decision> decisions = decide();
-        resolve(dayOrder(decisions, random));
+        List<Decision> order = dayOrder(decide(), random);
+        resolve(order);
+        metabolise();
         day++;
         return new DayReport(snapshot(), census());
     }
@@ -133,6 +134,17 @@ public final class World {
             grid.remove(entity.id(), entity.position());
             grid.place(entity.id(), next);
             entity.moveTo(next);
+        }
+    }
+
+    /** Charges every reserve in id order and removes anything below zero. */
+    private void metabolise() {
+        for (int id : entityIds()) {
+            Entity entity = entities.get(id);
+            if (entity != null
+                    && entity.part(Metabolism.class).map(m -> !m.tick()).orElse(false)) {
+                remove(id);
+            }
         }
     }
 

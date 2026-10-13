@@ -256,4 +256,24 @@ class WorldTest {
                 .hasMessageContaining("7");
         assertThat(world.snapshot()).isEqualTo(before);
     }
+
+    @Test
+    void aCreatureThatNeverEatsStarves() {
+        World world = new World(3, 3, 1, List.of(TestSpecies.eater(1, 2)));
+        world.submit(new Command.Spawn("eater", 1));
+        assertThat(world.advance().census().population()).containsEntry("eater", 1);
+        assertThat(world.advance().census().population()).containsEntry("eater", 1);
+        assertThat(world.advance().census().population()).containsEntry("eater", 0);
+    }
+
+    @Test
+    void theChargeFallsDueOnEachCreaturesOwnClock() {
+        World world = new World(3, 3, 1, List.of(TestSpecies.eater(3, 0)));
+        world.submit(new Command.Spawn("eater", 1));
+        world.advance();
+        world.submit(new Command.Spawn("eater", 1));
+        world.advance();
+        assertThat(world.advance().census().population()).containsEntry("eater", 1);
+        assertThat(world.advance().census().population()).containsEntry("eater", 0);
+    }
 }
