@@ -2,6 +2,7 @@ package io.github.decoppelelias.humansimulation.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.groups.Tuple.tuple;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -341,5 +342,17 @@ class WorldTest {
         assertThatThrownBy(() -> new World(5, 5, 1, RABBITS, List.of(new FoodDrop("grass"))))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("grass");
+    }
+
+    @Test
+    void theSnapshotMarksCreaturesAndNamesItsSpecies() {
+        World world = new World(3, 3, 1, List.of(Rabbit.species(), Grass.species()));
+        world.submit(new Command.SpawnAt("grass", new GridPosition(1, 1)));
+        world.submit(new Command.SpawnAt("rabbit", new GridPosition(1, 1)));
+        WorldSnapshot snapshot = world.applyPending();
+        assertThat(snapshot.species()).containsExactly("grass", "rabbit");
+        assertThat(snapshot.tiles().get(4).entities())
+                .extracting(WorldSnapshot.EntityView::species, WorldSnapshot.EntityView::creature)
+                .containsExactly(tuple("grass", false), tuple("rabbit", true));
     }
 }

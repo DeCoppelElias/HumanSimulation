@@ -5,8 +5,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-public record WorldSnapshot(long seed, int day, int width, int height, List<TileView> tiles) {
+public record WorldSnapshot(long seed, int day, int width, int height, List<String> species, List<TileView> tiles) {
     public WorldSnapshot {
+        species = List.copyOf(species);
         tiles = List.copyOf(tiles);
     }
 
@@ -17,7 +18,7 @@ public record WorldSnapshot(long seed, int day, int width, int height, List<Tile
         }
     }
 
-    public record EntityView(int id, String species, String spriteKey, Map<String, Double> info) {
+    public record EntityView(int id, String species, String spriteKey, boolean creature, Map<String, Double> info) {
         public EntityView {
             info = Collections.unmodifiableSortedMap(new TreeMap<>(info));
         }

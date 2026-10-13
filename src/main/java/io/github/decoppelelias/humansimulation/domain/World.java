@@ -77,11 +77,15 @@ public final class World {
             for (int id : grid.occupants(at)) {
                 Entity entity = entities.get(id);
                 standing.add(new WorldSnapshot.EntityView(
-                        id, entity.species().name(), entity.species().spriteKey(), Map.of()));
+                        id,
+                        entity.species().name(),
+                        entity.species().spriteKey(),
+                        entity.brain().isPresent(),
+                        Map.of()));
             }
             tiles.add(new WorldSnapshot.TileView(at, Map.of(), standing));
         }
-        return new WorldSnapshot(seed, day, width, height, tiles);
+        return new WorldSnapshot(seed, day, width, height, List.copyOf(species.keySet()), tiles);
     }
 
     private List<Decision> decide() {
