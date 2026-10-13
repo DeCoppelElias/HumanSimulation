@@ -276,4 +276,42 @@ class WorldTest {
         assertThat(world.advance().census().population()).containsEntry("eater", 1);
         assertThat(world.advance().census().population()).containsEntry("eater", 0);
     }
+
+    @Test
+    void feedingTakesEveryEdibleOnTheTile() {
+        World world = new World(3, 3, 1, List.of(TestSpecies.eater(1, 0), TestSpecies.food()));
+        world.submit(new Command.SpawnAt("eater", new GridPosition(1, 1)));
+        world.submit(new Command.SpawnAt("food", new GridPosition(1, 1)));
+        world.submit(new Command.SpawnAt("food", new GridPosition(1, 1)));
+        DayReport first = world.advance();
+        assertThat(first.census().population()).containsEntry("food", 0).containsEntry("eater", 1);
+        for (int day = 2; day <= 10; day++) {
+            assertThat(world.advance().census().population()).containsEntry("eater", 1);
+        }
+        assertThat(world.advance().census().population()).containsEntry("eater", 0);
+    }
+
+    @Test
+    void aLaterFeederFindsNothing() {
+        World world = new World(3, 3, 1, List.of(TestSpecies.eater(1, 0), TestSpecies.food()));
+        world.submit(new Command.SpawnAt("eater", new GridPosition(1, 1)));
+        world.submit(new Command.SpawnAt("eater", new GridPosition(1, 1)));
+        world.submit(new Command.SpawnAt("food", new GridPosition(1, 1)));
+        assertThat(world.advance().census().population())
+                .containsEntry("eater", 1)
+                .containsEntry("food", 0);
+    }
+
+    @Test
+    void theFirstInTheDaysOrderEats() {
+        World world = new World(3, 3, 1, List.of(TestSpecies.eater(1, 0), TestSpecies.food()));
+        world.submit(new Command.SpawnAt("eater", new GridPosition(1, 1)));
+        world.submit(new Command.SpawnAt("eater", new GridPosition(1, 1)));
+        world.submit(new Command.SpawnAt("food", new GridPosition(1, 1)));
+        world.applyPending();
+        world.feed(List.of(new Decision(1, new Intent.Idle()), new Decision(0, new Intent.Idle())));
+        assertThat(world.advance().snapshot().tiles().get(4).entities())
+                .extracting(WorldSnapshot.EntityView::id)
+                .containsExactly(1);
+    }
 }

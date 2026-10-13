@@ -48,6 +48,7 @@ public final class World {
         drain();
         List<Decision> order = dayOrder(decide(), random);
         resolve(order);
+        feed(order);
         metabolise();
         day++;
         return new DayReport(snapshot(), census());
@@ -134,6 +135,27 @@ public final class World {
             grid.remove(entity.id(), entity.position());
             grid.place(entity.id(), next);
             entity.moveTo(next);
+        }
+    }
+
+    /** Walks the day's order, per 0016: a creature takes every edible on its tile. */
+    void feed(List<Decision> order) {
+        for (Decision decision : order) {
+            Entity eater = entities.get(decision.entityId());
+            if (eater == null) {
+                continue;
+            }
+            eater.part(Metabolism.class).ifPresent(metabolism -> {
+                for (int id : grid.occupants(eater.position())) {
+                    Entity other = entities.get(id);
+                    if (id != eater.id() && other != null) {
+                        other.part(Edible.class).ifPresent(edible -> {
+                            metabolism.credit(edible.amount());
+                            remove(id);
+                        });
+                    }
+                }
+            });
         }
     }
 
