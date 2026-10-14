@@ -134,6 +134,8 @@ committing.
 Write the test first, run it, and see it fail for the reason it names before
 writing the code that makes it pass. `docs/decisions/0012` says why. When the
 code already exists, break it on purpose, watch the test fail, and restore it.
+A compile error counts as that failure only while the behaviour does not exist
+yet, and a break counts only if the test can see it.
 
 Assertions use AssertJ. A world for a test is `new World(width, height, seed,
 species)`, which owns the one generator everything draws from, so a seeded test
