@@ -1,6 +1,6 @@
 # 5. Eating and starving
 
-Status: not started.
+Status: done.
 
 Grass as a species whose members carry an `Edible`, and a world process that
 drops it. The feed and metabolise steps and the list of world processes join the

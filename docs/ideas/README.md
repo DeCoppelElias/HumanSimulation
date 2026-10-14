@@ -22,6 +22,8 @@ that settled it.
   day to the next.
 - [Browser smoke test](browser-smoke-test.md) an agent checks what the page
   actually renders.
+- [Control species](control-species.md) a species that never learns, run
+  beside the rabbits to show what selection adds.
 - [Corpses and scavenging](corpses-and-scavenging.md) death leaves something
   edible behind.
 - [Diet](diet.md) which edibles a creature accepts, needed once a predator
