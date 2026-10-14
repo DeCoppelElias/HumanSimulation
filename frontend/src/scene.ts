@@ -124,9 +124,9 @@ export class Scene {
     private drawCounts(snapshot: WorldSnapshot): void {
         this.labels.removeChildren().forEach((child) => child.destroy());
         for (const stack of stacks(snapshot)) {
-            if (stack.count > 1) {
+            if (stack.creatures > 1) {
                 const label = new Text({
-                    text: String(stack.count),
+                    text: String(stack.creatures),
                     style: {
                         fontSize: 12,
                         fontWeight: "bold",

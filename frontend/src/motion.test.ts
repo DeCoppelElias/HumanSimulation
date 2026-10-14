@@ -2,7 +2,13 @@ import { describe, expect, test } from "vitest";
 import { finished, frameAt, timing, type Transition } from "./motion";
 import type { Placed } from "./tiles";
 
-const placed = (id: number, x: number, y: number): Placed => ({ id, spriteKey: "rabbit", x, y });
+const placed = (id: number, x: number, y: number): Placed => ({
+    id,
+    spriteKey: "rabbit",
+    creature: true,
+    x,
+    y,
+});
 const map = (...items: Placed[]) => new Map(items.map((item) => [item.id, item]));
 const ids = (...values: number[]) => new Set(values);
 
