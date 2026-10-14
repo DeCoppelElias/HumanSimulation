@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import type { Api } from "./api";
 import { messageOf } from "./messages";
-import { readSeed, STARTING_RABBITS } from "./seed";
+import { readSeed } from "./seed";
+import { STARTING_RABBITS } from "./start";
 import type { WorldSummary } from "./types";
 
 type Props = { api: Api; onOpen(id: string): void; onError(message: string): void };

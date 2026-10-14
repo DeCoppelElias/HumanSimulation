@@ -2,7 +2,8 @@ import { useState } from "react";
 import type { Api } from "./api";
 import { messageOf } from "./messages";
 import { FAST_FORWARD_DEFAULT, FAST_FORWARD_MAX, fastForward } from "./fastForward";
-import { readSeed, STARTING_RABBITS } from "./seed";
+import { readSeed } from "./seed";
+import { STARTING_RABBITS } from "./start";
 import type { PlayState } from "./types";
 
 type Props = {
