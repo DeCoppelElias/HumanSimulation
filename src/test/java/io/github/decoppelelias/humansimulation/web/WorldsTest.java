@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 class WorldsTest {
     @Test
     void pauseAllStopsEveryPlayingWorldAndKeepsThem() {
-        Worlds worlds = new Worlds(3, List.of(Rabbit.species()));
+        Worlds worlds = new Worlds(3, List.of(Rabbit.species()), List.of());
         WorldHost first = worlds.create(5, 5, 1);
         WorldHost second = worlds.create(5, 5, 2);
         first.play();
@@ -29,7 +29,7 @@ class WorldsTest {
 
     @Test
     void pauseAllPassesOverAWorldClosedUnderIt() {
-        Worlds worlds = new Worlds(3, List.of(Rabbit.species()));
+        Worlds worlds = new Worlds(3, List.of(Rabbit.species()), List.of());
         WorldHost closed = worlds.create(5, 5, 1);
         WorldHost open = worlds.create(5, 5, 2);
         open.play();
@@ -43,7 +43,7 @@ class WorldsTest {
 
     @Test
     void deletingABusyWorldDoesNotHoldUpTheOthers() throws Exception {
-        Worlds worlds = new Worlds(3, List.of(Rabbit.species()));
+        Worlds worlds = new Worlds(3, List.of(Rabbit.species()), List.of());
         WorldHost busy = worlds.create(5, 5, 1);
         WorldHost other = worlds.create(5, 5, 2);
         CountDownLatch started = new CountDownLatch(1);

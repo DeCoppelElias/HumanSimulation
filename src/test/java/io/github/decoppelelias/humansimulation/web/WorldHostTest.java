@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Timeout;
 
 class WorldHostTest {
     private static WorldHost host() {
-        return new WorldHost("w", 5, 5, 1, List.of(Rabbit.species()));
+        return new WorldHost("w", 5, 5, 1, List.of(Rabbit.species()), List.of());
     }
 
     @Test

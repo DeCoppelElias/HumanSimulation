@@ -25,21 +25,27 @@ class RunCommandTest {
         Result result = run("--seed", "42", "--days", "3");
         assertThat(result.exitCode()).isZero();
         assertThat(result.out())
-                .isEqualTo("{\"seed\":42,\"day\":1,\"population\":{\"rabbit\":10}}\n"
-                        + "{\"seed\":42,\"day\":2,\"population\":{\"rabbit\":10}}\n"
-                        + "{\"seed\":42,\"day\":3,\"population\":{\"rabbit\":10}}\n");
+                .isEqualTo("{\"seed\":42,\"day\":1,\"population\":{\"grass\":0,\"rabbit\":10}}\n"
+                        + "{\"seed\":42,\"day\":2,\"population\":{\"grass\":0,\"rabbit\":10}}\n"
+                        + "{\"seed\":42,\"day\":3,\"population\":{\"grass\":0,\"rabbit\":10}}\n");
     }
 
     @Test
     void aSpawnReplacesTheDefaultStartingPopulation() {
         assertThat(run("--seed", "1", "--days", "1", "--spawn", "rabbit=3").out())
-                .isEqualTo("{\"seed\":1,\"day\":1,\"population\":{\"rabbit\":3}}\n");
+                .isEqualTo("{\"seed\":1,\"day\":1,\"population\":{\"grass\":0,\"rabbit\":3}}\n");
+    }
+
+    @Test
+    void spawnsGrassAndCountsIt() {
+        assertThat(run("--seed", "1", "--days", "1", "--spawn", "grass=3").out())
+                .isEqualTo("{\"seed\":1,\"day\":1,\"population\":{\"grass\":3,\"rabbit\":0}}\n");
     }
 
     @Test
     void theSeedDefaultsToTheClockAndIsPrinted() {
         assertThat(run("--days", "1").out())
-                .matches("\\{\"seed\":-?\\d+,\"day\":1,\"population\":\\{\"rabbit\":10}}\n");
+                .matches("\\{\"seed\":-?\\d+,\"day\":1,\"population\":\\{\"grass\":0,\"rabbit\":10}}\n");
     }
 
     @Test
