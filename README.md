@@ -1,9 +1,10 @@
 # HumanSimulation
 [![CI](https://github.com/DeCoppelElias/HumanSimulation/actions/workflows/ci.yml/badge.svg)](https://github.com/DeCoppelElias/HumanSimulation/actions/workflows/ci.yml)
 
-A world you watch evolve. Rabbits wander a grid today. Later versions let them
-eat, breed and pass varied behaviour to their children, so the population
-drifts toward whatever works. `DESIGN.md` says where it is going and
+A world you watch evolve. Today grass falls on a grid every seven days, and
+rabbits walk toward the grass they can see, eat it, and starve when they go
+too long without. Later versions let them breed and pass varied behaviour to
+their children, so the population drifts toward whatever works. `DESIGN.md` says where it is going and
 `docs/roadmap/` how far it has got.
 
 The 2022 version, a Swing app of humans looking for food, is on the
@@ -27,26 +28,29 @@ hot reload on port 5173, passing API calls to a `serve` on port 7070.
     java -jar target/HumanSimulation.jar serve
 
 `serve` opens the page in your browser. Pick a world or create one, with a seed
-or one drawn from the clock, and it starts with ten rabbits on a 20 by 20 grid.
-Play, pause, step, change the speed or fast-forward up to 10,000 days. Click a
-tile to drop a rabbit there. A chart beside the grid follows the population. The
+or one drawn from the clock, and it starts with ten rabbits and seven grass on a
+20 by 20 grid. Play, pause, step, change the speed or fast-forward up to 10,000
+days. Pick a species beside the spawn count, then spawn that many or click a
+tile to drop one there. Grass draws under a rabbit standing on it, and a tile's
+number counts its rabbits. A chart beside the grid follows each species. The
 address holds the world's id, so a reload or a second tab shows the same world.
 
-The rabbit sprite is from [Kenney](https://kenney.nl)'s Animal Pack Remastered,
-CC0.
+The sprites are from [Kenney](https://kenney.nl), CC0: the rabbit from Animal
+Pack Remastered and the grass from Foliage Pack.
 
 ## Running
 
 `run` advances a seeded world without a page and prints its census as JSON
 Lines, one line per day.
 
-    java -jar target/HumanSimulation.jar run --seed 42 --days 100
-    {"seed":42,"day":1,"population":{"rabbit":10}}
-    {"seed":42,"day":2,"population":{"rabbit":10}}
+    java -jar target/HumanSimulation.jar run --seed 42 --days 100 --spawn rabbit=10 --spawn grass=20
+    {"seed":42,"day":1,"population":{"grass":18,"rabbit":10}}
+    {"seed":42,"day":2,"population":{"grass":16,"rabbit":10}}
 
 `--days` is required. `--seed` defaults to one drawn from the clock, `--width`
-and `--height` to 20, and `--spawn rabbit=10` sets the starting population. The
-same seed prints the same lines.
+and `--height` to 20. `--spawn SPECIES=COUNT`, once per species, sets the
+starting population, which is ten rabbits and no grass without it. Grass falls
+on its own every seven days either way. The same seed prints the same lines.
 
 ## Serving
 
