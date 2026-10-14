@@ -5,6 +5,7 @@ import io.github.decoppelelias.humansimulation.domain.Command;
 import io.github.decoppelelias.humansimulation.domain.DayReport;
 import io.github.decoppelelias.humansimulation.domain.Species;
 import io.github.decoppelelias.humansimulation.domain.World;
+import io.github.decoppelelias.humansimulation.domain.WorldProcess;
 import io.github.decoppelelias.humansimulation.domain.WorldSnapshot;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -56,9 +57,9 @@ final class WorldHost {
     private boolean resetPending;
     private boolean closed;
 
-    WorldHost(String id, int width, int height, long seed, List<Species> species) {
+    WorldHost(String id, int width, int height, long seed, List<Species> species, List<WorldProcess> processes) {
         this.id = id;
-        this.world = new World(width, height, seed, species);
+        this.world = new World(width, height, seed, species, processes);
         this.thread = Executors.newSingleThreadScheduledExecutor(
                 Thread.ofPlatform().name("world-" + id).daemon().factory());
         this.latest = world.snapshot();

@@ -9,6 +9,7 @@ public record Species(
         String spriteKey,
         List<GeneSpec> geneLayout,
         Genome baseline,
+        Settings settings,
         Optional<Function<Spawn, Brain>> brain,
         List<Function<Spawn, Component>> parts) {
     public Species {

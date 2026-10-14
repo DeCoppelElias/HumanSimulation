@@ -46,6 +46,10 @@ final class Entity {
         return parts;
     }
 
+    <T extends Component> Optional<T> part(Class<T> type) {
+        return parts.stream().filter(type::isInstance).map(type::cast).findFirst();
+    }
+
     GridPosition position() {
         return position;
     }

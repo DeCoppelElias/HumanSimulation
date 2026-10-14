@@ -22,7 +22,8 @@ costs, and what the concrete type shapes are.
 - [0005](0005-a-day-is-one-method.md) A day is one method in six
   steps, passing intents as local data, with world processes as a list.
 - [0006](0006-genomes-are-a-named-layout-of-gene-shapes.md) Genomes are a named
-  layout of two gene shapes, and a child's reserve comes from its parent.
+  layout of gene shapes, bounded scalars today, and a child's reserve comes
+  from its parent.
 - [0007](0007-state-leaves-as-a-snapshot-commands-go-in.md) State leaves as a
   whole-world snapshot, and commands go in, draining at the start of a day. The
   core is a hexagonal domain, wired by hand, and a `jdeps` test holds the line.
@@ -42,7 +43,8 @@ costs, and what the concrete type shapes are.
   the seam, brains read components by class, and each component declares what
   others see of it.
 - [0014](0014-resolve-order-comes-from-a-speed-gene.md) Resolve order comes from
-  a speed gene, with equal speeds drawn at random.
+  a speed gene, with equal speeds drawn at random, and speed and view range
+  are charged against the reserve.
 - [0015](0015-geometry-lives-in-the-grid.md) Geometry lives in the grid: four
   directions for now, and the shape stays changeable.
 - [0016](0016-feeding-takes-the-tile.md) Feeding takes the tile, and there is no
@@ -63,3 +65,6 @@ costs, and what the concrete type shapes are.
 - [0022](0022-warnings-fail-the-build-and-nothing-is-null.md) Warnings fail
   the build and nothing is null: Java 25, lint as errors, values that validate
   themselves, picocli, and formatting without a ratchet.
+- [0023](0023-rabbits-score-the-tiles-they-can-reach.md) A rabbit scores
+  every tile it can reach by its pull toward grass and other rabbits, and picks
+  one by softmax.

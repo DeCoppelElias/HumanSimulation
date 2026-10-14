@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-27. Revised 2026-10-04.
+Accepted, 2026-09-27. Revised 2026-10-14.
 
 ## Context
 
@@ -45,7 +45,9 @@ starving, which no animal can know.
 One type, filled by a per-species builder. A brain reads components by class.
 
 ```java
-public record Perception(SelfView self, List<TileView> tiles) {
+public record Perception(SelfView self, List<TileView> tiles, Metric metric) {
+    public interface Metric { double distance(int dx, int dy); }
+    public double distance(int dx, int dy) { return metric.distance(dx, dy); }
     public record SelfView(int id, Parts parts) {}
     public record TileView(int dx, int dy, Map<String, Double> fields, List<EntityView> entities) {}
     public record EntityView(int id, String species, Parts parts) {}
@@ -87,6 +89,12 @@ Positions are relative to the perceiver, and no absolute position appears
 anywhere in a perception. A tile outside the grid is absent from the list, which
 is how a creature perceives an edge. Tile fields stay string-keyed, since they
 belong to the grid rather than to a component.
+
+A perception carries the grid's distance, so a brain that weighs how far apart
+two offsets are asks the perception and never measures for itself, per
+[0015](0015-geometry-lives-in-the-grid.md). The sense passes it in from the
+grid, so a different grid shape changes the distance every brain reads without
+touching a brain.
 
 Ordering is fixed: tiles by straight-line distance ascending, then by `dy` and
 `dx`; entities within a tile by ascending id. A brain that takes the first

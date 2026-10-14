@@ -26,8 +26,8 @@ test is a record, whose `equals` and `toString` already make a whole-value
 comparison readable, and AssertJ is one more dependency. It won on how its
 assertions read and on its failure messages for collections and exceptions.
 
-Several rules are invariants over many inputs, such as a move never walking off
-the step distribution. jqwik checks them with generated inputs and shrinks a
+Several rules are invariants over many inputs, such as a mutated gene never
+leaving its bounds. jqwik checks them with generated inputs and shrinks a
 failure to its smallest case. Whether it runs on the JUnit 6 platform was
 unconfirmed, and a seeded loop covers the same rules while replaying a failure
 exactly. It is kept in `docs/ideas/property-based-tests.md`.

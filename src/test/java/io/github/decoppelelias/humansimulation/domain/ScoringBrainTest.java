@@ -1,0 +1,131 @@
+package io.github.decoppelelias.humansimulation.domain;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.random.RandomGenerator;
+import java.util.random.RandomGeneratorFactory;
+import org.junit.jupiter.api.Test;
+
+class ScoringBrainTest {
+    private static final List<Direction> DIRECTIONS = new Grid(1, 1).directions();
+    private static final Direction NORTH = DIRECTIONS.getFirst();
+    private static final Direction EAST = DIRECTIONS.get(1);
+    private static final Direction SOUTH = DIRECTIONS.get(2);
+    private static final Direction WEST = DIRECTIONS.get(3);
+
+    /** Every landing within a stride of 3, with no edge in the way. */
+    private static Options openGround() {
+        List<Options.Landing> landings = new ArrayList<>();
+        landings.add(new Options.Landing(new Intent.Idle(), 0, 0));
+        for (Direction direction : DIRECTIONS) {
+            for (int distance = 1; distance <= 3; distance++) {
+                landings.add(new Options.Landing(
+                        new Intent.Move(direction, distance), direction.dx() * distance, direction.dy() * distance));
+            }
+        }
+        return new Options(DIRECTIONS, landings);
+    }
+
+    private record Seen(int dx, int dy, String species, boolean edible) {}
+
+    private static Seen grass(int dx, int dy) {
+        return new Seen(dx, dy, "grass", true);
+    }
+
+    private static Seen rabbit(int dx, int dy) {
+        return new Seen(dx, dy, "rabbit", false);
+    }
+
+    private static Perception perception(int daysLeft, Seen... seen) {
+        List<Perception.TileView> tiles = new ArrayList<>();
+        int id = 1;
+        for (Seen one : seen) {
+            ViewParts parts = one.edible()
+                    ? new ViewParts(List.of(Edible.class), List.of(new Edible.Amount(15)))
+                    : new ViewParts(List.of(), List.of());
+            tiles.add(new Perception.TileView(
+                    one.dx(), one.dy(), Map.of(), List.of(new Perception.EntityView(id++, one.species(), parts))));
+        }
+        ViewParts self = new ViewParts(List.of(Metabolism.class), List.of(new Metabolism.Own(daysLeft, daysLeft)));
+        return new Perception(new Perception.SelfView(0, self), tiles, Grid::distance);
+    }
+
+    private static ScoringBrain brain(double grassPull, double hungerDrive, double rabbitPull, double whim) {
+        return new ScoringBrain("rabbit", grassPull, hungerDrive, rabbitPull, whim);
+    }
+
+    private static RandomGenerator seeded(long seed) {
+        return RandomGeneratorFactory.of("L64X128MixRandom").create(seed);
+    }
+
+    private static Map<Intent, Integer> picks(ScoringBrain brain, Perception perception, int draws) {
+        Map<Intent, Integer> counts = new HashMap<>();
+        RandomGenerator random = seeded(1);
+        for (int i = 0; i < draws; i++) {
+            counts.merge(brain.decide(perception, openGround(), random), 1, Integer::sum);
+        }
+        return counts;
+    }
+
+    @Test
+    void landsOnGrassWithinReach() {
+        assertThat(picks(brain(1, 0, 0, 0.05), perception(15, grass(2, 0)), 200))
+                .containsOnlyKeys(new Intent.Move(EAST, 2));
+    }
+
+    @Test
+    void closesOnGrassBeyondReach() {
+        assertThat(picks(brain(1, 0, 0, 0.05), perception(15, grass(5, 0)), 200))
+                .containsOnlyKeys(new Intent.Move(EAST, 3));
+    }
+
+    @Test
+    void aNegativeRabbitPullPrefersTheLandingFartherFromRabbits() {
+        assertThat(picks(brain(1, 0, -2, 0.005), perception(15, rabbit(0, -1)), 200))
+                .containsOnlyKeys(new Intent.Move(SOUTH, 3));
+    }
+
+    @Test
+    void aPositiveRabbitPullPrefersTheLandingNearerRabbits() {
+        assertThat(picks(brain(1, 0, 2, 0.05), perception(15, rabbit(0, -1)), 200))
+                .containsOnlyKeys(new Intent.Move(NORTH, 1));
+    }
+
+    @Test
+    void hungerSharpensThePullOfGrass() {
+        ScoringBrain loafer = brain(0, 2, 0, 0.5);
+        Intent ontoGrass = new Intent.Move(EAST, 2);
+        double fed = picks(loafer, perception(14, grass(2, 0)), 2000).getOrDefault(ontoGrass, 0) / 2000.0;
+        double starving = picks(loafer, perception(0, grass(2, 0)), 2000).getOrDefault(ontoGrass, 0) / 2000.0;
+        assertThat(fed).isBetween(0.08, 0.25);
+        assertThat(starving).isGreaterThan(0.9);
+    }
+
+    @Test
+    void withNothingInViewEveryLandingIsEquallyLikely() {
+        Map<Intent, Integer> counts = picks(brain(1, 2, -0.2, 0.5), perception(15), 13_000);
+        assertThat(counts).hasSize(13);
+        assertThat(counts.values()).allSatisfy(count -> assertThat(count).isBetween(850, 1150));
+    }
+
+    @Test
+    void equalLandingsSplit() {
+        Map<Intent, Integer> counts = picks(brain(1, 0, 0, 0.05), perception(15, grass(2, 0), grass(-2, 0)), 2000);
+        assertThat(counts).containsOnlyKeys(new Intent.Move(EAST, 2), new Intent.Move(WEST, 2));
+        assertThat(counts.get(new Intent.Move(EAST, 2))).isBetween(850, 1150);
+    }
+
+    @Test
+    void aSeedReplaysThePick() {
+        ScoringBrain brain = brain(1, 2, -0.2, 0.5);
+        Perception seen = perception(5, grass(2, 1), rabbit(1, -2));
+        for (long seed = 0; seed < 50; seed++) {
+            assertThat(brain.decide(seen, openGround(), seeded(seed)))
+                    .isEqualTo(brain.decide(seen, openGround(), seeded(seed)));
+        }
+    }
+}

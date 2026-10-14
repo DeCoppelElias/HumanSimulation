@@ -24,6 +24,6 @@ final class CircularSense {
             }
             tiles.add(new Perception.TileView(tile.x() - at.x(), tile.y() - at.y(), Map.of(), seen));
         }
-        return new Perception(new Perception.SelfView(self.id(), ViewParts.own(self.parts())), tiles);
+        return new Perception(new Perception.SelfView(self.id(), ViewParts.own(self.parts())), tiles, Grid::distance);
     }
 }

@@ -3,6 +3,7 @@ export type EntityView = {
     id: number;
     species: string;
     spriteKey: string;
+    creature: boolean;
     info: Record<string, number>;
 };
 export type TileView = { at: GridPosition; fields: Record<string, number>; entities: EntityView[] };
@@ -11,6 +12,7 @@ export type WorldSnapshot = {
     day: number;
     width: number;
     height: number;
+    species: string[];
     tiles: TileView[];
 };
 export type CensusRow = { day: number; population: Record<string, number> };

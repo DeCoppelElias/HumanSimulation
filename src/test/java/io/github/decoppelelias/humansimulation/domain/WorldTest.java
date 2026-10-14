@@ -2,6 +2,7 @@ package io.github.decoppelelias.humansimulation.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.groups.Tuple.tuple;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -198,6 +199,35 @@ class WorldTest {
     }
 
     @Test
+    void eachBrainIsOfferedTheLandingsWithinItsStride() {
+        List<Perception> perceptions = new ArrayList<>();
+        List<Options> options = new ArrayList<>();
+        World world = new World(5, 5, 1, List.of(TestSpecies.recorder(perceptions, options)));
+        world.submit(new Command.SpawnAt("recorder", new GridPosition(0, 0)));
+        world.advance();
+
+        assertThat(options.getFirst().landings())
+                .extracting(landing -> List.of(landing.dx(), landing.dy()))
+                .containsExactly(
+                        List.of(0, 0),
+                        List.of(1, 0),
+                        List.of(2, 0),
+                        List.of(3, 0),
+                        List.of(0, 1),
+                        List.of(0, 2),
+                        List.of(0, 3));
+        assertThat(options.getFirst().landings().getFirst().intent()).isEqualTo(new Intent.Idle());
+        assertThat(options.getFirst().landings().get(3).intent()).isEqualTo(new Intent.Move(TestSpecies.EAST, 3));
+    }
+
+    @Test
+    void aSpeciesWithNoStrideIsOfferedOnlyStaying() {
+        assertThat(World.landings(new Grid(5, 5), new GridPosition(2, 2), Settings.NONE))
+                .extracting(Options.Landing::intent)
+                .containsExactly(new Intent.Idle());
+    }
+
+    @Test
     void theDaysOrderIsAPermutationShuffledFromIdOrder() {
         List<Decision> byId = IntStream.range(0, 10)
                 .mapToObj(id -> new Decision(id, new Intent.Idle()))
@@ -215,5 +245,114 @@ class WorldTest {
             }
         }
         assertThat(stillInIdOrder).isZero();
+    }
+
+    @Test
+    void removingAnUnknownEntityChangesNothing() {
+        World world = new World(5, 5, 1, RABBITS);
+        world.submit(new Command.Spawn("rabbit", 2));
+        WorldSnapshot before = world.applyPending();
+        assertThatThrownBy(() -> world.remove(7))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("7");
+        assertThat(world.snapshot()).isEqualTo(before);
+    }
+
+    @Test
+    void aCreatureThatNeverEatsStarves() {
+        World world = new World(3, 3, 1, List.of(TestSpecies.eater(1, 2)));
+        world.submit(new Command.Spawn("eater", 1));
+        assertThat(world.advance().census().population()).containsEntry("eater", 1);
+        assertThat(world.advance().census().population()).containsEntry("eater", 1);
+        assertThat(world.advance().census().population()).containsEntry("eater", 0);
+    }
+
+    @Test
+    void theChargeFallsDueOnEachCreaturesOwnClock() {
+        World world = new World(3, 3, 1, List.of(TestSpecies.eater(3, 0)));
+        world.submit(new Command.Spawn("eater", 1));
+        world.advance();
+        world.submit(new Command.Spawn("eater", 1));
+        world.advance();
+        assertThat(world.advance().census().population()).containsEntry("eater", 1);
+        assertThat(world.advance().census().population()).containsEntry("eater", 0);
+    }
+
+    @Test
+    void feedingTakesEveryEdibleOnTheTile() {
+        World world = new World(3, 3, 1, List.of(TestSpecies.eater(1, 0), TestSpecies.food()));
+        world.submit(new Command.SpawnAt("eater", new GridPosition(1, 1)));
+        world.submit(new Command.SpawnAt("food", new GridPosition(1, 1)));
+        world.submit(new Command.SpawnAt("food", new GridPosition(1, 1)));
+        DayReport first = world.advance();
+        assertThat(first.census().population()).containsEntry("food", 0).containsEntry("eater", 1);
+        for (int day = 2; day <= 10; day++) {
+            assertThat(world.advance().census().population()).containsEntry("eater", 1);
+        }
+        assertThat(world.advance().census().population()).containsEntry("eater", 0);
+    }
+
+    @Test
+    void aLaterFeederFindsNothing() {
+        World world = new World(3, 3, 1, List.of(TestSpecies.eater(1, 0), TestSpecies.food()));
+        world.submit(new Command.SpawnAt("eater", new GridPosition(1, 1)));
+        world.submit(new Command.SpawnAt("eater", new GridPosition(1, 1)));
+        world.submit(new Command.SpawnAt("food", new GridPosition(1, 1)));
+        assertThat(world.advance().census().population())
+                .containsEntry("eater", 1)
+                .containsEntry("food", 0);
+    }
+
+    @Test
+    void theFirstInTheDaysOrderEats() {
+        World world = new World(3, 3, 1, List.of(TestSpecies.eater(1, 0), TestSpecies.food()));
+        world.submit(new Command.SpawnAt("eater", new GridPosition(1, 1)));
+        world.submit(new Command.SpawnAt("eater", new GridPosition(1, 1)));
+        world.submit(new Command.SpawnAt("food", new GridPosition(1, 1)));
+        world.applyPending();
+        world.feed(List.of(new Decision(1, new Intent.Idle()), new Decision(0, new Intent.Idle())));
+        assertThat(world.advance().snapshot().tiles().get(4).entities())
+                .extracting(WorldSnapshot.EntityView::id)
+                .containsExactly(1);
+    }
+
+    @Test
+    void foodDropsOnTheDaysCompletingItsInterval() {
+        World world = new World(20, 20, 1, List.of(TestSpecies.food()), List.of(new FoodDrop("food")));
+        for (int day = 1; day < 7; day++) {
+            assertThat(world.advance().census().population()).containsEntry("food", 0);
+        }
+        assertThat(world.advance().census().population()).containsEntry("food", 7);
+        for (int day = 8; day < 14; day++) {
+            world.advance();
+        }
+        assertThat(world.advance().census().population()).containsEntry("food", 14);
+    }
+
+    @Test
+    void aWorldWithoutProcessesDropsNothing() {
+        World world = new World(5, 5, 1, List.of(TestSpecies.food()));
+        for (int day = 0; day < 14; day++) {
+            assertThat(world.advance().census().population()).containsEntry("food", 0);
+        }
+    }
+
+    @Test
+    void aDropOfAnUnknownSpeciesIsRejectedOnBuilding() {
+        assertThatThrownBy(() -> new World(5, 5, 1, RABBITS, List.of(new FoodDrop("grass"))))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("grass");
+    }
+
+    @Test
+    void theSnapshotMarksCreaturesAndNamesItsSpecies() {
+        World world = new World(3, 3, 1, List.of(Rabbit.species(), Grass.species()));
+        world.submit(new Command.SpawnAt("grass", new GridPosition(1, 1)));
+        world.submit(new Command.SpawnAt("rabbit", new GridPosition(1, 1)));
+        WorldSnapshot snapshot = world.applyPending();
+        assertThat(snapshot.species()).containsExactly("grass", "rabbit");
+        assertThat(snapshot.tiles().get(4).entities())
+                .extracting(WorldSnapshot.EntityView::species, WorldSnapshot.EntityView::creature)
+                .containsExactly(tuple("grass", false), tuple("rabbit", true));
     }
 }

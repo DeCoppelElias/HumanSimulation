@@ -53,4 +53,11 @@ class CircularSenseTest {
                 .extracting(Perception.EntityView::id, Perception.EntityView::species)
                 .containsExactly(tuple(1, "walker"));
     }
+
+    @Test
+    void measuresByTheGridsDistance() {
+        Entity self = put(0, new GridPosition(2, 2));
+        Perception perception = CircularSense.perceive(self, grid, entities);
+        assertThat(perception.distance(3, 4)).isEqualTo(Grid.distance(3, 4)).isEqualTo(5.0);
+    }
 }

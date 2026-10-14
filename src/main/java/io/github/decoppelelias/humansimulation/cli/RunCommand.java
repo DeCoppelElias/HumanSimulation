@@ -1,6 +1,8 @@
 package io.github.decoppelelias.humansimulation.cli;
 
 import io.github.decoppelelias.humansimulation.domain.Command;
+import io.github.decoppelelias.humansimulation.domain.FoodDrop;
+import io.github.decoppelelias.humansimulation.domain.Grass;
 import io.github.decoppelelias.humansimulation.domain.Rabbit;
 import io.github.decoppelelias.humansimulation.domain.World;
 import java.io.PrintWriter;
@@ -60,7 +62,12 @@ public final class RunCommand implements Callable<Integer> {
 
     private World start(long worldSeed) {
         try {
-            World world = new World(width, height, worldSeed, List.of(Rabbit.species()));
+            World world = new World(
+                    width,
+                    height,
+                    worldSeed,
+                    List.of(Grass.species(), Rabbit.species()),
+                    List.of(new FoodDrop("grass")));
             new TreeMap<>(spawn.isEmpty() ? STARTING_POPULATION : startingPopulation())
                     .forEach((name, count) -> world.submit(new Command.Spawn(name, count)));
             return world;

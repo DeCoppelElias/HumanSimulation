@@ -12,10 +12,12 @@ import java.util.random.RandomGeneratorFactory;
 
 public final class World {
     private static final String ALGORITHM = "L64X128MixRandom";
+    static final String STRIDE = "stride";
 
     private final int width;
     private final int height;
     private final SortedMap<String, Species> species;
+    private final List<WorldProcess> processes;
     private final ArrayDeque<Command> pending = new ArrayDeque<>();
     private final List<LoggedCommand> log = new ArrayList<>();
     private final TreeMap<Integer, Entity> entities = new TreeMap<>();
@@ -26,10 +28,20 @@ public final class World {
     private int day;
 
     public World(int width, int height, long seed, List<Species> species) {
+        this(width, height, seed, species, List.of());
+    }
+
+    public World(int width, int height, long seed, List<Species> species, List<WorldProcess> processes) {
         this.width = width;
         this.height = height;
         this.grid = new Grid(width, height);
         this.species = byName(species);
+        this.processes = List.copyOf(processes);
+        for (WorldProcess process : this.processes) {
+            switch (process) {
+                case FoodDrop drop -> speciesNamed(drop.species());
+            }
+        }
         start(seed);
     }
 
@@ -45,8 +57,11 @@ public final class World {
 
     public DayReport advance() {
         drain();
-        List<Decision> decisions = decide();
-        resolve(dayOrder(decisions, random));
+        List<Decision> order = dayOrder(decide(), random);
+        resolve(order);
+        feed(order);
+        metabolise();
+        runProcesses();
         day++;
         return new DayReport(snapshot(), census());
     }
@@ -62,23 +77,49 @@ public final class World {
             for (int id : grid.occupants(at)) {
                 Entity entity = entities.get(id);
                 standing.add(new WorldSnapshot.EntityView(
-                        id, entity.species().name(), entity.species().spriteKey(), Map.of()));
+                        id,
+                        entity.species().name(),
+                        entity.species().spriteKey(),
+                        entity.brain().isPresent(),
+                        Map.of()));
             }
             tiles.add(new WorldSnapshot.TileView(at, Map.of(), standing));
         }
-        return new WorldSnapshot(seed, day, width, height, tiles);
+        return new WorldSnapshot(seed, day, width, height, List.copyOf(species.keySet()), tiles);
     }
 
     private List<Decision> decide() {
-        Options options = new Options(grid.directions());
         List<Decision> decisions = new ArrayList<>();
         for (int id : entityIds()) {
             Entity entity = entities.get(id);
-            entity.brain()
-                    .ifPresent(brain -> decisions.add(new Decision(
-                            id, brain.decide(CircularSense.perceive(entity, grid, entities), options, random))));
+            entity.brain().ifPresent(brain -> {
+                Options options = new Options(
+                        grid.directions(),
+                        landings(grid, entity.position(), entity.species().settings()));
+                decisions.add(new Decision(
+                        id, brain.decide(CircularSense.perceive(entity, grid, entities), options, random)));
+            });
         }
         return decisions;
+    }
+
+    /** Staying, then each direction one tile at a time up to the stride, stopping at the edge. */
+    static List<Options.Landing> landings(Grid grid, GridPosition from, Settings settings) {
+        List<Options.Landing> landings = new ArrayList<>();
+        landings.add(new Options.Landing(new Intent.Idle(), 0, 0));
+        int stride = settings.declares(STRIDE) ? settings.whole(STRIDE) : 0;
+        for (Direction direction : grid.directions()) {
+            GridPosition at = from;
+            for (int distance = 1; distance <= stride; distance++) {
+                at = grid.step(at, direction);
+                if (!grid.contains(at)) {
+                    break;
+                }
+                landings.add(new Options.Landing(
+                        new Intent.Move(direction, distance), at.x() - from.x(), at.y() - from.y()));
+            }
+        }
+        return landings;
     }
 
     /** Shuffled from id order with the world's generator, so the draw replays. */
@@ -111,6 +152,55 @@ public final class World {
             grid.place(entity.id(), next);
             entity.moveTo(next);
         }
+    }
+
+    /** Walks the day's order, per 0016: a creature takes every edible on its tile. */
+    void feed(List<Decision> order) {
+        for (Decision decision : order) {
+            Entity eater = entities.get(decision.entityId());
+            if (eater == null) {
+                continue;
+            }
+            eater.part(Metabolism.class).ifPresent(metabolism -> {
+                for (int id : grid.occupants(eater.position())) {
+                    Entity other = entities.get(id);
+                    if (id != eater.id() && other != null) {
+                        other.part(Edible.class).ifPresent(edible -> {
+                            metabolism.credit(edible.amount());
+                            remove(id);
+                        });
+                    }
+                }
+            });
+        }
+    }
+
+    /** Charges every reserve in id order and removes anything below zero. */
+    private void metabolise() {
+        for (int id : entityIds()) {
+            Entity entity = entities.get(id);
+            if (entity != null
+                    && entity.part(Metabolism.class).map(m -> !m.tick()).orElse(false)) {
+                remove(id);
+            }
+        }
+    }
+
+    private void runProcesses() {
+        for (WorldProcess process : processes) {
+            switch (process) {
+                case FoodDrop drop -> {
+                    Species kind = speciesNamed(drop.species());
+                    for (int i = drop.dropsOn(day + 1); i > 0; i--) {
+                        place(kind, randomTile());
+                    }
+                }
+            }
+        }
+    }
+
+    private GridPosition randomTile() {
+        return new GridPosition(random.nextInt(width), random.nextInt(height));
     }
 
     private CensusRow census() {
@@ -155,7 +245,7 @@ public final class World {
             case Command.Spawn spawn -> {
                 Species kind = speciesNamed(spawn.species());
                 for (int i = 0; i < spawn.count(); i++) {
-                    place(kind, new GridPosition(random.nextInt(width), random.nextInt(height)));
+                    place(kind, randomTile());
                 }
             }
             case Command.SpawnAt spawnAt -> place(speciesNamed(spawnAt.species()), spawnAt.at());
@@ -174,6 +264,19 @@ public final class World {
                 kind.parts().stream().map(part -> part.apply(spawn)).toList());
         entities.put(entity.id(), entity);
         grid.place(entity.id(), at);
+    }
+
+    /** Checks everything before changing anything, so a failed removal leaves the world whole. */
+    void remove(int id) {
+        Entity entity = entities.get(id);
+        if (entity == null) {
+            throw new IllegalArgumentException("there is no entity " + id + " to remove");
+        }
+        if (!grid.occupants(entity.position()).contains(id)) {
+            throw new IllegalStateException("entity " + id + " is not on its tile " + entity.position());
+        }
+        entities.remove(id);
+        grid.remove(id, entity.position());
     }
 
     private Species speciesNamed(String name) {

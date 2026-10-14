@@ -46,6 +46,11 @@ final class Grid {
         return new GridPosition(from.x() + direction.dx(), from.y() + direction.dy());
     }
 
+    /** How far apart two tiles are, given the offset between them. */
+    static double distance(int dx, int dy) {
+        return Math.hypot(dx, dy);
+    }
+
     List<GridPosition> within(GridPosition centre, int range) {
         if (range < 0) {
             throw new IllegalArgumentException("a range cannot be negative, got " + range);

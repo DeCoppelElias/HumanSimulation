@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-27. Revised 2026-10-01.
+Accepted, 2026-09-27. Revised 2026-10-12.
 
 ## Context
 
@@ -47,6 +47,11 @@ ascending id order.
 Speed is charged for in the metabolise step, in proportion to the gene, so it
 trades against the reserve that feeds a creature's children.
 
+View range has the same defect, since seeing farther never hurts a brain that
+walks to the nearest grass, per
+[0023](0023-rabbits-score-the-tiles-they-can-reach.md). It is charged the same
+way, per tile of range, by a species setting.
+
 ## Consequences
 
 Initiative becomes a trait under selection and the first real tension between
@@ -56,6 +61,11 @@ Whether the charge is right is an empirical question rather than a design one,
 and the headless runner from [0012](0012-tests-target-brains-without-a-world.md)
 answers it. A speed mean that pins to the bound within a few dozen generations
 means the charge is too small.
+
+A reserve charge is a placeholder for both. Every gene needs a tradeoff, and the
+wanted kind is one specific to the trait, such as far sight blurring what is
+close. `docs/ideas/gene-tradeoffs.md` holds that, and a gene that gets its own
+tradeoff loses its charge.
 
 Coupling speed to how far a creature may move is the other available cost and
 stays available. Taking both at once would make a failed experiment unreadable.

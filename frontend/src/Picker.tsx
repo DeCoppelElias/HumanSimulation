@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import type { Api } from "./api";
 import { messageOf } from "./messages";
-import { readSeed, STARTING_RABBITS } from "./seed";
+import { readSeed } from "./seed";
+import { populate } from "./start";
 import type { WorldSummary } from "./types";
 
 type Props = { api: Api; onOpen(id: string): void; onError(message: string): void };
@@ -25,11 +26,7 @@ export function Picker({ api, onOpen, onError }: Props) {
         setCreating(true);
         try {
             const created = await api.createWorld(seed.kind === "seed" ? seed.seed : null);
-            await api.command(created.id, {
-                type: "spawn",
-                species: "rabbit",
-                count: STARTING_RABBITS,
-            });
+            await populate(api, created.id);
             onOpen(created.id);
         } catch (error) {
             onError(messageOf(error));

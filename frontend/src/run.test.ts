@@ -7,6 +7,7 @@ const at = (seed: number, day: number): WorldSnapshot => ({
     day,
     width: 1,
     height: 1,
+    species: [],
     tiles: [],
 });
 

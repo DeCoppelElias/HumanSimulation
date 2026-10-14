@@ -42,6 +42,25 @@ class DeterminismTest {
     }
 
     @Test
+    void aRunWithFoodReplaysExactly() {
+        List<Species> known = List.of(Grass.species(), Rabbit.species());
+        List<WorldProcess> drop = List.of(new FoodDrop("grass"));
+        World original = new World(12, 12, 42, known, drop);
+        original.submit(new Command.Spawn("rabbit", 15));
+        original.submit(new Command.Spawn("grass", 10));
+        List<WorldSnapshot> seen = new ArrayList<>();
+        for (int day = 0; day < 60; day++) {
+            if (day == 25) {
+                original.submit(new Command.SpawnAt("grass", new GridPosition(3, 4)));
+            }
+            seen.add(original.advance().snapshot());
+        }
+        assertThat(seen.getLast().day()).isEqualTo(60);
+        assertThat(replay(new World(12, 12, 42, known, drop), original.log(), 60))
+                .isEqualTo(seen);
+    }
+
+    @Test
     void aResetStartsALogThatReplaysOnItsOwn() {
         World original = new World(20, 20, 42, RABBITS);
         original.submit(new Command.Spawn("rabbit", 10));

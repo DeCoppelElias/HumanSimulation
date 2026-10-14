@@ -1,6 +1,7 @@
 package io.github.decoppelelias.humansimulation.web;
 
 import io.github.decoppelelias.humansimulation.domain.Species;
+import io.github.decoppelelias.humansimulation.domain.WorldProcess;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.HexFormat;
@@ -14,15 +15,17 @@ public final class Worlds {
 
     private final int cap;
     private final List<Species> species;
+    private final List<WorldProcess> processes;
     private final SecureRandom ids = new SecureRandom();
     private final Map<String, WorldHost> byId = new LinkedHashMap<>();
 
-    public Worlds(int cap, List<Species> species) {
+    public Worlds(int cap, List<Species> species, List<WorldProcess> processes) {
         if (cap < 1) {
             throw new IllegalArgumentException("a server holds at least one world, got a cap of " + cap);
         }
         this.cap = cap;
         this.species = List.copyOf(species);
+        this.processes = List.copyOf(processes);
     }
 
     synchronized WorldHost create(int width, int height, long seed) {
@@ -35,7 +38,7 @@ public final class Worlds {
         }
         byte[] bytes = new byte[16];
         ids.nextBytes(bytes);
-        WorldHost host = new WorldHost(HexFormat.of().formatHex(bytes), width, height, seed, species);
+        WorldHost host = new WorldHost(HexFormat.of().formatHex(bytes), width, height, seed, species, processes);
         byId.put(host.id(), host);
         return host;
     }

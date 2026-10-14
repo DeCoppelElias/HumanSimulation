@@ -49,6 +49,7 @@ export class Scene {
             scene.destroy();
             throw error;
         }
+        scene.sprites.sortableChildren = true;
         app.stage.addChild(tileLines(width, height), scene.sprites, scene.labels);
         app.stage.eventMode = "static";
         app.stage.hitArea = new Rectangle(0, 0, width * TILE, height * TILE);
@@ -102,6 +103,7 @@ export class Scene {
                 sprite = new Sprite(texture);
                 sprite.anchor.set(0.5);
                 sprite.scale.set(SPRITE_SIZE / Math.max(texture.width, texture.height));
+                sprite.zIndex = placed.creature ? 1 : 0;
                 this.pool.set(placed.id, sprite);
                 this.sprites.addChild(sprite);
             }
@@ -124,9 +126,9 @@ export class Scene {
     private drawCounts(snapshot: WorldSnapshot): void {
         this.labels.removeChildren().forEach((child) => child.destroy());
         for (const stack of stacks(snapshot)) {
-            if (stack.count > 1) {
+            if (stack.creatures > 1) {
                 const label = new Text({
-                    text: String(stack.count),
+                    text: String(stack.creatures),
                     style: {
                         fontSize: 12,
                         fontWeight: "bold",

@@ -22,6 +22,8 @@ that settled it.
   day to the next.
 - [Browser smoke test](browser-smoke-test.md) an agent checks what the page
   actually renders.
+- [Control species](control-species.md) a species that never learns, run
+  beside the rabbits to show what selection adds.
 - [Corpses and scavenging](corpses-and-scavenging.md) death leaves something
   edible behind.
 - [Diet](diet.md) which edibles a creature accepts, needed once a predator
@@ -32,6 +34,8 @@ that settled it.
   occupant of a shared tile.
 - [Error Prone](error-prone.md) failing the build on bug patterns javac does
   not warn about.
+- [Gene tradeoffs](gene-tradeoffs.md) a cost of its own for each gene that
+  only helps, instead of a charge against the reserve.
 - [Golden-run test](golden-run-test.md) pinning a seeded run's output across
   builds, left out for its overhead.
 - [Hexagonal grid](hexagonal-grid.md) six equidistant neighbours, so sight and
@@ -48,6 +52,8 @@ that settled it.
   over stdio.
 - [Network brain](network-brain.md) the second brain, warm-started from the
   fixed rules.
+- [Patchy food](patchy-food.md) food arriving near food, so herding has
+  something to gain.
 - [Property-based tests](property-based-tests.md) jqwik for the domain's
   invariants, with shrunk counterexamples.
 - [Remove command](remove-command.md) taking an entity out of a running world

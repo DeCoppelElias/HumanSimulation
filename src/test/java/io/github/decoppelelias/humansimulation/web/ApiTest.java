@@ -2,6 +2,8 @@ package io.github.decoppelelias.humansimulation.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.github.decoppelelias.humansimulation.domain.FoodDrop;
+import io.github.decoppelelias.humansimulation.domain.Grass;
 import io.github.decoppelelias.humansimulation.domain.Rabbit;
 import io.javalin.Javalin;
 import java.net.http.HttpRequest;
@@ -28,7 +30,7 @@ class ApiTest {
 
     @BeforeEach
     void start() {
-        worlds = new Worlds(3, List.of(Rabbit.species()));
+        worlds = new Worlds(3, List.of(Grass.species(), Rabbit.species()), List.of(new FoodDrop("grass")));
         IdleWatch idle = new IdleWatch(Duration.ZERO, System::nanoTime, () -> {});
         app = Api.create(worlds, idle, Duration.ofMillis(200), System::nanoTime).start("127.0.0.1", 0);
         client = new HttpTestClient(app.port());
@@ -61,6 +63,18 @@ class ApiTest {
         assertThat(client.get("/worlds/" + id).json().findValues("spriteKey")).isEmpty();
         assertThat(client.get("/worlds").json().get(0).get("playing").asBoolean())
                 .isFalse();
+    }
+
+    @Test
+    void aSnapshotNamesItsSpeciesAndMarksCreatures() {
+        String id = newWorld();
+        JsonNode snapshot = command(id, "{\"type\":\"spawn\",\"species\":\"rabbit\",\"count\":1}")
+                .json();
+        assertThat(snapshot.get("species").get(0).asString()).isEqualTo("grass");
+        assertThat(snapshot.get("species").get(1).asString()).isEqualTo("rabbit");
+        assertThat(snapshot.findValues("creature"))
+                .singleElement()
+                .satisfies(flag -> assertThat(flag.asBoolean()).isTrue());
     }
 
     @Test

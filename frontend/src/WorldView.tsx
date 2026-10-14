@@ -1,6 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import type { Api } from "./api";
 import { messageOf } from "./messages";
+import { defaultSpecies } from "./species";
 import { Chart } from "./Chart";
 import { Controls } from "./Controls";
 import { Grid } from "./Grid";
@@ -15,6 +16,10 @@ type Props = {
 
 export function WorldView({ api, id, onLeave, onError }: Props) {
     const { snapshot, play, history, gone } = useWorld(api, id);
+    const [selected, setSelected] = useState<string | null>(null);
+    const species = snapshot?.species ?? [];
+    const spawnAs =
+        selected !== null && species.includes(selected) ? selected : defaultSpecies(species);
 
     useEffect(() => {
         if (gone) {
@@ -33,11 +38,13 @@ export function WorldView({ api, id, onLeave, onError }: Props) {
             <Grid
                 snapshot={snapshot}
                 play={play}
-                onTileClick={(at) =>
-                    void api
-                        .command(id, { type: "spawnAt", species: "rabbit", at })
-                        .catch((error: unknown) => onError(messageOf(error)))
-                }
+                onTileClick={(at) => {
+                    if (spawnAs !== null) {
+                        void api
+                            .command(id, { type: "spawnAt", species: spawnAs, at })
+                            .catch((error: unknown) => onError(messageOf(error)));
+                    }
+                }}
                 onError={onError}
             />
             <Chart history={history} />
@@ -45,6 +52,9 @@ export function WorldView({ api, id, onLeave, onError }: Props) {
                 api={api}
                 id={id}
                 play={play}
+                species={species}
+                spawnAs={spawnAs}
+                onSelect={setSelected}
                 onError={onError}
                 onLeave={() => onLeave(null)}
             />
