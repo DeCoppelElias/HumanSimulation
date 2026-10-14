@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-03. Revised 2026-10-04.
+Accepted, 2026-09-03. Revised 2026-10-14.
 
 ## Context
 
@@ -59,14 +59,20 @@ public interface Brain extends Component {
     Intent decide(Perception perception, Options options, RandomGenerator random);
 }
 
-public record Options(List<Direction> directions) {}
+public record Options(List<Direction> directions, List<Landing> landings) {
+    public record Landing(Intent intent, int dx, int dy) {}
+}
 ```
 
 `Options` is what the world offers a creature when the day starts, built from
 the grid and the creature's own components, and kept apart from what it
 senses. A new sense never touches it, and a new capability never touches a
-sense. It starts with the grid's directions in a fixed order, per
-[0015](0015-geometry-lives-in-the-grid.md). Breeding and attack targets join it
+sense. It holds the grid's directions in a fixed order, per
+[0015](0015-geometry-lives-in-the-grid.md), and the landings: each tile the
+creature could end the day on, as an offset with the intent that walks there.
+They are staying, then each direction one tile at a time up to the species'
+`stride` setting, stopping at the edge, so a brain that scores tiles never
+walks the grid itself. A species with no `stride` is offered only staying. Breeding and attack targets join it
 when those intents are built, and a network brain reads it as a fixed encoding
 of its outputs. An option offered at dawn is not a promise: the resolver still
 decides what happens, and a move can be blocked by something that moved first.

@@ -179,16 +179,21 @@ what its carrier sees of it and what others in range see, which may be nothing,
 so a creature can read its own reserve while its neighbours cannot, and what one
 creature can know about another is a deliberate choice. Positions in it are
 relative to the creature, and a tile off the grid is simply absent, which is how
-an edge is perceived. An intent is the single action it wants to take this day,
-one of moving in a direction for a distance, breeding, or doing nothing. There
-is no attack until a predator needs one.
+an edge is perceived. A perception also carries the grid's distance, so a brain
+asks how far apart two offsets are and never measures for itself. An intent is
+the single action it wants to take this day, one of moving in a direction for a
+distance, breeding, or doing nothing. There is no attack until a predator needs
+one.
 
 There is one perception type, and what fills it is a component. A species that
 senses differently carries a different sense, the component that builds its
 perception, and every brain still takes the same input.
 
 The options are what the world offers a creature when the day starts: the
-directions the grid has, and later whatever else it can choose between. They
+directions the grid has, the landings it could end the day on, and later
+whatever else it can choose between. The landings are staying and each
+direction one tile at a time up to the species' stride, stopping at the edge,
+each as an offset with the intent that walks there. They
 come from the grid and the creature's components rather than from its sense, so
 a new sense never has to supply them. An option is not a promise, since the
 resolver still decides what happens.
