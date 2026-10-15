@@ -40,8 +40,14 @@ class RabbitTest {
         assertThat(settings.number("eatingCharge")).isEqualTo(1);
         assertThat(settings.number("startingReserve")).isEqualTo(15);
         assertThat(settings.whole("stride")).isEqualTo(3);
-        assertThat(settings.number("speedCharge")).isEqualTo(0.1);
-        assertThat(settings.number("viewCharge")).isEqualTo(0.03);
+        assertThat(settings.declared().scalar("speedCharge"))
+                .extracting(
+                        Setting.Scalar::min, Setting.Scalar::max, Setting.Scalar::step, Setting.Scalar::defaultValue)
+                .containsExactly(0.0, 2.0, 0.01, 0.1);
+        assertThat(settings.declared().scalar("viewCharge"))
+                .extracting(
+                        Setting.Scalar::min, Setting.Scalar::max, Setting.Scalar::step, Setting.Scalar::defaultValue)
+                .containsExactly(0.0, 1.0, 0.01, 0.03);
     }
 
     @Test

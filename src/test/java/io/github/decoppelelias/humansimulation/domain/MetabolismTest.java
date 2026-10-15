@@ -53,6 +53,9 @@ class MetabolismTest {
         Species eater = TestSpecies.eater(1, 15);
         Metabolism metabolism = Metabolism.of(new Spawn(eater.baseline(), eater, new SettingValues(eater.settings())));
         assertThat(metabolism.ownView()).isEqualTo(new Metabolism.Own(15, 15));
+        Species rabbit = Rabbit.species();
+        Metabolism charged = Metabolism.of(new Spawn(rabbit.baseline(), rabbit, new SettingValues(rabbit.settings())));
+        assertThat(charged.ownView()).isEqualTo(new Metabolism.Own(15, 13));
     }
 
     @Test

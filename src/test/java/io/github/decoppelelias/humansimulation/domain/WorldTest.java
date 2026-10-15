@@ -189,6 +189,11 @@ class WorldTest {
             views.add(genome.scalar("viewRange"));
         }
         assertThat(views).doesNotHaveDuplicates();
+        world.submit(new Command.SpawnAt("rabbit", new GridPosition(0, 0)));
+        world.submit(new Command.SpawnAt("rabbit", new GridPosition(0, 0)));
+        world.applyPending();
+        assertThat(world.entity(20).orElseThrow().genome())
+                .isNotEqualTo(world.entity(21).orElseThrow().genome());
     }
 
     @Test
@@ -386,7 +391,7 @@ class WorldTest {
     void withoutASpeedGeneActsLast() {
         List<Decision> order = World.dayOrder(
                 idle(4),
-                id -> id >= 2 ? OptionalDouble.of(id) : OptionalDouble.empty(),
+                id -> id >= 2 ? OptionalDouble.of(id - 2) : OptionalDouble.empty(),
                 RandomGeneratorFactory.of("L64X128MixRandom").create(3));
         assertThat(order).extracting(Decision::entityId).startsWith(3, 2);
         assertThat(order.subList(2, 4)).extracting(Decision::entityId).containsExactlyInAnyOrder(0, 1);
