@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-10-12.
+Accepted, 2026-10-12. Revised 2026-10-15.
 
 ## Context
 
@@ -34,7 +34,7 @@ would be fighting the roll.
 Within scoring, the distance to grass and the closeness of other rabbits could
 each be measured two ways. Summed closeness to every visible grass rewards
 clusters, and it flattens with range, so a rabbit drifts toward distant grass
-rather than walking to it, and between two equal patches the best landing can be
+rather than walking to it, and between two equal patches the best tile can be
 the empty middle. Distance to the nearest rabbit, used for avoidance, keeps
 growing with range, so a rabbit avoiding others is pushed to the edge of its
 vision whatever the crowd, and two rabbits count as one.
@@ -50,19 +50,32 @@ uniform pick was simpler to explain. It makes the second best tile no likelier
 than the worst, so a careless rabbit wanders off instead of fumbling near the
 food, and hunger loses its focusing effect.
 
+Breeding could be chosen outside the softmax. A `breedMargin` gene, breeding
+whenever the reserve left after paying covers that many days, gives selection
+the clearest story, thin parents against safe ones, but it is a hard gate that a
+small change in the gene flips all at once. Always breeding when offered needs no
+gene and stops breeding being a decision, which undoes why
+[0004](0004-creatures-return-intents.md) made it an intent.
+
 ## Decision
 
 Each day a rabbit scores every tile it could land on and picks one.
 
-The candidates are staying put and each of the grid's directions at each
-distance from one up to `stride`, a species setting with a default of 3. A
-candidate is a landing tile, so a rabbit chooses how far to walk.
+The candidates are the options it is offered, per
+[0004](0004-creatures-return-intents.md): idling, each of the grid's directions
+at each distance from one up to `stride`, a species setting with a default of 3,
+and breeding when it is legal. A move is scored at the tile it lands on, so a
+rabbit chooses how far to walk.
 
 ```
 weight = grassPull + hungerDrive / (1 + daysLeft)
-score  = -weight * (distance from the landing tile to the nearest visible grass)
-       + rabbitPull * sum over visible rabbits of 1 / (1 + distance from the landing tile)
+score  = -weight * (distance from the tile it ends on to the nearest visible grass)
+       + rabbitPull * sum over visible rabbits of 1 / (1 + distance from the tile it ends on)
 ```
+
+Idling is scored at the rabbit's own tile. Breeding keeps it there too, and
+scores as idling plus `breedPull`, so breeding competes with walking toward food
+and with staying, and a rabbit far from grass usually walks instead.
 
 `daysLeft` comes from the own view of `Metabolism`, computed from the reserve and
 the live eating charge and interval. A term with nothing of its kind in view is
@@ -71,8 +84,9 @@ read from `EntityView.species`. A second species gets a term of its own.
 
 The pick is a softmax: each candidate's chance is proportional to
 `exp(score / whim)`, with scores shifted by their maximum first. One draw from
-the world's generator picks among the candidates in a fixed order, staying first,
-then the grid's directions in order, each at distances one up to `stride`.
+the world's generator picks among the candidates in the order they are offered,
+idling first, then the grid's directions in order, each at distances one up to
+`stride`, then breeding.
 
 | Gene | Bounds | Baseline | Mutation size |
 |---|---|---|---|
@@ -81,6 +95,7 @@ then the grid's directions in order, each at distances one up to `stride`.
 | `hungerDrive` | 0 to 10 | 2 | 0.4 |
 | `rabbitPull` | -2 to 2 | -0.2 | 0.1 |
 | `whim` | 0.05 to 5 | 0.5 | 0.1 |
+| `breedPull` | 0 to 5 | 1 | 0.2 |
 
 ## Consequences
 
@@ -89,7 +104,7 @@ herd is where `rabbitPull` drifts, and a fed rabbit wanders more than a starving
 one because hunger raises the weight that `whim` divides, with no rule saying so.
 
 The grass term is measured in tiles, so `whim` reads in tiles too. At a grass
-weight of 1 and a `whim` of 1, a landing one tile worse is e⁻¹ as likely as the
+weight of 1 and a `whim` of 1, a tile one step worse is e⁻¹ as likely as the
 best.
 
 With nothing in view every score ties, and the rabbit picks uniformly among its
@@ -106,6 +121,12 @@ patchy food rather than a cost on `whim`.
 `hungerDrive` has little to select on until breeding gives a reserve a use in
 entry 6.
 
+At the baseline `whim` of 0.5, a `breedPull` of 1 makes breeding about seven
+times likelier than idling, and about as attractive as one tile closer to
+grass. Its cost is built in: breeding spends the day's move and the reserve, so
+a high `breedPull` makes thin parents. Nothing in the score keeps a margin, so
+the world does, per [0004](0004-creatures-return-intents.md).
+
 A rabbit between two equal patches can alternate between them, since nothing
 remembers a target. `docs/ideas/brain-memory.md` is the fix when it matters.
 
@@ -119,7 +140,7 @@ The score is a weighted sum of features followed by a softmax, which is a networ
 with one layer, so the network brain in 0018 can start from these exact weights
 rather than from weights fitted to imitate them.
 
-A brain test hands the brain a perception where one landing clearly wins, or two
+A brain test hands the brain a perception where one option clearly wins, or two
 tie, and checks the pick over a seeded generator.
 
 The step distribution is gone, and with it the only gene that needed a

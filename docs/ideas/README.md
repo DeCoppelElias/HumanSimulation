@@ -64,3 +64,5 @@ that settled it.
   which makes how much to eat a decision.
 - [World persistence](world-persistence.md) a server's worlds surviving a
   restart.
+- [World size on the page](world-size-on-the-page.md) choosing a world's width
+  and height on the create screen.

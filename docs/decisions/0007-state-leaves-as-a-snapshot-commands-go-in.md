@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-03. Revised 2026-10-04.
+Accepted, 2026-09-03. Revised 2026-10-15.
 
 ## Context
 
@@ -112,11 +112,13 @@ constructs either. There is no container.
 Each day the world produces an immutable snapshot of everything: the seed, the
 day number, the grid dimensions, and for each tile its scalar fields and the
 entities standing on it with their species, sprite key and the values worth
-displaying. The viewer is a person rather than a creature, so the audience rules
+displaying, and the current value of every setting, grouped by owner per
+[0017](0017-every-number-is-a-setting-or-a-gene.md). The viewer is a person rather than a creature, so the audience rules
 in [0013](0013-perception-is-one-type.md) do not limit what the snapshot shows.
 
 ```java
-public record WorldSnapshot(long seed, int day, int width, int height, List<TileView> tiles) {
+public record WorldSnapshot(long seed, int day, int width, int height, List<String> species,
+        List<TileView> tiles, Map<String, Map<String, Double>> settings) {
     public record TileView(GridPosition at, Map<String, Double> fields, List<EntityView> entities) {}
     public record EntityView(
             int id, String species, String spriteKey, Map<String, Double> info) {}
@@ -124,7 +126,8 @@ public record WorldSnapshot(long seed, int day, int width, int height, List<Tile
 ```
 
 Commands are the only way in. Spawning entities, resetting the world, editing a
-species' settings and setting an entity alight are all commands. The interface
+setting or restoring its default, and setting an entity alight are all
+commands. The interface
 never calls a model method that is not one. A reset carries the seed the new
 world uses, so the log replays it.
 
@@ -139,9 +142,12 @@ uniformly from the whole grid with the world's generator, independently, so two
 can land on one tile. Spawning at a position places one. Spawns can be sent on
 any day, not only the first.
 
-A reset with a seed leaves the world exactly as constructing it with that seed
-would: empty, day 0, ids counted from the start again, and a command log whose
-first entry is the reset. The dimensions, settings and species stay. Ids and day numbers therefore repeat
+A reset with a seed leaves the world as constructing it with that seed and
+sending its edited settings would: empty, day 0, ids counted from the start
+again, and a command log whose first entry is the reset, followed by a
+`SetSetting` for each value that differs from its default, per
+[0017](0017-every-number-is-a-setting-or-a-gene.md). The dimensions, settings
+and species stay. Ids and day numbers therefore repeat
 across a reset, so a viewer treats a changed seed or a day that goes backwards
 as a new run rather than diffing across it. The reset is recorded in the new
 log at day 0, the day the world it builds starts on.
@@ -168,11 +174,14 @@ value at both moments, so the log records the same day either way.
 
 A census row holds the day and the population of every species the world knows,
 keyed by species name in name order. A species that has died out stays in the
-row at zero, so a chart line does not break at an extinction. Gene means join
-the row in roadmap entry 6.
+row at zero, so a chart line does not break at an extinction. The row also
+holds the mean of each gene per species, over the members alive at the end of
+the day, from their raw values. A species with no members or no genes is left
+out of the means, since a zero would read as a real mean.
 
 ```java
-public record CensusRow(int day, Map<String, Integer> population) {}
+public record CensusRow(int day, Map<String, Integer> population,
+        Map<String, Map<String, Double>> geneMeans) {}
 ```
 
 The census row leaves with each day, and its history belongs to the adapter

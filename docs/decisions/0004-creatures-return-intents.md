@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-03. Revised 2026-10-14.
+Accepted, 2026-09-03. Revised 2026-10-15.
 
 ## Context
 
@@ -25,6 +25,14 @@ an intent. Breeding passes the brain test in
 [0008](0008-brains-decide-systems-apply.md) on all three counts, so it is an
 intent.
 
+The 2022 code let a human breed only on days that were exact multiples of its
+age. A creature that chooses to breed would then have to choose it on that one
+day, and one short of reserve that day waited a whole interval. Breeding was
+also one cost with the child's share a fraction of it. A parent whose reserve
+just covered the cost was left with less than a day's charge and died that
+evening unless it ate, and three numbers in three units, a cost, a fraction and
+a margin, were harder to read on a panel than three amounts.
+
 Dead entities could stay in the world until the clean-up step, marked dead. The
 body would then occupy its tile for the rest of the day and could be perceived,
 but perception happens only in the decide step, before anything can die, so
@@ -43,6 +51,30 @@ perceives, which needs no new type, and since a tile off the grid is absent, a
 creature at an edge could never choose to walk into it, moving the edge rule
 from the resolver into the brain.
 
+What a brain is offered first took the shape of one field per kind of action:
+the landings, a tile to end the day on plus the intent that walks there, with
+breeding and attack targets to join as fields of their own. Every new action
+then changed the shape of `Options`. Offering breeding as one more landing at
+the creature's own tile needed no new field, but a landing stopped meaning a
+tile you walk to, and a brain that scored only tiles would breed as often as it
+stayed, by accident.
+
+Offering every action and letting the resolver turn an illegal pick into an
+idle day was simpler for the options. Machine learning calls the other way
+action masking, and the comparison in Huang and Ontañón, *A Closer Look at
+Invalid Action Masking in Policy Gradient Algorithms* (2020), found that
+penalising illegal picks stops working as they grow more common, where masking
+keeps working. Selection is the learner here, and a wasted day is that penalty.
+
+Legality could live in each component, which would answer what its action
+offers and whether it may happen. Breeding alone already reads two components,
+the window and the reserve, and a move reads the grid and whoever blocks it, so
+a component deciding legality would reach into others and into the world. A
+generic `legal(entity, intent)` engine, or rules registered behind one
+interface, was the other end. A registry looks a rule up by intent class
+instead of switching over the sealed `Intent`, which loses the compile error
+that makes every new action get a rule.
+
 ## Decision
 
 A brain receives a perception and the day's options, and returns one intent. The world applies it.
@@ -59,35 +91,58 @@ public interface Brain extends Component {
     Intent decide(Perception perception, Options options, RandomGenerator random);
 }
 
-public record Options(List<Direction> directions, List<Landing> landings) {
-    public record Landing(Intent intent, int dx, int dy) {}
+public sealed interface Option {
+    Intent intent();
+    record Move(Direction direction, int distance, int dx, int dy) implements Option {}
+    record Breed() implements Option {}
+    record Idle() implements Option {}
 }
+
+public record Options(List<Direction> directions, List<Option> offered) {}
 ```
+
+An option is something a creature may choose today, and an intent is what it
+chose. `Option` mirrors `Intent` case for case, and each option returns the
+intent of the same name, so adding an action adds a case of the same name to
+both. A `Move` option also carries the offset it lands on, worked out by the
+grid, because an intent's direction and distance become a tile only through the
+grid, and a brain never measures, per [0015](0015-geometry-lives-in-the-grid.md).
 
 `Options` is what the world offers a creature when the day starts, built from
 the grid and the creature's own components, and kept apart from what it
 senses. A new sense never touches it, and a new capability never touches a
-sense. It holds the grid's directions in a fixed order, per
-[0015](0015-geometry-lives-in-the-grid.md), and the landings: each tile the
-creature could end the day on, as an offset with the intent that walks there.
-They are staying, then each direction one tile at a time up to the species'
-`stride` setting, stopping at the edge, so a brain that scores tiles never
-walks the grid itself. A species with no `stride` is offered only staying. Breeding and attack targets join it
-when those intents are built, and a network brain reads it as a fixed encoding
-of its outputs. An option offered at dawn is not a promise: the resolver still
-decides what happens, and a move can be blocked by something that moved first.
+sense. It holds the grid's directions in a fixed order and one ordered list of
+options: idling, then each direction one tile at a time up to the species'
+`stride` setting, stopping at the edge, then breeding. A species with no
+`stride` is offered no moves. The order is fixed, so a pick replays and a
+network brain reads the list as a fixed encoding of its outputs. An attack
+joins as a case when it is built, and the shape of `Options` stays the same.
+
+Only legal options are offered. An option offered at dawn is still not a
+promise: the resolver decides what happens, and a move can be blocked by
+something that moved first.
 
 A move's distance is at least one, checked when it is built, per
 [0022](0022-warnings-fail-the-build-and-nothing-is-null.md). A move carries a
-direction and a distance rather than a delta, matching the landing tiles a
-brain scores per [0023](0023-rabbits-score-the-tiles-they-can-reach.md) and
-making the walked path unambiguous. `Intent` is
-sealed, so a switch with no default branch fails to compile when a case is
-missing. `Brain` defaults its own key and offers no views, since a brain shows
+direction and a distance rather than a delta, matching the tiles a brain scores
+per [0023](0023-rabbits-score-the-tiles-they-can-reach.md) and making the
+walked path unambiguous. `Intent` and `Option` are sealed, so a switch with no
+default branch fails to compile when a case is missing. `Brain` defaults its own key and offers no views, since a brain shows
 only in what it does, so an implementation supplies only the decision. The
 perception's shape is [0013](0013-perception-is-one-type.md).
 
 The resolve step owns legality.
+
+Each action has one rule in the world, such as `MoveRule` and `BreedRule`, with
+two methods: `options(entity)` says what the action offers this creature today,
+and `resolve(entity, intent)` applies the chosen intent. The offer and the
+outcome live in one class, so they cannot drift apart, and they stay two checks,
+since the resolver runs after faster creatures have acted. The world's
+`options(entity)` calls each rule in the fixed order, and the resolve switch
+hands each intent to its rule, so those two places list every action. Idling
+needs no rule, since it is always allowed and changes nothing. A component
+answers only about its own state, such as whether its window is open, and a rule
+that combines components or reads the world belongs to the world.
 
 It applies intents in the day's order from
 [0014](0014-resolve-order-comes-from-a-speed-gene.md), over a list of ids fixed
@@ -103,11 +158,17 @@ An entity that dies leaves the world at once, whichever step killed it. When a
 dead entity's turn arrives its id no longer resolves and it is skipped. Remains,
 if they are ever wanted, are spawned by whatever does the killing.
 
-Breeding takes its interval, its cost and the child's endowment from species
-settings, per [0017](0017-every-number-is-a-setting-or-a-gene.md). A parent
-breeds when the interval has elapsed and its reserve covers the cost. The child
-spawns on the parent's tile with a mutated genome and a reserve funded from the
-cost, per [0006](0006-genomes-are-a-named-layout-of-gene-shapes.md).
+Breeding reads four species settings, per
+[0017](0017-every-number-is-a-setting-or-a-gene.md), all in reserve but the
+first: `breedInterval`, `childReserve`, `breedingLoss` and `parentMargin`. A
+`Fertility` component holds the day of the creature's birth or its last breed.
+Breeding is legal once `breedInterval` days have passed since then, and stays
+legal until it breeds, while the reserve is at least `childReserve +
+breedingLoss + parentMargin`. The parent pays `childReserve + breedingLoss`, so
+it keeps at least `parentMargin`. The child spawns on the parent's tile with a
+mutated genome and `childReserve` as its reserve, per
+[0006](0006-genomes-are-a-named-layout-of-gene-shapes.md), and `breedingLoss` is
+gone.
 
 There is no attack. Nothing in the base simulation needs one, and designing it
 before there is a predator to ask would be guesswork. When the predator on the
@@ -153,4 +214,11 @@ actions has to read what was applied rather than what was decided.
 
 When a new intent joins the sealed type, the switch in the resolver fails to
 compile until that case is handled, which is the reminder that nothing else
-provides.
+provides. A new action costs an `Intent` case, an `Option` case of the same
+name, its rule, and a line in the world's `options` and in its resolve switch,
+and every brain that switches over `Option` has to decide what to do with it.
+
+A brain never spends a day on an action that cannot happen, so selection weighs
+only real choices. What the world rules out, a creature cannot learn to avoid,
+such as breeding itself thin. `parentMargin` could become a gene if caution
+itself should evolve.

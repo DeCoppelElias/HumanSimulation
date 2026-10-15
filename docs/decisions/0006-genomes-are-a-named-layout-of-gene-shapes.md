@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-03. Revised 2026-10-12.
+Accepted, 2026-09-03. Revised 2026-10-15.
 
 ## Context
 
@@ -30,7 +30,8 @@ metabolism charge unless it has eaten, and it cannot eat on its birth day, per
 [0004](0004-creatures-return-intents.md), so nearly every child would starve. A
 grace period of some days without charges was the other way out. It adds an age
 check to the metabolise step, and it gives every child days of life that no food
-paid for.
+paid for. The endowment was first a fraction of the breeding cost. A fraction
+reads only after multiplying, and a third sits on no slider step.
 
 ## Decision
 
@@ -49,10 +50,14 @@ A scalar mutates by an offset within its mutation size, clamped to its bounds.
 every switch over it has to handle.
 
 Reproduction stays asexual. A child spawns at the parent's position with the
-parent's genome mutated. Its starting reserve is its endowment, a fraction of
-the breeding cost the parent pays, set by a species setting per
-[0017](0017-every-number-is-a-setting-or-a-gene.md). Metabolism charges a
-newborn like everyone else.
+parent's genome mutated. Its starting reserve is `childReserve`, an amount the
+parent pays as part of breeding, set by a species setting per
+[0017](0017-every-number-is-a-setting-or-a-gene.md) and
+[0004](0004-creatures-return-intents.md). Metabolism charges a newborn like
+everyone else.
+
+A scalar's offset is drawn uniformly within plus or minus its mutation size,
+from the world's generator, one gene at a time in layout order.
 
 Scalars are continuous. Traits that are conceptually whole numbers, such as view
 range, round at read time, so selection still sees differences that a stored
@@ -88,6 +93,5 @@ new shape.
 Energy passes from parent to child, so every day a child lives was paid for by
 food someone gathered. A parent's condition shows in how often it can breed,
 since its reserve has to cover the cost, rather than in what each child gets.
-The endowment fraction is a setting, and making it a gene later would let
-selection choose between few well-fed children and many thin ones, with no new
-shape.
+`childReserve` is a setting, and making it a gene later would let selection
+choose between few well-fed children and many thin ones, with no new shape.

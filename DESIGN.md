@@ -108,7 +108,9 @@ rule reads is declared on its species or on the world: a gene when it varies
 between individuals and passes to a child, a setting otherwise, and a gene's own
 bounds and mutation size in the layout. A setting declares its default and what
 an editor needs to show it, so the interface can edit anything without a line of
-code per number. The brain has its own slot rather than sitting among the
+code per number. The species is a recipe and never changes. Each world keeps
+its own current values, so an edit in one world reaches every creature alive in
+it and no other world. The brain has its own slot rather than sitting among the
 components, because it is the seam that gets swapped. Terrain is a species too,
 and water decides nothing, so the brain slot can be empty.
 
@@ -190,13 +192,18 @@ senses differently carries a different sense, the component that builds its
 perception, and every brain still takes the same input.
 
 The options are what the world offers a creature when the day starts: the
-directions the grid has, the landings it could end the day on, and later
-whatever else it can choose between. The landings are staying and each
-direction one tile at a time up to the species' stride, stopping at the edge,
-each as an offset with the intent that walks there. They
-come from the grid and the creature's components rather than from its sense, so
-a new sense never has to supply them. An option is not a promise, since the
-resolver still decides what happens.
+directions the grid has, and a list of what it may choose today. Each option
+mirrors an intent of the same name. Idling comes first, then each direction one
+tile at a time up to the species' stride, stopping at the edge, each with the
+offset it lands on, then breeding. They come from the grid and the creature's
+components rather than from its sense, so a new sense never has to supply them.
+Only legal options are offered, and an option is still not a promise, since the
+resolver decides what happens.
+
+Each action has one rule in the world, which says what the action offers a
+creature and what happens when it is chosen, so the offer and the outcome never
+drift apart. A component answers only about its own state, and a rule that
+combines several, or reads the world, belongs to the world.
 
 The world resolves intents. A creature says what it wants and the world decides
 what actually happens, so the rules about where you may step and when you may
@@ -241,17 +248,20 @@ A day runs these steps in order:
 2. Resolve. Each intent is applied against a list of ids fixed at the start,
    since resolving can spawn and remove entities, ordered by the speed gene with
    equal speeds drawn at random. Movement walks one tile at a time and stops
-   where the world says it must. Breeding checks the interval and the reserve,
-   spends the cost, and spawns a child at the parent's position carrying a
-   mutated copy of the parent's genome and part of the cost as its reserve, its
-   endowment. A child is not on the day's list, so it first acts and feeds the
-   next day.
+   where the world says it must. Breeding is legal once the breeding interval
+   has passed since the creature's birth or its last breed, which its fertility
+   component records, while its reserve
+   covers the child's reserve, the loss and the margin the parent must keep. It
+   spends the first two and spawns a child at the parent's position carrying a
+   mutated copy of the parent's genome and the child's reserve. A child is not
+   on the day's list, so it first acts and feeds the next day.
 3. Feed. In the same order, a creature takes every edible on its tile,
    crediting its metabolism. A pile taken is gone, so whoever comes later finds
    nothing.
-4. Metabolise. Reserves are charged on the eating interval and again for the
-   speed and view range the creature carries, and anything whose reserve falls
-   below zero dies. A reserve counts days: by default a creature pays one a day.
+4. Metabolise. Reserves are charged on the eating interval, one charge covering
+   eating and the speed and view range the creature carries, and anything whose
+   reserve falls below zero dies. A reserve counts days: by default a creature
+   pays one a day for eating.
 5. World processes, in list order: spawning new food, regrowth, fire.
 6. Clean up. One census row is produced.
 
@@ -271,15 +281,16 @@ the core. A run with no browser behaves exactly like a watched one.
 State leaves as a snapshot of the whole world each day: the seed, the day
 number, the species the world knows, the grid, and for each tile its fields and
 what stands on it with the values worth drawing, including which of it is a
-creature. Commands are the only way in, covering spawning,
-resetting, editing a species' settings, and anything else the interface
-initiates. They queue and drain at the start of a day. The interface never
+creature, and the current value of every setting. Commands are the only way in,
+covering spawning, resetting, editing a setting or restoring its default, and
+anything else the interface initiates. They queue and drain at the start of a day. The interface never
 reaches into the model. A command is checked before it changes anything, and a
 bad one changes nothing.
 
 The day number counts days completed, so a new world is on day 0. A reset with
-a seed leaves the world exactly as building it with that seed would: empty, and
-on day 0.
+a seed leaves the world as building it with that seed and sending its edited
+settings would: empty, on day 0, with edited settings kept and written into the
+new log.
 
 Pausing is the adapter's business rather than the world's. A paused adapter
 asks the world to apply what is pending, which drains the queue and returns a
@@ -309,7 +320,8 @@ carries the world's play state beside its days, so every tab shows the same
 controls. An agent drives worlds over the same API with no browser open.
 
 A `run` command advances a seeded world for a given number of days and prints
-the census as JSON Lines, with population and gene means. It is the only thing
+the census as JSON Lines, with population and the mean of each gene per
+species. It is the only thing
 that catches a build which compiles, passes every test, and quietly stops
 selecting for anything.
 
