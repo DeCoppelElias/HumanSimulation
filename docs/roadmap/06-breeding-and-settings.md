@@ -1,15 +1,16 @@
 # 6. Breeding and settings
 
-Status: not started.
+Status: done.
 
 `Breed` joins `Intent`, and `Option` arrives as a sealed type mirroring it, with
 `Move(direction, distance, dx, dy)`, `Idle` and `Breed`, per
 [0004](../decisions/0004-creatures-return-intents.md). `Options` holds the
 grid's directions and one ordered list of options: idling, then the moves, then
 breeding when it is legal. `Options.Landing` is gone. `MoveRule` and `BreedRule`
-each have `options(entity)` and `resolve(entity, intent)`, and the world's
-`options(entity)` and its resolve switch are the two places that list every
-action. Only legal options are offered.
+each have an `options` and a `resolve` method that take what they read, such as
+the creature, the grid, its settings or the day, and the world's `options` and
+its resolve switch are the two places that list every action. Only legal options
+are offered.
 
 A `Fertility` component holds the day of its carrier's birth or last breed.
 Breeding is legal once `breedInterval` days have passed since then, while the

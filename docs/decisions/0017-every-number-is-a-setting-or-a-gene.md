@@ -84,7 +84,9 @@ record SetSetting(String owner, String key, double value) implements Command {}
 record RestoreDefaults(Optional<String> owner, Optional<String> key) implements Command {}
 ```
 
-`SetSetting` is checked against the declaration's bounds and step.
+`SetSetting` is checked against the declaration's bounds and step, and the value
+is stored exactly on the step, in decimal arithmetic, so a default never reads
+as edited. A declaration's maximum and default sit on its step too.
 `RestoreDefaults` copies the declared defaults back: with no owner the whole
 table, with an owner that group, with both one setting. A key without an owner
 is refused when it is built. A world created with values of its own gets them

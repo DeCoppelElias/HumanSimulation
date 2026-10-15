@@ -57,7 +57,12 @@ public final class Rabbit {
                         0.01,
                         0.03),
                 new Setting.Scalar(
-                        Metabolism.STARTING_RESERVE, "Reserve a spawned rabbit starts with, in days.", 0, 100, 1, 15),
+                        Metabolism.STARTING_RESERVE,
+                        "Reserve a spawned rabbit starts with; one pays for a day of eating.",
+                        0,
+                        100,
+                        1,
+                        15),
                 new Setting.Scalar(MoveRule.STRIDE, "Farthest a rabbit can walk in one day, in tiles.", 1, 5, 1, 3),
                 new Setting.Scalar(
                         BreedRule.BREED_INTERVAL,
@@ -66,8 +71,7 @@ public final class Rabbit {
                         100,
                         1,
                         15),
-                new Setting.Scalar(
-                        BreedRule.CHILD_RESERVE, "Reserve a parent gives its child, in days.", 0, 100, 1, 15),
+                new Setting.Scalar(BreedRule.CHILD_RESERVE, "Reserve a parent gives its child.", 0, 100, 1, 15),
                 new Setting.Scalar(
                         BreedRule.BREEDING_LOSS, "Reserve lost to each birth on top of the child's.", 0, 200, 1, 30),
                 new Setting.Scalar(

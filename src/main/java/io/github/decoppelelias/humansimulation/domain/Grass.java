@@ -10,8 +10,8 @@ public final class Grass {
     private Grass() {}
 
     public static Species species() {
-        Settings settings = new Settings(List.of(
-                new Setting.Scalar(NOURISHMENT, "Reserve an eater gains from one grass, in days.", 1, 100, 1, 15)));
+        Settings settings = new Settings(
+                List.of(new Setting.Scalar(NOURISHMENT, "Reserve an eater gains from one grass.", 1, 100, 1, 15)));
         return new Species(
                 "grass",
                 "grass",

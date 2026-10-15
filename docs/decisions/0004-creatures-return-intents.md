@@ -170,7 +170,7 @@ breedingLoss + parentMargin`. The parent pays `childReserve + breedingLoss`, so
 it keeps at least `parentMargin`. The child spawns on the parent's tile with a
 mutated genome and `childReserve` as its reserve, per
 [0006](0006-genomes-are-a-named-layout-of-gene-shapes.md), and `breedingLoss` is
-gone.
+lost to the birth.
 
 There is no attack. Nothing in the base simulation needs one, and designing it
 before there is a predator to ask would be guesswork. When the predator on the
