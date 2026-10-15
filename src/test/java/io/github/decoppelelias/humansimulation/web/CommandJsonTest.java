@@ -74,6 +74,10 @@ class CommandJsonTest {
                         setting("setSetting", Optional.empty(), Optional.of("stride"), Optional.of(2.0)), () -> 0L))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("owner");
+        assertThatThrownBy(() -> CommandJson.toCommand(
+                        setting("setSetting", Optional.of("rabbit"), Optional.empty(), Optional.of(2.0)), () -> 0L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("key");
     }
 
     @Test

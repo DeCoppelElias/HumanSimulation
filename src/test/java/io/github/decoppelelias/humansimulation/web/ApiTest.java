@@ -30,7 +30,7 @@ class ApiTest {
 
     @BeforeEach
     void start() {
-        worlds = new Worlds(3, List.of(Grass.species(), Rabbit.species()), List.of(new FoodDrop("grass")));
+        worlds = new Worlds(3, List.of(Rabbit.species(), Grass.species()), List.of(new FoodDrop("grass")));
         IdleWatch idle = new IdleWatch(Duration.ZERO, System::nanoTime, () -> {});
         app = Api.create(worlds, idle, Duration.ofMillis(200), System::nanoTime).start("127.0.0.1", 0);
         client = new HttpTestClient(app.port());
@@ -464,7 +464,23 @@ class ApiTest {
         assertThat(declarations.get(0).get("owner").asString()).isEqualTo("world");
         assertThat(declarations.get(0).get("key").asString()).isEqualTo("grassPerDrop");
         assertThat(declarations.get(0).get("description").asString()).isNotBlank();
+        assertThat(declarations.findValuesAsString("owner"))
+                .startsWith("world", "world", "grass", "rabbit")
+                .containsOnly("world", "grass", "rabbit");
         assertThat(declarations.findValuesAsString("key")).contains("nourishment", "breedingLoss", "parentMargin");
+        JsonNode stride = null;
+        for (JsonNode declaration : declarations) {
+            if (declaration.get("key").asString().equals("stride")) {
+                stride = declaration;
+            }
+        }
+        assertThat(stride).isNotNull();
+        assertThat(List.of(
+                        stride.get("min").asDouble(),
+                        stride.get("max").asDouble(),
+                        stride.get("step").asDouble(),
+                        stride.get("defaultValue").asDouble()))
+                .containsExactly(1.0, 5.0, 1.0, 3.0);
         assertThat(client.get("/worlds/nope/settings").status()).isEqualTo(404);
     }
 
@@ -484,12 +500,13 @@ class ApiTest {
     @Test
     void aBadSettingIs400() {
         String id = newWorld();
-        assertThat(command(id, "{\"type\":\"setSetting\",\"owner\":\"rabbit\",\"key\":\"stride\",\"value\":9}")
-                        .status())
-                .isEqualTo(400);
-        assertThat(command(id, "{\"type\":\"restoreDefaults\",\"key\":\"stride\"}")
-                        .status())
-                .isEqualTo(400);
+        HttpTestClient.Response tooFar =
+                command(id, "{\"type\":\"setSetting\",\"owner\":\"rabbit\",\"key\":\"stride\",\"value\":9}");
+        assertThat(tooFar.status()).isEqualTo(400);
+        assertThat(tooFar.json().get("error").asString()).contains("outside");
+        HttpTestClient.Response ownerless = command(id, "{\"type\":\"restoreDefaults\",\"key\":\"stride\"}");
+        assertThat(ownerless.status()).isEqualTo(400);
+        assertThat(ownerless.json().get("error").asString()).contains("needs the owner");
     }
 
     @Test
