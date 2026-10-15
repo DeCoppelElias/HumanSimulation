@@ -34,7 +34,7 @@ record Settings(List<Setting> declared) {
         return (int) scalar.defaultValue();
     }
 
-    private Setting.Scalar scalar(String key) {
+    Setting.Scalar scalar(String key) {
         for (Setting setting : declared) {
             if (setting.key().equals(key)) {
                 return switch (setting) {
