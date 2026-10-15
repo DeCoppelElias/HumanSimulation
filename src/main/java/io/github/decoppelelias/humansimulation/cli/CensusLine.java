@@ -21,6 +21,21 @@ final class CensusLine {
                     .append(entry.getValue());
             separator = ",";
         }
+        line.append("},\"geneMeans\":{");
+        separator = "";
+        for (Map.Entry<String, Map<String, Double>> species : row.geneMeans().entrySet()) {
+            line.append(separator).append(JsonStrings.quote(species.getKey())).append(":{");
+            String inner = "";
+            for (Map.Entry<String, Double> gene : species.getValue().entrySet()) {
+                line.append(inner)
+                        .append(JsonStrings.quote(gene.getKey()))
+                        .append(':')
+                        .append(gene.getValue());
+                inner = ",";
+            }
+            line.append('}');
+            separator = ",";
+        }
         return line.append("}}").toString();
     }
 }

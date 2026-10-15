@@ -24,28 +24,40 @@ class RunCommandTest {
     void printsOneLinePerDayFromDayOne() {
         Result result = run("--seed", "42", "--days", "3");
         assertThat(result.exitCode()).isZero();
-        assertThat(result.out())
-                .isEqualTo("{\"seed\":42,\"day\":1,\"population\":{\"grass\":0,\"rabbit\":10}}\n"
-                        + "{\"seed\":42,\"day\":2,\"population\":{\"grass\":0,\"rabbit\":10}}\n"
-                        + "{\"seed\":42,\"day\":3,\"population\":{\"grass\":0,\"rabbit\":10}}\n");
+        assertThat(result.out().split("\n"))
+                .hasSize(3)
+                .satisfiesExactly(
+                        line -> assertThat(line)
+                                .startsWith("{\"seed\":42,\"day\":1,\"population\":{\"grass\":0,\"rabbit\":10},"
+                                        + "\"geneMeans\":{\"rabbit\":{\"breedPull\":"),
+                        line -> assertThat(line).startsWith("{\"seed\":42,\"day\":2,"),
+                        line -> assertThat(line).startsWith("{\"seed\":42,\"day\":3,"));
+    }
+
+    @Test
+    void theSameSeedPrintsTheSameLines() {
+        assertThat(run("--seed", "7", "--days", "20").out())
+                .isEqualTo(run("--seed", "7", "--days", "20").out());
     }
 
     @Test
     void aSpawnReplacesTheDefaultStartingPopulation() {
         assertThat(run("--seed", "1", "--days", "1", "--spawn", "rabbit=3").out())
-                .isEqualTo("{\"seed\":1,\"day\":1,\"population\":{\"grass\":0,\"rabbit\":3}}\n");
+                .startsWith("{\"seed\":1,\"day\":1,\"population\":{\"grass\":0,\"rabbit\":3},"
+                        + "\"geneMeans\":{\"rabbit\":{");
     }
 
     @Test
     void spawnsGrassAndCountsIt() {
         assertThat(run("--seed", "1", "--days", "1", "--spawn", "grass=3").out())
-                .isEqualTo("{\"seed\":1,\"day\":1,\"population\":{\"grass\":3,\"rabbit\":0}}\n");
+                .isEqualTo("{\"seed\":1,\"day\":1,\"population\":{\"grass\":3,\"rabbit\":0},\"geneMeans\":{}}\n");
     }
 
     @Test
     void theSeedDefaultsToTheClockAndIsPrinted() {
         assertThat(run("--days", "1").out())
-                .matches("\\{\"seed\":-?\\d+,\"day\":1,\"population\":\\{\"grass\":0,\"rabbit\":10}}\n");
+                .matches("\\{\"seed\":-?\\d+,\"day\":1,\"population\":\\{\"grass\":0,\"rabbit\":10},"
+                        + "\"geneMeans\":\\{\"rabbit\":\\{.*}}}\n");
     }
 
     @Test
