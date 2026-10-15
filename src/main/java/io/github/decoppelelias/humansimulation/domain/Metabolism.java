@@ -46,6 +46,15 @@ final class Metabolism implements Component {
         reserve += amount;
     }
 
+    double reserve() {
+        return reserve;
+    }
+
+    /** Takes from the reserve. Whoever spends checks first that it may. */
+    void spend(double amount) {
+        reserve -= amount;
+    }
+
     /** One day passes. Returns whether the carrier is still alive. */
     boolean tick() {
         daysSinceCharge++;

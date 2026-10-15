@@ -96,6 +96,13 @@ class MetabolismTest {
     }
 
     @Test
+    void spendingTakesFromTheReserve() {
+        Metabolism metabolism = metabolism(1, 1, 60);
+        metabolism.spend(45);
+        assertThat(metabolism.reserve()).isEqualTo(15);
+    }
+
+    @Test
     void othersSeeNothing() {
         assertThat(metabolism(1, 1, 15).seenView()).isEmpty();
     }

@@ -25,6 +25,15 @@ final class TestSpecies {
                 new Setting.Scalar(Metabolism.STARTING_RESERVE, "Reserve at spawn.", 0, 100, 1, startingReserve)));
     }
 
+    /** Breeding every 15 days, with a child's reserve of 15, a loss of 30 and a margin of 5. */
+    static Settings breeding() {
+        return new Settings(List.of(
+                new Setting.Scalar(BreedRule.BREED_INTERVAL, "Days between breeds.", 1, 100, 1, 15),
+                new Setting.Scalar(BreedRule.CHILD_RESERVE, "Reserve a child starts with.", 0, 100, 1, 15),
+                new Setting.Scalar(BreedRule.BREEDING_LOSS, "Reserve lost to a birth.", 0, 200, 1, 30),
+                new Setting.Scalar(BreedRule.PARENT_MARGIN, "Reserve a parent keeps.", 0, 100, 1, 5)));
+    }
+
     /** A species named "eater" that idles, charged one on every interval. */
     static Species eater(int interval, int startingReserve) {
         List<GeneSpec> layout = List.of(new GeneSpec.Scalar("viewRange", 1, 10, 1.0));
