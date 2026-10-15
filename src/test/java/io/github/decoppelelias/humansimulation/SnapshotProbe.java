@@ -6,8 +6,12 @@ import io.github.decoppelelias.humansimulation.domain.Grass;
 import io.github.decoppelelias.humansimulation.domain.Rabbit;
 import io.github.decoppelelias.humansimulation.domain.World;
 import java.util.List;
+import java.util.Optional;
 
-/** Prints every day's whole snapshot, which a census of rabbit counts alone cannot tell apart. */
+/**
+ * Prints every day's whole snapshot, which a census of rabbit counts alone cannot tell apart, through a run that edits
+ * a setting and restores the defaults.
+ */
 public final class SnapshotProbe {
     private SnapshotProbe() {}
 
@@ -22,6 +26,12 @@ public final class SnapshotProbe {
         world.submit(new Command.Spawn("grass", 10));
         StringBuilder out = new StringBuilder();
         for (int day = 0; day < Integer.parseInt(args[1]); day++) {
+            if (day == 40) {
+                world.submit(new Command.SetSetting("rabbit", "breedingLoss", 20));
+            }
+            if (day == 80) {
+                world.submit(new Command.RestoreDefaults(Optional.empty(), Optional.empty()));
+            }
             out.append(world.advance().snapshot()).append('\n');
         }
         System.out.print(out);

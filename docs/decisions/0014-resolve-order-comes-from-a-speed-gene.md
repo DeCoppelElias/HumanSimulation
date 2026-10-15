@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-27. Revised 2026-10-12.
+Accepted, 2026-09-27. Revised 2026-10-15.
 
 ## Context
 
@@ -29,6 +29,10 @@ nothing to do with each other, and still needs a tiebreak underneath.
 A free advantage is not a tradeoff. Speed with no cost pins to the upper bound
 of its range within a few dozen generations and becomes a constant.
 
+The gene charges could be taken every day, apart from the eating interval. A
+trait would then cost the same per day whatever the interval, but a creature's
+days left would combine two rhythms.
+
 ## Decision
 
 A `speed` scalar gene in a species' gene layout. The resolve step orders the
@@ -45,12 +49,19 @@ it, per [0016](0016-feeding-takes-the-tile.md). Every other system iterates in
 ascending id order.
 
 Speed is charged for in the metabolise step, in proportion to the gene, so it
-trades against the reserve that feeds a creature's children.
+trades against the reserve that feeds a creature's children. The rabbit's
+`speed` runs from 0 to 1, with a baseline of 0.5 and a mutation size of 0.05,
+since only the ranking matters and the charge sets the scale.
 
 View range has the same defect, since seeing farther never hurts a brain that
 walks to the nearest grass, per
 [0023](0023-rabbits-score-the-tiles-they-can-reach.md). It is charged the same
-way, per tile of range, by a species setting.
+way, per tile of range, by a species setting. It is charged on the rounded
+range, the tiles actually seen, so a fraction that buys nothing costs nothing.
+Both charges fold into the eating charge, so each charge on the eating interval
+is `eatingCharge + speed * speedCharge + round(viewRange) * viewCharge`, and a
+creature's days left stays one formula. By default `speedCharge` is 0.1 and
+`viewCharge` 0.03, so a baseline rabbit pays 1.14 a day.
 
 ## Consequences
 

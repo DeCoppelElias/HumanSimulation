@@ -30,7 +30,7 @@ class ApiTest {
 
     @BeforeEach
     void start() {
-        worlds = new Worlds(3, List.of(Grass.species(), Rabbit.species()), List.of(new FoodDrop("grass")));
+        worlds = new Worlds(3, List.of(Rabbit.species(), Grass.species()), List.of(new FoodDrop("grass")));
         IdleWatch idle = new IdleWatch(Duration.ZERO, System::nanoTime, () -> {});
         app = Api.create(worlds, idle, Duration.ofMillis(200), System::nanoTime).start("127.0.0.1", 0);
         client = new HttpTestClient(app.port());
@@ -455,6 +455,68 @@ class ApiTest {
 
     private HttpTestClient.Response command(String id, String json) {
         return client.post("/worlds/" + id + "/commands", json);
+    }
+
+    @Test
+    void settingsListsTheDeclarationsWorldFirst() {
+        String id = newWorld();
+        JsonNode declarations = client.get("/worlds/" + id + "/settings").json();
+        assertThat(declarations.get(0).get("owner").asString()).isEqualTo("world");
+        assertThat(declarations.get(0).get("key").asString()).isEqualTo("grassPerDrop");
+        assertThat(declarations.get(0).get("description").asString()).isNotBlank();
+        assertThat(declarations.findValuesAsString("owner"))
+                .startsWith("world", "world", "grass", "rabbit")
+                .containsOnly("world", "grass", "rabbit");
+        assertThat(declarations.findValuesAsString("key")).contains("nourishment", "breedingLoss", "parentMargin");
+        JsonNode stride = null;
+        for (JsonNode declaration : declarations) {
+            if (declaration.get("key").asString().equals("stride")) {
+                stride = declaration;
+            }
+        }
+        assertThat(stride).isNotNull();
+        assertThat(List.of(
+                        stride.get("min").asDouble(),
+                        stride.get("max").asDouble(),
+                        stride.get("step").asDouble(),
+                        stride.get("defaultValue").asDouble()))
+                .containsExactly(1.0, 5.0, 1.0, 3.0);
+        assertThat(client.get("/worlds/nope/settings").status()).isEqualTo(404);
+    }
+
+    @Test
+    void aSettingEditShowsInTheSnapshot() {
+        String id = newWorld();
+        JsonNode edited = command(id, "{\"type\":\"setSetting\",\"owner\":\"rabbit\",\"key\":\"stride\",\"value\":2}")
+                .json();
+        assertThat(edited.get("settings").get("rabbit").get("stride").asDouble())
+                .isEqualTo(2);
+        JsonNode restored = command(id, "{\"type\":\"restoreDefaults\",\"owner\":\"rabbit\"}")
+                .json();
+        assertThat(restored.get("settings").get("rabbit").get("stride").asDouble())
+                .isEqualTo(3);
+    }
+
+    @Test
+    void aBadSettingIs400() {
+        String id = newWorld();
+        HttpTestClient.Response tooFar =
+                command(id, "{\"type\":\"setSetting\",\"owner\":\"rabbit\",\"key\":\"stride\",\"value\":9}");
+        assertThat(tooFar.status()).isEqualTo(400);
+        assertThat(tooFar.json().get("error").asString()).contains("outside");
+        HttpTestClient.Response ownerless = command(id, "{\"type\":\"restoreDefaults\",\"key\":\"stride\"}");
+        assertThat(ownerless.status()).isEqualTo(400);
+        assertThat(ownerless.json().get("error").asString()).contains("needs the owner");
+    }
+
+    @Test
+    void theCensusCarriesGeneMeans() {
+        String id = newWorld();
+        spawn(id, 3);
+        client.post("/worlds/" + id + "/step", "");
+        JsonNode row = client.get("/worlds/" + id + "/census").json().get(0);
+        assertThat(row.get("geneMeans").get("rabbit").get("breedPull").asDouble())
+                .isBetween(0.8, 1.2);
     }
 
     private HttpTestClient.Response spawn(String id, int count) {

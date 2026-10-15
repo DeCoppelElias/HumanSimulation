@@ -5,6 +5,7 @@ import { defaultSpecies } from "./species";
 import { Chart } from "./Chart";
 import { Controls } from "./Controls";
 import { Grid } from "./Grid";
+import { SettingsPanel } from "./SettingsPanel";
 import { useWorld } from "./useWorld";
 
 type Props = {
@@ -48,6 +49,7 @@ export function WorldView({ api, id, onLeave, onError }: Props) {
                 onError={onError}
             />
             <Chart history={history} />
+            <SettingsPanel api={api} id={id} values={snapshot.settings} onError={onError} />
             <Controls
                 api={api}
                 id={id}

@@ -7,7 +7,7 @@ Status: idea.
 Runs a species that never learns beside the rabbits. It uses the scoring brain
 of [0023](../decisions/0023-rabbits-score-the-tiles-they-can-reach.md) with
 `grassPull`, `hungerDrive` and `rabbitPull` fixed at zero and every gene's
-mutation size at zero, so it picks among its landings evenly and stays that way
+mutation size at zero, so it picks among its moves evenly and stays that way
 across generations.
 
 ## Why it is interesting
@@ -28,3 +28,6 @@ Whether it eats the same grass as the rabbits, so the two compete, or a food of
 its own, so each measures against the same supply without interfering.
 
 Whether the census and the chart mark it as a control, or it is one more line.
+
+What its `breedPull` is fixed at, since breeding is a choice its brain scores
+and the control has to breed at a rate that means something.

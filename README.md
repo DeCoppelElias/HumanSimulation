@@ -1,11 +1,11 @@
 # HumanSimulation
 [![CI](https://github.com/DeCoppelElias/HumanSimulation/actions/workflows/ci.yml/badge.svg)](https://github.com/DeCoppelElias/HumanSimulation/actions/workflows/ci.yml)
 
-A world you watch evolve. Today grass falls on a grid every seven days, and
-rabbits walk toward the grass they can see, eat it, and starve when they go
-too long without. Later versions let them breed and pass varied behaviour to
-their children, so the population drifts toward whatever works. `DESIGN.md` says where it is going and
-`docs/roadmap/` how far it has got.
+A world you watch evolve. Grass falls on a grid every seven days, and rabbits
+walk toward the grass they can see, eat it, and starve when they go too long
+without. A rabbit with enough reserve can breed, and its child inherits its
+genes with small mutations, so the population drifts toward whatever works.
+`DESIGN.md` says where it is going and `docs/roadmap/` how far it has got.
 
 The 2022 version, a Swing app of humans looking for food, is on the
 `v1.0-original-2022` tag.
@@ -35,17 +35,26 @@ tile to drop one there. Grass draws under a rabbit standing on it, and a tile's
 number counts its rabbits. A chart beside the grid follows each species. The
 address holds the world's id, so a reload or a second tab shows the same world.
 
+Under the chart, the settings panel has a slider for every number the world
+reads, grouped as World, Grass and Rabbit, each with its description: how much
+grass falls and how often, what a rabbit pays a day, how far it walks, and what
+breeding costs. An edit takes effect at the next day and only in that world. An
+edited setting is marked in bold, its ↺ button puts the default back, and
+"Restore all" resets every one. A reset keeps the edits.
+
 The sprites are from [Kenney](https://kenney.nl), CC0: the rabbit from Animal
 Pack Remastered and the grass from Foliage Pack.
 
 ## Running
 
 `run` advances a seeded world without a page and prints its census as JSON
-Lines, one line per day.
+Lines, one line per day: the population of each species, and the mean of each
+gene over the members alive that day.
 
-    java -jar target/HumanSimulation.jar run --seed 42 --days 100 --spawn rabbit=10 --spawn grass=20
-    {"seed":42,"day":1,"population":{"grass":18,"rabbit":10}}
-    {"seed":42,"day":2,"population":{"grass":16,"rabbit":10}}
+    java -jar target/HumanSimulation.jar run --seed 42 --days 300
+    {"seed":42,"day":1,"population":{"grass":0,"rabbit":10},"geneMeans":{"rabbit":{"breedPull":1.01,...,"viewRange":2.99,"whim":0.53}}}
+    ...
+    {"seed":42,"day":300,"population":{"grass":1,"rabbit":10},"geneMeans":{"rabbit":{"breedPull":1.12,...,"viewRange":4.01,"whim":0.53}}}
 
 `--days` is required. `--seed` defaults to one drawn from the clock, `--width`
 and `--height` to 20. `--spawn SPECIES=COUNT`, once per species, sets the
@@ -72,6 +81,14 @@ read it back:
 
 `GET /worlds/ID` is the current snapshot, `POST .../play` and `.../pause` run
 it on a timer, and `GET .../events` streams each day. `docs/roadmap/02-serving-worlds-over-http.md`
-lists every route. With `--no-browser` the server quits after 10 minutes without a
+lists the first routes. `GET .../settings` lists every declared setting with its
+bounds, step and default, and the snapshot carries the current values. Two
+commands change them:
+
+    curl -X POST localhost:63214/worlds/ID/commands -d '{"type":"setSetting","owner":"rabbit","key":"breedingLoss","value":20}'
+    curl -X POST localhost:63214/worlds/ID/commands -d '{"type":"restoreDefaults","owner":"rabbit"}'
+
+`restoreDefaults` with no owner restores everything, and with an owner and a
+`key` one setting. Process settings belong to the owner `world`. With `--no-browser` the server quits after 10 minutes without a
 request or an open stream, and without it never quits. It listens on `127.0.0.1` unless `--host`
 says otherwise.

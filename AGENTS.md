@@ -137,6 +137,11 @@ code already exists, break it on purpose, watch the test fail, and restore it.
 A compile error counts as that failure only while the behaviour does not exist
 yet, and a break counts only if the test can see it.
 
+Name the plausible wrong implementation a test must reject, and check the
+fixture can tell it apart: a creature already alive before an edit, values
+spread wide enough that a fresh draw lands outside a parent's reach, an error
+message that names the rule rather than a missing key.
+
 Assertions use AssertJ. A world for a test is `new World(width, height, seed,
 species)`, which owns the one generator everything draws from, so a seeded test
 replays exactly. `TestSpecies.walker(intent)` gives a species whose brain always

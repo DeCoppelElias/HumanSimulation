@@ -12,23 +12,15 @@ class SettingsTest {
             new Setting.Scalar("share", "A fraction.", 0, 1, 0.05, 0.25)));
 
     @Test
-    void readsDefaults() {
-        assertThat(SETTINGS.whole("stride")).isEqualTo(3);
-        assertThat(SETTINGS.number("share")).isEqualTo(0.25);
-    }
-
-    @Test
-    void aFractionalSettingIsNotWhole() {
-        assertThatThrownBy(() -> SETTINGS.whole("share"))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("share");
-    }
-
-    @Test
-    void anUnknownKeyThrows() {
-        assertThatThrownBy(() -> SETTINGS.number("speed"))
+    void scalarFindsADeclaration() {
+        assertThat(SETTINGS.scalar("stride").defaultValue()).isEqualTo(3);
+        assertThatThrownBy(() -> SETTINGS.scalar("speed"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("speed");
+    }
+
+    @Test
+    void declaresOnlyItsOwnKeys() {
         assertThat(SETTINGS.declares("speed")).isFalse();
         assertThat(SETTINGS.declares("stride")).isTrue();
     }

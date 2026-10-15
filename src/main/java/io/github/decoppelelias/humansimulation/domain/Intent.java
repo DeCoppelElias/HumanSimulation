@@ -9,5 +9,7 @@ sealed interface Intent {
         }
     }
 
+    record Breed() implements Intent {}
+
     record Idle() implements Intent {}
 }

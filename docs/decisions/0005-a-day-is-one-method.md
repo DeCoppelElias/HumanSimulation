@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-03. Revised 2026-10-04.
+Accepted, 2026-09-03. Revised 2026-10-15.
 
 ## Context
 
@@ -69,12 +69,12 @@ Commands drain first, per
    changes.
 2. Resolve. Apply each decision in the day's order, under the legality rules in
    [0004](0004-creatures-return-intents.md). Movement walks a tile at a time.
-   Breeding checks the interval and the reserve, spends the cost and spawns a
-   child carrying a mutated genome and an endowment.
+   Breeding checks the window and the reserve, spends the cost and spawns a
+   child carrying a mutated genome and `childReserve`.
 3. Feed. In the same order, each creature takes every edible on its tile, per
    [0016](0016-feeding-takes-the-tile.md).
-4. Metabolise. Charge the eating cost on the interval and the cost of speed.
-   Anything whose reserve falls below zero dies.
+4. Metabolise. On the eating interval, charge the eating cost plus the costs of
+   speed and view range. Anything whose reserve falls below zero dies.
 5. World processes, in list order: spawning food, regrowth, fire.
 6. Take one census row, and return it with the snapshot.
 

@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-27. Revised 2026-10-04.
+Accepted, 2026-09-27. Revised 2026-10-15.
 
 ## Context
 
@@ -25,7 +25,28 @@ on a living world would need a rule that no other setting has, that the edit
 waits for a reset. And the starting population is input to a run rather than a
 rule the world reads. Both became inputs instead, the dimensions to the world's
 constructor and the starting population as spawn commands an adapter sends, per
-[0007](0007-state-leaves-as-a-snapshot-commands-go-in.md).
+[0007](0007-state-leaves-as-a-snapshot-commands-go-in.md). A flag marking a
+setting as settable only at creation would have kept them declared, and it
+needs a reset that waits for edits and rebuilds the grid, for two numbers.
+
+Settings were first read live from the species. Every world on a server holds
+the same species objects, so an edit in one world reached every other. Building
+fresh species for each world kept them apart, but made a species a mutable
+value, and isolation then depended on every adapter and test remembering to
+build its own.
+
+A reset could revert edited values to their defaults, which leaves the world
+exactly as building it would and loses the tuning that is usually why someone
+resets. Keeping the edits without logging them breaks replay from the seed and
+the log, per [0010](0010-runs-replay-exactly-from-a-seed.md).
+
+The page could restore defaults by sending each default back as an edit. It
+would then restore what it believes the defaults are, which a tab opened before
+a rebuild gets wrong, and the log would show edits where someone restored.
+
+Declarations could travel in every snapshot, which repeats their descriptions
+every day, or behind an endpoint with a stream event when values change, which
+is a second way for state to leave the world.
 
 ## Decision
 
@@ -44,18 +65,54 @@ slider, a choice from a fixed set, and a toggle.
 Every setting has a default, so a species and a world are usable without
 configuring anything.
 
-Settings are read live from the species, so an edit reaches every creature
-already alive, as the 2022 panel does. A `Spawn` carries its species rather than
-a copy of its values, per [0003](0003-entities-carry-components.md).
+A species or a world process owns its declarations and their defaults, and
+they stay an immutable recipe. The world owns a table of current values, filled
+from the defaults when it is built. A component reads its values live through a
+handle the `Spawn` gives it, so an edit reaches every creature already alive, as
+the 2022 panel does, and only in its own world. A process reads its values the
+same way.
+
+Values are grouped by owner: `world` for every process's settings, or a species
+name. A world refuses a species named `world`, and two processes declaring one
+key, when it is built.
+
+Two commands change the table, per
+[0007](0007-state-leaves-as-a-snapshot-commands-go-in.md):
+
+```java
+record SetSetting(String owner, String key, double value) implements Command {}
+record RestoreDefaults(Optional<String> owner, Optional<String> key) implements Command {}
+```
+
+`SetSetting` is checked against the declaration's bounds and step, and the value
+is stored exactly on the step, in decimal arithmetic, so a default never reads
+as edited. A declaration's maximum and default sit on its step too.
+`RestoreDefaults` copies the declared defaults back: with no owner the whole
+table, with an owner that group, with both one setting. A key without an owner
+is refused when it is built. A world created with values of its own gets them
+as `SetSetting` commands on day 0, like its spawns.
+
+A reset keeps edited values, and writes each value that differs from its
+default into the new log as a `SetSetting` right after the reset, so the seed
+and the log still describe the run.
+
+No setting is settable only at creation. Width, height and seed are constructor
+inputs. A `Setting` gains a flag for that the day one needs it.
+
+The current values leave in the snapshot, grouped by owner, since they are world
+state. The declarations never change for a world, so the web adapter serves
+them once, in panel order, the world first and then each species by name.
 
 The parameters panel is generated from the declarations, so a new setting
-appears in the interface with no interface code. Editing one is a command, per
-[0007](0007-state-leaves-as-a-snapshot-commands-go-in.md).
+appears in the interface with no interface code. It marks each setting whose
+value differs from its default, with a restore button beside it and one for the
+whole panel.
 
 ## Consequences
 
-The breeding interval, the breeding cost, the endowment fraction, the eating
-charge and the charges for speed and view range are all species settings.
+The breeding interval, `childReserve`, `breedingLoss`, `parentMargin`, the
+eating charge and the charges for speed and view range are all species
+settings.
 
 A world has settings too, such as how much food arrives and how often, and they
 are declared the same way.
@@ -71,3 +128,10 @@ A generated panel is plainer than a hand-made one, and it is the only kind that
 cannot fall behind the model.
 
 Because commands drain at the day boundary, a live read is stable within a day.
+
+Worlds on one server share species objects and never share an edit. Changing a
+default is a code change, and no command can do it.
+
+A logged `RestoreDefaults` replays to the defaults of the build replaying it, so
+a log replayed on a build with other defaults diverges there. Replay is promised
+within one build.

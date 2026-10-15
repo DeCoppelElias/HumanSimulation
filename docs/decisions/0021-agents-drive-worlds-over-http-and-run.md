@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-10-01. Revised 2026-10-05.
+Accepted, 2026-10-01. Revised 2026-10-15.
 
 ## Context
 
@@ -67,7 +67,9 @@ defaults to ten rabbits, and any `--spawn` given replaces that default rather
 than adding to it. Each line is a census row with the seed added, since batch
 runs put many seeds into one stream and a line should stand on its own:
 
-    {"seed":42,"day":1,"population":{"rabbit":10}}
+    {"seed":42,"day":1,"population":{"grass":0,"rabbit":10},"geneMeans":{"rabbit":{"breedPull":1.01,"grassPull":1.03,...}}}
+
+A species with no members, or no genes, has no entry under `geneMeans`.
 
 The first line is day 1, since applying the starting spawns completes no day.
 

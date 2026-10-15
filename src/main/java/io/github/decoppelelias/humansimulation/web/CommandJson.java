@@ -14,7 +14,10 @@ final class CommandJson {
             Optional<String> species,
             Optional<Integer> count,
             Optional<GridPosition> at,
-            Optional<Long> seed) {}
+            Optional<Long> seed,
+            Optional<String> owner,
+            Optional<String> key,
+            Optional<Double> value) {}
 
     private CommandJson() {}
 
@@ -24,6 +27,12 @@ final class CommandJson {
             case "spawn" -> new Command.Spawn(required(body.species(), "species"), required(body.count(), "count"));
             case "spawnAt" -> new Command.SpawnAt(required(body.species(), "species"), required(body.at(), "at"));
             case "reset" -> new Command.Reset(body.seed().map(Api::checkSeed).orElseGet(freshSeed::getAsLong));
+            case "setSetting" ->
+                new Command.SetSetting(
+                        required(body.owner(), "an owner"),
+                        required(body.key(), "a key"),
+                        required(body.value(), "a value"));
+            case "restoreDefaults" -> new Command.RestoreDefaults(body.owner(), body.key());
             default -> throw new IllegalArgumentException("unknown command type " + type);
         };
     }
@@ -44,6 +53,17 @@ final class CommandJson {
             case Command.Reset reset -> {
                 json.put("type", "reset");
                 json.put("seed", reset.seed());
+            }
+            case Command.SetSetting set -> {
+                json.put("type", "setSetting");
+                json.put("owner", set.owner());
+                json.put("key", set.key());
+                json.put("value", set.value());
+            }
+            case Command.RestoreDefaults restore -> {
+                json.put("type", "restoreDefaults");
+                restore.owner().ifPresent(owner -> json.put("owner", owner));
+                restore.key().ifPresent(key -> json.put("key", key));
             }
         }
         return json;

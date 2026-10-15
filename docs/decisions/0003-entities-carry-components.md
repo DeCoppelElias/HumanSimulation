@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-03. Revised 2026-09-30.
+Accepted, 2026-09-03. Revised 2026-10-15.
 
 ## Context
 
@@ -67,8 +67,10 @@ the parts, because it is the seam that gets swapped, and it is optional because
 terrain is a species too and water decides nothing.
 
 At spawn the world builds a `Spawn` from the genome it drew from the baseline or
-inherited from a parent, plus the species itself, whose settings are read live,
-and hands it to the brain and every part.
+inherited from a parent, the species itself, and a handle to the species'
+current setting values in this world, read live per
+[0017](0017-every-number-is-a-setting-or-a-gene.md), and hands it to the brain
+and every part.
 
 In DDD terms the world is the aggregate root, and nothing inside it changes
 except through it. An entity is a DDD entity, identified by its id alone.

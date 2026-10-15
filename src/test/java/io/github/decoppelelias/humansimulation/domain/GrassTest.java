@@ -2,17 +2,21 @@ package io.github.decoppelelias.humansimulation.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
 class GrassTest {
     @Test
     void isEdibleForItsNourishment() {
         Species grass = Grass.species();
-        assertThat(grass.settings().number("nourishment")).isEqualTo(15);
-        assertThat(grass.parts())
-                .singleElement()
-                .satisfies(part -> assertThat(part.apply(new Spawn(grass.baseline(), grass)))
-                        .isEqualTo(new Edible(15)));
+        SettingValues values = new SettingValues(grass.settings());
+        assertThat(values.number("nourishment")).isEqualTo(15);
+        assertThat(grass.parts()).singleElement().satisfies(part -> {
+            Edible edible = (Edible) part.apply(new Spawn(grass.baseline(), grass, values, 0, Optional.empty()));
+            assertThat(edible.amount()).isEqualTo(15);
+            values.set("nourishment", 20);
+            assertThat(edible.amount()).isEqualTo(20);
+        });
     }
 
     @Test

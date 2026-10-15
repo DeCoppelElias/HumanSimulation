@@ -19,7 +19,7 @@ class ReplayAcrossProcessesTest {
     @Test
     void aSeededWorldReachesTheSameStatesInTwoProcesses() throws Exception {
         String first = launch(SnapshotProbe.class, "42", "200");
-        assertThat(first).isNotEmpty().isEqualTo(launch(SnapshotProbe.class, "42", "200"));
+        assertThat(first).contains("breedingLoss=20.0").isEqualTo(launch(SnapshotProbe.class, "42", "200"));
     }
 
     private static String launch(Class<?> main, String... args) throws IOException, InterruptedException {

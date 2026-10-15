@@ -1,5 +1,6 @@
 package io.github.decoppelelias.humansimulation.domain;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -25,6 +26,15 @@ final class TestSpecies {
                 new Setting.Scalar(Metabolism.STARTING_RESERVE, "Reserve at spawn.", 0, 100, 1, startingReserve)));
     }
 
+    /** Breeding every 15 days, with a child's reserve of 15, a loss of 30 and a margin of 5. */
+    static Settings breeding() {
+        return new Settings(List.of(
+                new Setting.Scalar(BreedRule.BREED_INTERVAL, "Days between breeds.", 1, 100, 1, 15),
+                new Setting.Scalar(BreedRule.CHILD_RESERVE, "Reserve a child starts with.", 0, 100, 1, 15),
+                new Setting.Scalar(BreedRule.BREEDING_LOSS, "Reserve lost to a birth.", 0, 200, 1, 30),
+                new Setting.Scalar(BreedRule.PARENT_MARGIN, "Reserve a parent keeps.", 0, 100, 1, 5)));
+    }
+
     /** A species named "eater" that idles, charged one on every interval. */
     static Species eater(int interval, int startingReserve) {
         List<GeneSpec> layout = List.of(new GeneSpec.Scalar("viewRange", 1, 10, 1.0));
@@ -36,7 +46,7 @@ final class TestSpecies {
                 new Genome(layout, Map.of("viewRange", 1.0)),
                 metabolism(interval, startingReserve),
                 Optional.of(spawn -> brain),
-                List.of(spawn -> new Metabolism(spawn.species().settings())));
+                List.of(Metabolism::of));
     }
 
     /** A species named "food", worth five, with no brain. */
@@ -48,19 +58,53 @@ final class TestSpecies {
                 new Genome(List.of(), Map.of()),
                 Settings.NONE,
                 Optional.empty(),
-                List.of(spawn -> new Edible(5)));
+                List.of(spawn -> new Edible(() -> 5)));
     }
 
-    /** A species named "recorder", seeing one tile and walking up to three, whose brain idles and keeps its inputs. */
+    /**
+     * A species named "breeder" that breeds whenever offered, idles otherwise and keeps the options it saw. It starts
+     * with 100, walks one tile, and its view range spreads widely, so a child shows whose genome it came from.
+     */
+    static Species breeder(List<Options> seen) {
+        return breeder((perception, options, random) -> {
+            seen.add(options);
+            return options.offered().contains(new Option.Breed()) ? new Intent.Breed() : new Intent.Idle();
+        });
+    }
+
+    /** A breeder whose brain asks to breed every day, offered or not. */
+    static Species eagerBreeder() {
+        return breeder((perception, options, random) -> new Intent.Breed());
+    }
+
+    private static Species breeder(Brain brain) {
+        List<GeneSpec> layout = List.of(new GeneSpec.Scalar("viewRange", 1, 10, 4.0));
+        List<Setting> declared = new ArrayList<>(metabolism(1, 100).declared());
+        declared.addAll(breeding().declared());
+        declared.add(new Setting.Scalar(MoveRule.STRIDE, "Farthest walk.", 1, 5, 1, 1));
+        return new Species(
+                "breeder",
+                "breeder",
+                layout,
+                new Genome(layout, Map.of("viewRange", 5.0)),
+                new Settings(declared),
+                Optional.of(spawn -> brain),
+                List.of(Metabolism::of, spawn -> new Fertility(spawn.day())));
+    }
+
+    /**
+     * A species named "recorder", seeing one tile and walking up to three, whose brain idles and keeps its inputs. Its
+     * sight does not mutate, so every member sees the same tiles.
+     */
     static Species recorder(List<Perception> perceptions, List<Options> options) {
-        List<GeneSpec> layout = List.of(new GeneSpec.Scalar("viewRange", 1, 10, 1.0));
+        List<GeneSpec> layout = List.of(new GeneSpec.Scalar("viewRange", 1, 10, 0));
         Genome baseline = new Genome(layout, Map.of("viewRange", 1.0));
         Brain brain = (perception, offered, random) -> {
             perceptions.add(perception);
             options.add(offered);
             return new Intent.Idle();
         };
-        Settings settings = new Settings(List.of(new Setting.Scalar(World.STRIDE, "Farthest walk.", 1, 5, 1, 3)));
+        Settings settings = new Settings(List.of(new Setting.Scalar(MoveRule.STRIDE, "Farthest walk.", 1, 5, 1, 3)));
         return new Species("recorder", "recorder", layout, baseline, settings, Optional.of(spawn -> brain), List.of());
     }
 }

@@ -2,11 +2,14 @@ package io.github.decoppelelias.humansimulation.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.within;
 import static org.assertj.core.groups.Tuple.tuple;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.OptionalDouble;
 import java.util.random.RandomGeneratorFactory;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
@@ -110,7 +113,32 @@ class WorldTest {
         world.submit(new Command.Spawn("rabbit", 3));
         DayReport report = world.advance();
         assertThat(report.snapshot().day()).isEqualTo(1);
-        assertThat(report.census()).isEqualTo(new CensusRow(1, Map.of("rabbit", 3)));
+        assertThat(report.census().day()).isEqualTo(1);
+        assertThat(report.census().population()).isEqualTo(Map.of("rabbit", 3));
+    }
+
+    @Test
+    void theCensusAveragesEachGenePerSpecies() {
+        World world = new World(5, 5, 1, List.of(Rabbit.species(), TestSpecies.food(), TestSpecies.eater(1, 1)));
+        world.submit(new Command.Spawn("rabbit", 3));
+        world.submit(new Command.SpawnAt("food", new GridPosition(4, 4)));
+        world.submit(new Command.SpawnAt("eater", new GridPosition(4, 0)));
+        CensusRow row = world.advance().census();
+        assertThat(row.geneMeans()).containsOnlyKeys("eater", "rabbit");
+        assertThat(row.geneMeans().get("rabbit")).hasSize(7);
+        for (GeneSpec spec : Rabbit.species().geneLayout()) {
+            double sum = 0;
+            for (int id = 0; id < 3; id++) {
+                sum += world.entity(id).orElseThrow().genome().scalar(spec.key());
+            }
+            assertThat(row.geneMeans().get("rabbit").get(spec.key())).isCloseTo(sum / 3, within(1e-12));
+        }
+        assertThat(world.entity(0).orElseThrow().genome().scalar("grassPull"))
+                .isNotEqualTo(world.entity(1).orElseThrow().genome().scalar("grassPull"));
+
+        CensusRow afterTheEaterStarves = world.advance().census();
+        assertThat(afterTheEaterStarves.population()).containsEntry("eater", 0);
+        assertThat(afterTheEaterStarves.geneMeans()).containsOnlyKeys("rabbit");
     }
 
     @Test
@@ -175,6 +203,224 @@ class WorldTest {
     }
 
     @Test
+    void spawnedMembersVaryAroundTheBaseline() {
+        World world = new World(5, 5, 1, RABBITS);
+        world.submit(new Command.Spawn("rabbit", 20));
+        world.applyPending();
+        List<Double> views = new ArrayList<>();
+        for (int id = 0; id < 20; id++) {
+            Genome genome = world.entity(id).orElseThrow().genome();
+            assertThat(genome.scalar("viewRange")).isBetween(2.0, 4.0);
+            assertThat(genome.scalar("grassPull")).isBetween(0.8, 1.2);
+            views.add(genome.scalar("viewRange"));
+        }
+        assertThat(views).doesNotHaveDuplicates();
+        world.submit(new Command.SpawnAt("rabbit", new GridPosition(0, 0)));
+        world.submit(new Command.SpawnAt("rabbit", new GridPosition(0, 0)));
+        world.applyPending();
+        assertThat(world.entity(20).orElseThrow().genome())
+                .isNotEqualTo(world.entity(21).orElseThrow().genome());
+    }
+
+    private static double reserveOf(World world, int id) {
+        return world.entity(id)
+                .orElseThrow()
+                .part(Metabolism.class)
+                .orElseThrow()
+                .reserve();
+    }
+
+    @Test
+    void breedingIsOfferedOnlyOnceTheWindowOpens() {
+        List<Options> seen = new ArrayList<>();
+        World world = new World(3, 3, 1, List.of(TestSpecies.breeder(seen)));
+        world.submit(new Command.SpawnAt("breeder", new GridPosition(1, 1)));
+        for (int i = 0; i < 15; i++) {
+            world.advance();
+        }
+        assertThat(seen)
+                .hasSize(15)
+                .allSatisfy(options -> assertThat(options.offered()).doesNotContain(new Option.Breed()));
+        world.advance();
+        List<Option> offered = seen.get(15).offered();
+        assertThat(offered).hasSize(6).startsWith(new Option.Idle()).endsWith(new Option.Breed());
+    }
+
+    @Test
+    void breedingSpawnsAChildOnItsParentsTile() {
+        World world = new World(3, 3, 1, List.of(TestSpecies.breeder(new ArrayList<>())));
+        world.submit(new Command.SpawnAt("breeder", new GridPosition(1, 1)));
+        DayReport report = world.advance();
+        for (int i = 1; i < 16; i++) {
+            report = world.advance();
+        }
+        assertThat(report.census().population()).containsEntry("breeder", 2);
+        assertThat(report.snapshot().tiles().get(4).entities())
+                .extracting(WorldSnapshot.EntityView::id)
+                .containsExactly(0, 1);
+        assertThat(reserveOf(world, 0)).isEqualTo(39);
+        assertThat(reserveOf(world, 1)).isEqualTo(14);
+    }
+
+    @Test
+    void aChildFirstActsTheDayAfterItsBirth() {
+        List<Options> seen = new ArrayList<>();
+        World world = new World(3, 3, 1, List.of(TestSpecies.breeder(seen)));
+        world.submit(new Command.SpawnAt("breeder", new GridPosition(1, 1)));
+        for (int i = 0; i < 16; i++) {
+            world.advance();
+        }
+        assertThat(seen).hasSize(16);
+        world.advance();
+        assertThat(seen).hasSize(18);
+    }
+
+    @Test
+    void aChildCarriesItsParentsGenomeMutated() {
+        World world = new World(5, 5, 1, List.of(TestSpecies.breeder(new ArrayList<>())));
+        for (int x = 0; x < 5; x++) {
+            for (int y = 0; y < 5; y++) {
+                world.submit(new Command.SpawnAt("breeder", new GridPosition(x, y)));
+            }
+        }
+        WorldSnapshot snapshot = world.applyPending();
+        for (int i = 0; i < 16; i++) {
+            snapshot = world.advance().snapshot();
+        }
+        int differ = 0;
+        for (WorldSnapshot.TileView tile : snapshot.tiles()) {
+            assertThat(tile.entities()).hasSize(2);
+            double parent = world.entity(tile.entities().get(0).id())
+                    .orElseThrow()
+                    .genome()
+                    .scalar("viewRange");
+            double child = world.entity(tile.entities().get(1).id())
+                    .orElseThrow()
+                    .genome()
+                    .scalar("viewRange");
+            assertThat(child).isBetween(Math.max(1, parent - 4), Math.min(10, parent + 4));
+            differ += child != parent ? 1 : 0;
+        }
+        assertThat(differ).isGreaterThan(5);
+    }
+
+    @Test
+    void rabbitsBreedOnTheirOwn() {
+        World world = new World(20, 20, 3, List.of(Grass.species(), Rabbit.species()), List.of(new FoodDrop("grass")));
+        world.submit(new Command.Spawn("rabbit", 10));
+        world.submit(new Command.Spawn("grass", 100));
+        int most = 0;
+        for (int day = 0; day < 60; day++) {
+            most = Math.max(most, world.advance().census().population().get("rabbit"));
+        }
+        assertThat(most).isGreaterThan(10);
+    }
+
+    @Test
+    void anIllegalBreedChangesNothing() {
+        World walkers = new World(3, 3, 1, List.of(TestSpecies.walker(new Intent.Breed())));
+        walkers.submit(new Command.SpawnAt("walker", new GridPosition(1, 1)));
+        assertThat(walkers.advance().census().population()).containsEntry("walker", 1);
+
+        World eager = new World(3, 3, 1, List.of(TestSpecies.eagerBreeder()));
+        eager.submit(new Command.SpawnAt("breeder", new GridPosition(1, 1)));
+        assertThat(eager.advance().census().population()).containsEntry("breeder", 1);
+        assertThat(reserveOf(eager, 0)).isEqualTo(99);
+        assertThat(eager.entity(0)
+                        .orElseThrow()
+                        .part(Fertility.class)
+                        .orElseThrow()
+                        .ownView())
+                .isEqualTo(new Fertility.Since(0));
+    }
+
+    @Test
+    void anEditReachesItsOwnWorldOnly() {
+        World edited = new World(3, 3, 1, RABBITS);
+        World other = new World(3, 3, 1, RABBITS);
+        edited.submit(new Command.Spawn("rabbit", 1));
+        other.submit(new Command.Spawn("rabbit", 1));
+        edited.advance();
+        other.advance();
+        edited.submit(new Command.SetSetting("rabbit", "eatingCharge", 20));
+        assertThat(edited.advance().census().population()).containsEntry("rabbit", 0);
+        assertThat(other.advance().census().population()).containsEntry("rabbit", 1);
+    }
+
+    @Test
+    void theFoodDropReadsItsWorldsValues() {
+        World world = new World(10, 10, 1, List.of(TestSpecies.food()), List.of(new FoodDrop("food")));
+        world.submit(new Command.SetSetting("world", "foodDropInterval", 2));
+        world.submit(new Command.SetSetting("world", "foodPerDrop", 3));
+        world.advance();
+        assertThat(world.advance().census().population()).containsEntry("food", 3);
+    }
+
+    @Test
+    void declarationsListTheWorldThenEachSpeciesByName() {
+        World world = new World(3, 3, 1, List.of(Rabbit.species(), Grass.species()), List.of(new FoodDrop("grass")));
+        assertThat(world.declarations())
+                .extracting(SettingDeclaration::owner)
+                .startsWith("world", "world", "grass", "rabbit");
+    }
+
+    @Test
+    void aBadSettingCommandChangesNothing() {
+        World world = new World(3, 3, 1, RABBITS);
+        WorldSnapshot before = world.applyPending();
+        assertThatThrownBy(() -> world.submit(new Command.SetSetting("rabbit", "stride", 9)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("stride");
+        assertThatThrownBy(() -> world.submit(new Command.SetSetting("wolf", "stride", 2)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("wolf");
+        assertThatThrownBy(() -> world.submit(new Command.RestoreDefaults(Optional.of("rabbit"), Optional.of("wings"))))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new Command.RestoreDefaults(Optional.empty(), Optional.of("stride")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("stride");
+        assertThat(world.applyPending()).isEqualTo(before);
+        assertThat(world.log()).isEmpty();
+    }
+
+    @Test
+    void theSnapshotCarriesTheCurrentValues() {
+        World world = new World(3, 3, 1, List.of(Grass.species(), Rabbit.species()), List.of(new FoodDrop("grass")));
+        world.submit(new Command.SetSetting("rabbit", "stride", 2));
+        WorldSnapshot snapshot = world.applyPending();
+        assertThat(snapshot.settings()).containsOnlyKeys("grass", "rabbit", "world");
+        assertThat(snapshot.settings().get("rabbit")).containsEntry("stride", 2.0);
+        assertThat(snapshot.settings().get("world")).containsEntry("grassPerDrop", 7.0);
+    }
+
+    @Test
+    void restoreDefaultsPutsTheDeclaredValuesBack() {
+        World world = new World(3, 3, 1, RABBITS);
+        world.submit(new Command.SetSetting("rabbit", "stride", 2));
+        world.submit(new Command.SetSetting("rabbit", "eatingCharge", 2));
+        world.submit(new Command.RestoreDefaults(Optional.of("rabbit"), Optional.of("stride")));
+        assertThat(world.applyPending().settings().get("rabbit"))
+                .containsEntry("stride", 3.0)
+                .containsEntry("eatingCharge", 2.0);
+        world.submit(new Command.RestoreDefaults(Optional.empty(), Optional.empty()));
+        assertThat(world.applyPending().settings().get("rabbit")).containsEntry("eatingCharge", 1.0);
+    }
+
+    @Test
+    void aResetKeepsEditedSettingsAndLogsThem() {
+        World world = new World(3, 3, 1, List.of(Grass.species(), Rabbit.species()), List.of(new FoodDrop("grass")));
+        world.submit(new Command.SetSetting("rabbit", "stride", 2));
+        world.submit(new Command.SetSetting("world", "grassPerDrop", 3));
+        world.submit(new Command.Reset(7));
+        assertThat(world.applyPending().settings().get("rabbit")).containsEntry("stride", 2.0);
+        assertThat(world.log())
+                .containsExactly(
+                        new LoggedCommand(0, new Command.Reset(7)),
+                        new LoggedCommand(0, new Command.SetSetting("world", "grassPerDrop", 3)),
+                        new LoggedCommand(0, new Command.SetSetting("rabbit", "stride", 2)));
+    }
+
+    @Test
     void eachBrainIsHandedWhatItsSenseSeesAndTheGridsDirections() {
         List<Perception> perceptions = new ArrayList<>();
         List<Options> options = new ArrayList<>();
@@ -199,32 +445,17 @@ class WorldTest {
     }
 
     @Test
-    void eachBrainIsOfferedTheLandingsWithinItsStride() {
+    void eachBrainIsOfferedIdlingThenItsMoves() {
         List<Perception> perceptions = new ArrayList<>();
         List<Options> options = new ArrayList<>();
         World world = new World(5, 5, 1, List.of(TestSpecies.recorder(perceptions, options)));
         world.submit(new Command.SpawnAt("recorder", new GridPosition(0, 0)));
         world.advance();
 
-        assertThat(options.getFirst().landings())
-                .extracting(landing -> List.of(landing.dx(), landing.dy()))
-                .containsExactly(
-                        List.of(0, 0),
-                        List.of(1, 0),
-                        List.of(2, 0),
-                        List.of(3, 0),
-                        List.of(0, 1),
-                        List.of(0, 2),
-                        List.of(0, 3));
-        assertThat(options.getFirst().landings().getFirst().intent()).isEqualTo(new Intent.Idle());
-        assertThat(options.getFirst().landings().get(3).intent()).isEqualTo(new Intent.Move(TestSpecies.EAST, 3));
-    }
-
-    @Test
-    void aSpeciesWithNoStrideIsOfferedOnlyStaying() {
-        assertThat(World.landings(new Grid(5, 5), new GridPosition(2, 2), Settings.NONE))
-                .extracting(Options.Landing::intent)
-                .containsExactly(new Intent.Idle());
+        List<Option> offered = options.getFirst().offered();
+        assertThat(offered.getFirst()).isEqualTo(new Option.Idle());
+        assertThat(offered).hasSize(7);
+        assertThat(offered.get(3)).isEqualTo(new Option.Move(TestSpecies.EAST, 3, 3, 0));
     }
 
     @Test
@@ -235,16 +466,58 @@ class WorldTest {
         int stillInIdOrder = 0;
         for (long seed = 0; seed < 20; seed++) {
             List<Decision> order = World.dayOrder(
-                    byId, RandomGeneratorFactory.of("L64X128MixRandom").create(seed));
+                    byId,
+                    id -> OptionalDouble.empty(),
+                    RandomGeneratorFactory.of("L64X128MixRandom").create(seed));
             assertThat(order).containsExactlyInAnyOrderElementsOf(byId);
             assertThat(order)
                     .isEqualTo(World.dayOrder(
-                            byId, RandomGeneratorFactory.of("L64X128MixRandom").create(seed)));
+                            byId,
+                            id -> OptionalDouble.empty(),
+                            RandomGeneratorFactory.of("L64X128MixRandom").create(seed)));
             if (order.equals(byId)) {
                 stillInIdOrder++;
             }
         }
         assertThat(stillInIdOrder).isZero();
+    }
+
+    private static List<Decision> idle(int count) {
+        return IntStream.range(0, count)
+                .mapToObj(id -> new Decision(id, new Intent.Idle()))
+                .toList();
+    }
+
+    @Test
+    void theFasterActFirst() {
+        List<Decision> order = World.dayOrder(
+                idle(6),
+                id -> OptionalDouble.of(id * 0.1),
+                RandomGeneratorFactory.of("L64X128MixRandom").create(1));
+        assertThat(order).extracting(Decision::entityId).containsExactly(5, 4, 3, 2, 1, 0);
+    }
+
+    @Test
+    void equalSpeedsAreDrawnAtRandom() {
+        int stillInIdOrder = 0;
+        for (long seed = 0; seed < 20; seed++) {
+            List<Decision> order = World.dayOrder(
+                    idle(10),
+                    id -> OptionalDouble.of(0.5),
+                    RandomGeneratorFactory.of("L64X128MixRandom").create(seed));
+            stillInIdOrder += order.equals(idle(10)) ? 1 : 0;
+        }
+        assertThat(stillInIdOrder).isZero();
+    }
+
+    @Test
+    void withoutASpeedGeneActsLast() {
+        List<Decision> order = World.dayOrder(
+                idle(4),
+                id -> id >= 2 ? OptionalDouble.of(id - 2) : OptionalDouble.empty(),
+                RandomGeneratorFactory.of("L64X128MixRandom").create(3));
+        assertThat(order).extracting(Decision::entityId).startsWith(3, 2);
+        assertThat(order.subList(2, 4)).extracting(Decision::entityId).containsExactlyInAnyOrder(0, 1);
     }
 
     @Test

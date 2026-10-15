@@ -17,17 +17,19 @@ class ScoringBrainTest {
     private static final Direction SOUTH = DIRECTIONS.get(2);
     private static final Direction WEST = DIRECTIONS.get(3);
 
-    /** Every landing within a stride of 3, with no edge in the way. */
-    private static Options openGround() {
-        List<Options.Landing> landings = new ArrayList<>();
-        landings.add(new Options.Landing(new Intent.Idle(), 0, 0));
+    /** Idling and every move within a stride of 3, with no edge in the way, and breeding when asked for. */
+    private static Options openGround(boolean breed) {
+        List<Option> offered = new ArrayList<>();
+        offered.add(new Option.Idle());
         for (Direction direction : DIRECTIONS) {
             for (int distance = 1; distance <= 3; distance++) {
-                landings.add(new Options.Landing(
-                        new Intent.Move(direction, distance), direction.dx() * distance, direction.dy() * distance));
+                offered.add(new Option.Move(direction, distance, direction.dx() * distance, direction.dy() * distance));
             }
         }
-        return new Options(DIRECTIONS, landings);
+        if (breed) {
+            offered.add(new Option.Breed());
+        }
+        return new Options(DIRECTIONS, offered);
     }
 
     private record Seen(int dx, int dy, String species, boolean edible) {}
@@ -55,7 +57,12 @@ class ScoringBrainTest {
     }
 
     private static ScoringBrain brain(double grassPull, double hungerDrive, double rabbitPull, double whim) {
-        return new ScoringBrain("rabbit", grassPull, hungerDrive, rabbitPull, whim);
+        return brain(grassPull, hungerDrive, rabbitPull, whim, 0);
+    }
+
+    private static ScoringBrain brain(
+            double grassPull, double hungerDrive, double rabbitPull, double whim, double breedPull) {
+        return new ScoringBrain("rabbit", grassPull, hungerDrive, rabbitPull, whim, breedPull);
     }
 
     private static RandomGenerator seeded(long seed) {
@@ -63,12 +70,36 @@ class ScoringBrainTest {
     }
 
     private static Map<Intent, Integer> picks(ScoringBrain brain, Perception perception, int draws) {
+        return picks(brain, perception, openGround(false), draws);
+    }
+
+    private static Map<Intent, Integer> picks(ScoringBrain brain, Perception perception, Options options, int draws) {
         Map<Intent, Integer> counts = new HashMap<>();
         RandomGenerator random = seeded(1);
         for (int i = 0; i < draws; i++) {
-            counts.merge(brain.decide(perception, openGround(), random), 1, Integer::sum);
+            counts.merge(brain.decide(perception, options, random), 1, Integer::sum);
         }
         return counts;
+    }
+
+    @Test
+    void breedingScoresAsIdlingPlusBreedPull() {
+        Options idleOrBreed = new Options(DIRECTIONS, List.of(new Option.Idle(), new Option.Breed()));
+        Map<Intent, Integer> counts = picks(brain(1, 2, 0, 0.5, 1), perception(15), idleOrBreed, 4000);
+        double breeding = counts.getOrDefault(new Intent.Breed(), 0) / 4000.0;
+        assertThat(breeding).isBetween(0.85, 0.91);
+    }
+
+    @Test
+    void farFromGrassItWalksRatherThanBreeds() {
+        assertThat(picks(brain(1, 0, 0, 0.05, 1), perception(50, grass(6, 0)), openGround(true), 200))
+                .containsOnlyKeys(new Intent.Move(EAST, 3));
+    }
+
+    @Test
+    void onGrassWithNothingToGainByWalkingItBreeds() {
+        assertThat(picks(brain(1, 0, 0, 0.05, 1), perception(50, grass(0, 0)), openGround(true), 200))
+                .containsOnlyKeys(new Intent.Breed());
     }
 
     @Test
@@ -124,8 +155,8 @@ class ScoringBrainTest {
         ScoringBrain brain = brain(1, 2, -0.2, 0.5);
         Perception seen = perception(5, grass(2, 1), rabbit(1, -2));
         for (long seed = 0; seed < 50; seed++) {
-            assertThat(brain.decide(seen, openGround(), seeded(seed)))
-                    .isEqualTo(brain.decide(seen, openGround(), seeded(seed)));
+            assertThat(brain.decide(seen, openGround(true), seeded(seed)))
+                    .isEqualTo(brain.decide(seen, openGround(true), seeded(seed)));
         }
     }
 }

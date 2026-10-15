@@ -3,21 +3,26 @@ package io.github.decoppelelias.humansimulation.domain;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.OptionalDouble;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.function.IntFunction;
 import java.util.random.RandomGenerator;
 import java.util.random.RandomGeneratorFactory;
 
 public final class World {
     private static final String ALGORITHM = "L64X128MixRandom";
-    static final String STRIDE = "stride";
+    static final String SPEED = "speed";
 
     private final int width;
     private final int height;
     private final SortedMap<String, Species> species;
     private final List<WorldProcess> processes;
+    private final SettingTable table;
     private final ArrayDeque<Command> pending = new ArrayDeque<>();
     private final List<LoggedCommand> log = new ArrayList<>();
     private final TreeMap<Integer, Entity> entities = new TreeMap<>();
@@ -42,6 +47,7 @@ public final class World {
                 case FoodDrop drop -> speciesNamed(drop.species());
             }
         }
+        this.table = new SettingTable(this.species.values(), this.processes);
         start(seed);
     }
 
@@ -57,13 +63,23 @@ public final class World {
 
     public DayReport advance() {
         drain();
-        List<Decision> order = dayOrder(decide(), random);
+        List<Decision> order = dayOrder(decide(), this::speedOf, random);
         resolve(order);
         feed(order);
         metabolise();
         runProcesses();
         day++;
         return new DayReport(snapshot(), census());
+    }
+
+    /** One entity, for tests that read its state. */
+    Optional<Entity> entity(int id) {
+        return Optional.ofNullable(entities.get(id));
+    }
+
+    /** Every declared setting in panel order. They never change for a world. */
+    public List<SettingDeclaration> declarations() {
+        return table.declarations();
     }
 
     public List<LoggedCommand> log() {
@@ -85,48 +101,49 @@ public final class World {
             }
             tiles.add(new WorldSnapshot.TileView(at, Map.of(), standing));
         }
-        return new WorldSnapshot(seed, day, width, height, List.copyOf(species.keySet()), tiles);
+        return new WorldSnapshot(seed, day, width, height, List.copyOf(species.keySet()), tiles, table.current());
     }
 
     private List<Decision> decide() {
         List<Decision> decisions = new ArrayList<>();
         for (int id : entityIds()) {
             Entity entity = entities.get(id);
-            entity.brain().ifPresent(brain -> {
-                Options options = new Options(
-                        grid.directions(),
-                        landings(grid, entity.position(), entity.species().settings()));
-                decisions.add(new Decision(
-                        id, brain.decide(CircularSense.perceive(entity, grid, entities), options, random)));
-            });
+            entity.brain()
+                    .ifPresent(brain -> decisions.add(new Decision(
+                            id,
+                            brain.decide(CircularSense.perceive(entity, grid, entities), options(entity), random))));
         }
         return decisions;
     }
 
-    /** Staying, then each direction one tile at a time up to the stride, stopping at the edge. */
-    static List<Options.Landing> landings(Grid grid, GridPosition from, Settings settings) {
-        List<Options.Landing> landings = new ArrayList<>();
-        landings.add(new Options.Landing(new Intent.Idle(), 0, 0));
-        int stride = settings.declares(STRIDE) ? settings.whole(STRIDE) : 0;
-        for (Direction direction : grid.directions()) {
-            GridPosition at = from;
-            for (int distance = 1; distance <= stride; distance++) {
-                at = grid.step(at, direction);
-                if (!grid.contains(at)) {
-                    break;
-                }
-                landings.add(new Options.Landing(
-                        new Intent.Move(direction, distance), at.x() - from.x(), at.y() - from.y()));
-            }
-        }
-        return landings;
+    /** Idling, then each rule's offer in a fixed order. Every action a creature can take is listed here. */
+    private Options options(Entity entity) {
+        SettingValues settings = table.of(entity.species().name());
+        List<Option> offered = new ArrayList<>();
+        offered.add(new Option.Idle());
+        offered.addAll(MoveRule.options(grid, entity.position(), settings));
+        BreedRule.options(entity, settings, day).ifPresent(offered::add);
+        return new Options(grid.directions(), offered);
     }
 
-    /** Shuffled from id order with the world's generator, so the draw replays. */
-    static List<Decision> dayOrder(List<Decision> decisions, RandomGenerator random) {
+    /**
+     * Shuffled from id order with the world's generator, so the draw replays, then sorted fastest first. The sort is
+     * stable, so equal speeds keep the shuffle, and anything without a speed gene goes last.
+     */
+    static List<Decision> dayOrder(
+            List<Decision> decisions, IntFunction<OptionalDouble> speedOf, RandomGenerator random) {
         List<Decision> order = new ArrayList<>(decisions);
         Collections.shuffle(order, random);
+        order.sort(Comparator.comparingDouble(decision -> {
+            OptionalDouble speed = speedOf.apply(decision.entityId());
+            return speed.isPresent() ? -speed.getAsDouble() : Double.POSITIVE_INFINITY;
+        }));
         return order;
+    }
+
+    private OptionalDouble speedOf(int id) {
+        Genome genome = entities.get(id).genome();
+        return genome.declares(SPEED) ? OptionalDouble.of(genome.scalar(SPEED)) : OptionalDouble.empty();
     }
 
     private void resolve(List<Decision> order) {
@@ -136,21 +153,16 @@ public final class World {
                 continue;
             }
             switch (decision.intent()) {
-                case Intent.Move move -> walk(entity, move);
+                case Intent.Move move -> MoveRule.resolve(grid, entity, move);
+                case Intent.Breed _ ->
+                    BreedRule.resolve(entity, table.of(entity.species().name()), day)
+                            .ifPresent(reserve -> place(
+                                    entity.species(),
+                                    entity.position(),
+                                    entity.genome().mutated(random),
+                                    Optional.of(reserve)));
                 case Intent.Idle _ -> {}
             }
-        }
-    }
-
-    private void walk(Entity entity, Intent.Move move) {
-        for (int i = 0; i < move.distance(); i++) {
-            GridPosition next = grid.step(entity.position(), move.direction());
-            if (!grid.contains(next)) {
-                return;
-            }
-            grid.remove(entity.id(), entity.position());
-            grid.place(entity.id(), next);
-            entity.moveTo(next);
         }
     }
 
@@ -191,8 +203,9 @@ public final class World {
             switch (process) {
                 case FoodDrop drop -> {
                     Species kind = speciesNamed(drop.species());
-                    for (int i = drop.dropsOn(day + 1); i > 0; i--) {
-                        place(kind, randomTile());
+                    for (int i = drop.dropsOn(day + 1, table.of(SettingTable.WORLD)); i > 0; i--) {
+                        GridPosition at = randomTile();
+                        place(kind, at, kind.baseline().mutated(random), Optional.empty());
                     }
                 }
             }
@@ -203,15 +216,40 @@ public final class World {
         return new GridPosition(random.nextInt(width), random.nextInt(height));
     }
 
+    /** A species with no members or no genes has no means, since a zero would read as a real one. */
     private CensusRow census() {
         Map<String, Integer> population = new TreeMap<>();
+        Map<String, List<Genome>> genomes = new TreeMap<>();
         for (String name : species.keySet()) {
             population.put(name, 0);
+            genomes.put(name, new ArrayList<>());
         }
         for (int id : entityIds()) {
-            population.merge(entities.get(id).species().name(), 1, Integer::sum);
+            Entity entity = entities.get(id);
+            population.merge(entity.species().name(), 1, Integer::sum);
+            genomes.get(entity.species().name()).add(entity.genome());
         }
-        return new CensusRow(day, population);
+        Map<String, Map<String, Double>> means = new TreeMap<>();
+        genomes.forEach((name, members) -> {
+            List<GeneSpec> layout = species.get(name).geneLayout();
+            if (members.isEmpty() || layout.isEmpty()) {
+                return;
+            }
+            Map<String, Double> mean = new TreeMap<>();
+            for (GeneSpec spec : layout) {
+                switch (spec) {
+                    case GeneSpec.Scalar scalar ->
+                        mean.put(
+                                scalar.key(),
+                                members.stream()
+                                        .mapToDouble(genome -> genome.scalar(scalar.key()))
+                                        .average()
+                                        .orElseThrow());
+                }
+            }
+            means.put(name, mean);
+        });
+        return new CensusRow(day, population, means);
     }
 
     private List<Integer> entityIds() {
@@ -229,6 +267,8 @@ public final class World {
                 }
             }
             case Command.Reset _ -> {}
+            case Command.SetSetting set -> table.check(set.owner(), set.key(), set.value());
+            case Command.RestoreDefaults restore -> table.checkScope(restore.owner(), restore.key());
         }
     }
 
@@ -237,6 +277,10 @@ public final class World {
             Command command = pending.poll();
             apply(command);
             log.add(new LoggedCommand(day, command));
+            if (command instanceof Command.Reset) {
+                // A reset keeps edited settings, so the new log carries them and the run still replays from it.
+                table.edits().forEach(edit -> log.add(new LoggedCommand(day, edit)));
+            }
         }
     }
 
@@ -245,20 +289,26 @@ public final class World {
             case Command.Spawn spawn -> {
                 Species kind = speciesNamed(spawn.species());
                 for (int i = 0; i < spawn.count(); i++) {
-                    place(kind, randomTile());
+                    GridPosition at = randomTile();
+                    place(kind, at, kind.baseline().mutated(random), Optional.empty());
                 }
             }
-            case Command.SpawnAt spawnAt -> place(speciesNamed(spawnAt.species()), spawnAt.at());
+            case Command.SpawnAt spawnAt -> {
+                Species kind = speciesNamed(spawnAt.species());
+                place(kind, spawnAt.at(), kind.baseline().mutated(random), Optional.empty());
+            }
             case Command.Reset reset -> start(reset.seed());
+            case Command.SetSetting set -> table.set(set.owner(), set.key(), set.value());
+            case Command.RestoreDefaults restore -> table.restore(restore.owner(), restore.key());
         }
     }
 
-    private void place(Species kind, GridPosition at) {
-        Spawn spawn = new Spawn(kind.baseline(), kind);
+    private void place(Species kind, GridPosition at, Genome genome, Optional<Double> reserve) {
+        Spawn spawn = new Spawn(genome, kind, table.of(kind.name()), day, reserve);
         Entity entity = new Entity(
                 nextId++,
                 kind,
-                kind.baseline(),
+                genome,
                 at,
                 kind.brain().map(brain -> brain.apply(spawn)),
                 kind.parts().stream().map(part -> part.apply(spawn)).toList());

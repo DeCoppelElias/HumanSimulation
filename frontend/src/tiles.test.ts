@@ -23,6 +23,7 @@ const snapshot: WorldSnapshot = {
     width: 4,
     height: 1,
     species: ["grass", "rabbit"],
+    settings: {},
     tiles: [
         { at: { x: 0, y: 0 }, fields: {}, entities: [rabbit(4), rabbit(2), rabbit(9)] },
         { at: { x: 1, y: 0 }, fields: {}, entities: [] },
