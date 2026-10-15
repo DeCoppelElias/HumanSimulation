@@ -4,15 +4,16 @@ import { messageOf } from "./messages";
 import {
     RESTORE_ALL,
     anyEdited,
-    commitDraft,
-    currentValue,
-    draftKey,
     formatValue,
     groups,
+    heldKey,
     isEdited,
+    release,
     restoreOne,
-    withoutDraft,
-    type Drafts,
+    settle,
+    shownValue,
+    withoutKey,
+    type Held,
 } from "./settings";
 import type { Command, SettingDeclaration, Settings } from "./types";
 
@@ -20,7 +21,8 @@ type Props = { api: Api; id: string; values: Settings; onError(message: string):
 
 export function SettingsPanel({ api, id, values, onError }: Props) {
     const [declarations, setDeclarations] = useState<SettingDeclaration[]>([]);
-    const [drafts, setDrafts] = useState<Drafts>({});
+    const [drafts, setDrafts] = useState<Held>({});
+    const [pending, setPending] = useState<Held>({});
 
     useEffect(() => {
         let live = true;
@@ -36,14 +38,27 @@ export function SettingsPanel({ api, id, values, onError }: Props) {
         };
     }, [api, id, onError]);
 
-    const send = (command: Command) => {
-        void api.command(id, command).catch((error: unknown) => onError(messageOf(error)));
+    // Each new snapshot lets go of the values it now shows, before this render reads them.
+    const [seen, setSeen] = useState(values);
+    if (seen !== values) {
+        setSeen(values);
+        setPending(settle(pending, declarations, values));
+    }
+
+    const send = (command: Command, onFailure: () => void = () => undefined) => {
+        void api.command(id, command).catch((error: unknown) => {
+            onFailure();
+            onError(messageOf(error));
+        });
     };
     const commit = (declaration: SettingDeclaration) => {
-        const command = commitDraft(drafts[draftKey(declaration)], declaration, values);
-        setDrafts((current) => withoutDraft(current, draftKey(declaration)));
-        if (command !== null) {
-            send(command);
+        const released = release(drafts, pending, declaration, values);
+        setDrafts(released.drafts);
+        setPending(released.pending);
+        if (released.command !== null) {
+            send(released.command, () =>
+                setPending((current) => withoutKey(current, heldKey(declaration))),
+            );
         }
     };
 
@@ -53,7 +68,10 @@ export function SettingsPanel({ api, id, values, onError }: Props) {
                 <h2>Settings</h2>
                 <button
                     disabled={!anyEdited(declarations, values)}
-                    onClick={() => send(RESTORE_ALL)}
+                    onClick={() => {
+                        setPending({});
+                        send(RESTORE_ALL);
+                    }}
                 >
                     Restore all
                 </button>
@@ -62,41 +80,43 @@ export function SettingsPanel({ api, id, values, onError }: Props) {
                 <fieldset key={group.owner}>
                     <legend>{group.label}</legend>
                     {group.settings.map((declaration) => {
-                        const shown =
-                            drafts[draftKey(declaration)] ?? currentValue(declaration, values);
+                        const key = heldKey(declaration);
+                        const shown = shownValue(drafts, pending, declaration, values);
                         const edited = isEdited(declaration, values);
+                        const described = `setting-${group.owner}-${declaration.key}`;
                         return (
-                            <div
-                                key={declaration.key}
-                                className={edited ? "setting edited" : "setting"}
-                            >
+                            <div key={key} className={edited ? "setting edited" : "setting"}>
                                 <span className="setting-name">{declaration.key}</span>
                                 <input
                                     type="range"
-                                    aria-label={declaration.key}
+                                    aria-label={`${group.label} ${declaration.key}`}
+                                    aria-describedby={described}
                                     min={declaration.min}
                                     max={declaration.max}
                                     step={declaration.step}
                                     value={shown}
                                     onChange={(event) => {
                                         const value = Number(event.target.value);
-                                        setDrafts((current) => ({
-                                            ...current,
-                                            [draftKey(declaration)]: value,
-                                        }));
+                                        setDrafts((current) => ({ ...current, [key]: value }));
                                     }}
                                     onPointerUp={() => commit(declaration)}
+                                    onPointerCancel={() => commit(declaration)}
                                     onKeyUp={() => commit(declaration)}
+                                    onBlur={() => commit(declaration)}
                                 />
-                                <output>{formatValue(shown, declaration.step)}</output>
+                                <output>{formatValue(shown, declaration)}</output>
                                 <button
                                     disabled={!edited}
+                                    aria-label={`Restore ${group.label} ${declaration.key}`}
                                     title="Restore the default"
-                                    onClick={() => send(restoreOne(declaration))}
+                                    onClick={() => {
+                                        setPending((current) => withoutKey(current, key));
+                                        send(restoreOne(declaration));
+                                    }}
                                 >
                                     ↺
                                 </button>
-                                <small>{declaration.description}</small>
+                                <small id={described}>{declaration.description}</small>
                             </div>
                         );
                     })}

@@ -2,13 +2,16 @@ import { describe, expect, test } from "vitest";
 import {
     RESTORE_ALL,
     anyEdited,
-    commitDraft,
     currentValue,
     formatValue,
     groups,
     isEdited,
+    onStep,
+    release,
     restoreOne,
-    withoutDraft,
+    settle,
+    shownValue,
+    withoutKey,
 } from "./settings";
 import type { SettingDeclaration } from "./types";
 
@@ -17,11 +20,12 @@ const declaration = (
     key: string,
     defaultValue = 1,
     step = 1,
+    min = 0,
 ): SettingDeclaration => ({
     owner,
     key,
     description: `${key}.`,
-    min: 0,
+    min,
     max: 100,
     step,
     defaultValue,
@@ -52,16 +56,46 @@ describe("the settings panel", () => {
         expect(isEdited(perDrop, {})).toBe(false);
     });
 
-    test("a released slider sends its value rounded to its step, and nothing when unchanged", () => {
-        const values = { rabbit: { viewCharge: 0.03 } };
-        expect(commitDraft(0.060000000000000005, charge, values)).toEqual({
-            type: "setSetting",
-            owner: "rabbit",
-            key: "viewCharge",
-            value: 0.06,
+    test("the slider shows its draft, else the value sent, else the snapshot's", () => {
+        const values = { rabbit: { stride: 2 } };
+        expect(shownValue({}, {}, stride, values)).toBe(2);
+        expect(shownValue({}, { "rabbit.stride": 4 }, stride, values)).toBe(4);
+        expect(shownValue({ "rabbit.stride": 5 }, { "rabbit.stride": 4 }, stride, values)).toBe(5);
+    });
+
+    test("a release sends the draft on its step and holds it until the snapshot catches up", () => {
+        const values = { rabbit: { viewCharge: 0.05 } };
+        expect(release({ "rabbit.viewCharge": 0.060000000000000005 }, {}, charge, values)).toEqual({
+            drafts: {},
+            pending: { "rabbit.viewCharge": 0.06 },
+            command: { type: "setSetting", owner: "rabbit", key: "viewCharge", value: 0.06 },
         });
-        expect(commitDraft(0.03, charge, values)).toBeNull();
-        expect(commitDraft(undefined, charge, values)).toBeNull();
+    });
+
+    test("a release on the snapshot's value, or with no draft, sends nothing", () => {
+        const values = { rabbit: { viewCharge: 0.05 } };
+        expect(release({ "rabbit.viewCharge": 0.05 }, {}, charge, values)).toEqual({
+            drafts: {},
+            pending: {},
+            command: null,
+        });
+        expect(release({}, { "rabbit.viewCharge": 0.06 }, charge, values)).toEqual({
+            drafts: {},
+            pending: { "rabbit.viewCharge": 0.06 },
+            command: null,
+        });
+    });
+
+    test("a value sent is let go once the snapshot shows it", () => {
+        const pending = { "rabbit.stride": 4, "world.grassPerDrop": 9 };
+        expect(
+            settle(pending, [stride, perDrop], {
+                rabbit: { stride: 4 },
+                world: { grassPerDrop: 7 },
+            }),
+        ).toEqual({
+            "world.grassPerDrop": 9,
+        });
     });
 
     test("restoring one names its owner and key, restoring all names nothing", () => {
@@ -73,15 +107,25 @@ describe("the settings panel", () => {
         expect(RESTORE_ALL).toEqual({ type: "restoreDefaults" });
     });
 
-    test("a value shows as many decimals as its step", () => {
-        expect(formatValue(15, 1)).toBe("15");
-        expect(formatValue(0.030000000000000002, 0.01)).toBe("0.03");
-        expect(formatValue(0.1, 0.05)).toBe("0.10");
+    test("a value lands on its step from the minimum, whatever the step's digits", () => {
+        expect(onStep(0.060000000000000005, charge)).toBe(0.06);
+        expect(onStep(0.6, declaration("a", "quarter", 0, 0.25))).toBe(0.5);
+        expect(onStep(6.1, declaration("a", "half", 0, 2.5))).toBe(5);
+        expect(onStep(0.36, declaration("a", "offset", 0.05, 0.1, 0.05))).toBe(0.35);
     });
 
-    test("a committed draft is dropped", () => {
+    test("a value shows as many decimals as its step or minimum has", () => {
+        expect(formatValue(15, stride)).toBe("15");
+        expect(formatValue(0.030000000000000002, charge)).toBe("0.03");
+        expect(formatValue(0.5, declaration("a", "quarter", 0, 0.25))).toBe("0.50");
+        expect(formatValue(5, declaration("a", "half", 0, 2.5))).toBe("5.0");
+    });
+
+    test("a key is dropped from a map of held values", () => {
         expect(
-            withoutDraft({ "rabbit.stride": 2, "world.grassPerDrop": 3 }, "rabbit.stride"),
-        ).toEqual({ "world.grassPerDrop": 3 });
+            withoutKey({ "rabbit.stride": 2, "world.grassPerDrop": 3 }, "rabbit.stride"),
+        ).toEqual({
+            "world.grassPerDrop": 3,
+        });
     });
 });

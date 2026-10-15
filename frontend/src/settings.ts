@@ -1,7 +1,9 @@
 import type { Command, SettingDeclaration, Settings } from "./types";
 
 export type SettingGroup = { owner: string; label: string; settings: SettingDeclaration[] };
-export type Drafts = Partial<Record<string, number>>;
+/** Values the page holds by owner and key: drafts not yet sent, or values sent and not yet in a snapshot. */
+export type Held = Partial<Record<string, number>>;
+export type Release = { drafts: Held; pending: Held; command: Command | null };
 
 export const RESTORE_ALL: Command = { type: "restoreDefaults" };
 
@@ -18,12 +20,23 @@ export function groups(declarations: SettingDeclaration[]): SettingGroup[] {
     }));
 }
 
-export function draftKey(declaration: SettingDeclaration): string {
+export function heldKey(declaration: SettingDeclaration): string {
     return `${declaration.owner}.${declaration.key}`;
 }
 
 export function currentValue(declaration: SettingDeclaration, values: Settings): number {
     return values[declaration.owner]?.[declaration.key] ?? declaration.defaultValue;
+}
+
+/** A slider being dragged shows its draft, one just released shows what it sent until the snapshot catches up. */
+export function shownValue(
+    drafts: Held,
+    pending: Held,
+    declaration: SettingDeclaration,
+    values: Settings,
+): number {
+    const key = heldKey(declaration);
+    return drafts[key] ?? pending[key] ?? currentValue(declaration, values);
 }
 
 export function isEdited(declaration: SettingDeclaration, values: Settings): boolean {
@@ -34,31 +47,66 @@ export function anyEdited(declarations: SettingDeclaration[], values: Settings):
     return declarations.some((declaration) => isEdited(declaration, values));
 }
 
-/** Shows as many decimals as the step has, so 0.03 does not show as 0.030000000000000002. */
-export function formatValue(value: number, step: number): string {
-    return value.toFixed(Math.max(0, Math.ceil(-Math.log10(step) - 1e-9)));
+/** Counted from the number's own digits, so 0.25 has two and 2.5 has one. */
+function decimalsOf(x: number): number {
+    const [mantissa, exponent = "0"] = String(x).split("e");
+    const dot = mantissa.indexOf(".");
+    const fraction = dot < 0 ? 0 : mantissa.length - dot - 1;
+    return Math.max(0, fraction - Number(exponent));
 }
 
-/** A released slider sends one command, rounded to its step, and none when it ends where it began. */
-export function commitDraft(
-    draft: number | undefined,
+function decimals(declaration: SettingDeclaration): number {
+    return Math.max(decimalsOf(declaration.step), decimalsOf(declaration.min));
+}
+
+/** The nearest value on the step counted from the minimum, as the server stores it. */
+export function onStep(value: number, declaration: SettingDeclaration): number {
+    const steps = Math.round((value - declaration.min) / declaration.step);
+    return Number((declaration.min + steps * declaration.step).toFixed(decimals(declaration)));
+}
+
+export function formatValue(value: number, declaration: SettingDeclaration): string {
+    return value.toFixed(decimals(declaration));
+}
+
+/** A released slider sends its draft once, on its step, and holds it as pending; nothing when it ends where it began. */
+export function release(
+    drafts: Held,
+    pending: Held,
     declaration: SettingDeclaration,
     values: Settings,
-): Command | null {
+): Release {
+    const key = heldKey(declaration);
+    const draft = drafts[key];
+    const remaining = withoutKey(drafts, key);
     if (draft === undefined) {
-        return null;
+        return { drafts: remaining, pending, command: null };
     }
-    const value = Number(formatValue(draft, declaration.step));
+    const value = onStep(draft, declaration);
     if (value === currentValue(declaration, values)) {
-        return null;
+        return { drafts: remaining, pending: withoutKey(pending, key), command: null };
     }
-    return { type: "setSetting", owner: declaration.owner, key: declaration.key, value };
+    return {
+        drafts: remaining,
+        pending: { ...pending, [key]: value },
+        command: { type: "setSetting", owner: declaration.owner, key: declaration.key, value },
+    };
+}
+
+/** Lets go of every value sent that the snapshot now shows. */
+export function settle(pending: Held, declarations: SettingDeclaration[], values: Settings): Held {
+    return Object.fromEntries(
+        Object.entries(pending).filter(([key, value]) => {
+            const declaration = declarations.find((one) => heldKey(one) === key);
+            return declaration === undefined || currentValue(declaration, values) !== value;
+        }),
+    );
 }
 
 export function restoreOne(declaration: SettingDeclaration): Command {
     return { type: "restoreDefaults", owner: declaration.owner, key: declaration.key };
 }
 
-export function withoutDraft(drafts: Drafts, key: string): Drafts {
-    return Object.fromEntries(Object.entries(drafts).filter(([held]) => held !== key));
+export function withoutKey(held: Held, key: string): Held {
+    return Object.fromEntries(Object.entries(held).filter(([one]) => one !== key));
 }
