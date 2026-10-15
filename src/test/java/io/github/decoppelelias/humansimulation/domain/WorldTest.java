@@ -119,18 +119,26 @@ class WorldTest {
 
     @Test
     void theCensusAveragesEachGenePerSpecies() {
-        World world = new World(
-                3, 3, 1, List.of(TestSpecies.walker(new Intent.Idle()), TestSpecies.food(), TestSpecies.eater(1, 50)));
-        world.submit(new Command.SpawnAt("walker", new GridPosition(0, 0)));
-        world.submit(new Command.SpawnAt("walker", new GridPosition(1, 0)));
-        world.submit(new Command.SpawnAt("food", new GridPosition(2, 0)));
+        World world = new World(5, 5, 1, List.of(Rabbit.species(), TestSpecies.food(), TestSpecies.eater(1, 1)));
+        world.submit(new Command.Spawn("rabbit", 3));
+        world.submit(new Command.SpawnAt("food", new GridPosition(4, 4)));
+        world.submit(new Command.SpawnAt("eater", new GridPosition(4, 0)));
         CensusRow row = world.advance().census();
-        double expected = (world.entity(0).orElseThrow().genome().scalar("viewRange")
-                        + world.entity(1).orElseThrow().genome().scalar("viewRange"))
-                / 2;
-        assertThat(row.geneMeans()).containsOnlyKeys("walker");
-        assertThat(row.geneMeans().get("walker")).containsOnlyKeys("viewRange");
-        assertThat(row.geneMeans().get("walker").get("viewRange")).isCloseTo(expected, within(1e-12));
+        assertThat(row.geneMeans()).containsOnlyKeys("eater", "rabbit");
+        assertThat(row.geneMeans().get("rabbit")).hasSize(7);
+        for (GeneSpec spec : Rabbit.species().geneLayout()) {
+            double sum = 0;
+            for (int id = 0; id < 3; id++) {
+                sum += world.entity(id).orElseThrow().genome().scalar(spec.key());
+            }
+            assertThat(row.geneMeans().get("rabbit").get(spec.key())).isCloseTo(sum / 3, within(1e-12));
+        }
+        assertThat(world.entity(0).orElseThrow().genome().scalar("grassPull"))
+                .isNotEqualTo(world.entity(1).orElseThrow().genome().scalar("grassPull"));
+
+        CensusRow afterTheEaterStarves = world.advance().census();
+        assertThat(afterTheEaterStarves.population()).containsEntry("eater", 0);
+        assertThat(afterTheEaterStarves.geneMeans()).containsOnlyKeys("rabbit");
     }
 
     @Test

@@ -30,8 +30,12 @@ class RunCommandTest {
                         line -> assertThat(line)
                                 .startsWith("{\"seed\":42,\"day\":1,\"population\":{\"grass\":0,\"rabbit\":10},"
                                         + "\"geneMeans\":{\"rabbit\":{\"breedPull\":"),
-                        line -> assertThat(line).startsWith("{\"seed\":42,\"day\":2,"),
-                        line -> assertThat(line).startsWith("{\"seed\":42,\"day\":3,"));
+                        line -> assertThat(line)
+                                .startsWith("{\"seed\":42,\"day\":2,\"population\":{\"grass\":0,\"rabbit\":10},"
+                                        + "\"geneMeans\":{\"rabbit\":{\"breedPull\":"),
+                        line -> assertThat(line)
+                                .startsWith("{\"seed\":42,\"day\":3,\"population\":{\"grass\":0,\"rabbit\":10},"
+                                        + "\"geneMeans\":{\"rabbit\":{\"breedPull\":"));
     }
 
     @Test
