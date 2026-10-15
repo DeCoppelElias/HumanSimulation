@@ -176,6 +176,21 @@ class WorldTest {
     }
 
     @Test
+    void spawnedMembersVaryAroundTheBaseline() {
+        World world = new World(5, 5, 1, RABBITS);
+        world.submit(new Command.Spawn("rabbit", 20));
+        world.applyPending();
+        List<Double> views = new ArrayList<>();
+        for (int id = 0; id < 20; id++) {
+            Genome genome = world.entity(id).orElseThrow().genome();
+            assertThat(genome.scalar("viewRange")).isBetween(2.0, 4.0);
+            assertThat(genome.scalar("grassPull")).isBetween(0.8, 1.2);
+            views.add(genome.scalar("viewRange"));
+        }
+        assertThat(views).doesNotHaveDuplicates();
+    }
+
+    @Test
     void anEditReachesItsOwnWorldOnly() {
         World edited = new World(3, 3, 1, RABBITS);
         World other = new World(3, 3, 1, RABBITS);

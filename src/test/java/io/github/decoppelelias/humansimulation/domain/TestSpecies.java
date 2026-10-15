@@ -51,9 +51,12 @@ final class TestSpecies {
                 List.of(spawn -> new Edible(() -> 5)));
     }
 
-    /** A species named "recorder", seeing one tile and walking up to three, whose brain idles and keeps its inputs. */
+    /**
+     * A species named "recorder", seeing one tile and walking up to three, whose brain idles and keeps its inputs. Its
+     * sight does not mutate, so every member sees the same tiles.
+     */
     static Species recorder(List<Perception> perceptions, List<Options> options) {
-        List<GeneSpec> layout = List.of(new GeneSpec.Scalar("viewRange", 1, 10, 1.0));
+        List<GeneSpec> layout = List.of(new GeneSpec.Scalar("viewRange", 1, 10, 0));
         Genome baseline = new Genome(layout, Map.of("viewRange", 1.0));
         Brain brain = (perception, offered, random) -> {
             perceptions.add(perception);

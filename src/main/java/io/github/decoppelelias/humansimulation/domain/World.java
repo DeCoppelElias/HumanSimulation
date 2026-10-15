@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.random.RandomGenerator;
@@ -66,6 +67,11 @@ public final class World {
         runProcesses();
         day++;
         return new DayReport(snapshot(), census());
+    }
+
+    /** One entity, for tests that read its state. */
+    Optional<Entity> entity(int id) {
+        return Optional.ofNullable(entities.get(id));
     }
 
     /** Every declared setting in panel order. They never change for a world. */
@@ -202,7 +208,8 @@ public final class World {
                 case FoodDrop drop -> {
                     Species kind = speciesNamed(drop.species());
                     for (int i = drop.dropsOn(day + 1, table.of(SettingTable.WORLD)); i > 0; i--) {
-                        place(kind, randomTile());
+                        GridPosition at = randomTile();
+                        place(kind, at, kind.baseline().mutated(random));
                     }
                 }
             }
@@ -261,22 +268,26 @@ public final class World {
             case Command.Spawn spawn -> {
                 Species kind = speciesNamed(spawn.species());
                 for (int i = 0; i < spawn.count(); i++) {
-                    place(kind, randomTile());
+                    GridPosition at = randomTile();
+                    place(kind, at, kind.baseline().mutated(random));
                 }
             }
-            case Command.SpawnAt spawnAt -> place(speciesNamed(spawnAt.species()), spawnAt.at());
+            case Command.SpawnAt spawnAt -> {
+                Species kind = speciesNamed(spawnAt.species());
+                place(kind, spawnAt.at(), kind.baseline().mutated(random));
+            }
             case Command.Reset reset -> start(reset.seed());
             case Command.SetSetting set -> table.set(set.owner(), set.key(), set.value());
             case Command.RestoreDefaults restore -> table.restore(restore.owner(), restore.key());
         }
     }
 
-    private void place(Species kind, GridPosition at) {
-        Spawn spawn = new Spawn(kind.baseline(), kind, table.of(kind.name()));
+    private void place(Species kind, GridPosition at, Genome genome) {
+        Spawn spawn = new Spawn(genome, kind, table.of(kind.name()));
         Entity entity = new Entity(
                 nextId++,
                 kind,
-                kind.baseline(),
+                genome,
                 at,
                 kind.brain().map(brain -> brain.apply(spawn)),
                 kind.parts().stream().map(part -> part.apply(spawn)).toList());
