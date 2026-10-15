@@ -41,6 +41,20 @@ class SettingValuesTest {
     }
 
     @Test
+    void aValueWithinTheStepToleranceIsStoredOnItsStep() {
+        SettingValues values = values();
+        values.set("share", 0.5000000000001);
+        assertThat(values.number("share")).isEqualTo(0.5);
+        SettingValues charges = new SettingValues(
+                new Settings(List.of(new Setting.Scalar("viewCharge", "Per tile.", 0, 1, 0.01, 0.03))));
+        for (int hundredths = 0; hundredths <= 100; hundredths++) {
+            double typed = Double.parseDouble("0." + (hundredths < 10 ? "0" : "") + hundredths);
+            charges.set("viewCharge", hundredths == 100 ? 1 : typed);
+            assertThat(charges.number("viewCharge")).isEqualTo(hundredths == 100 ? 1 : typed);
+        }
+    }
+
+    @Test
     void restoringPutsTheDefaultBack() {
         SettingValues values = values();
         values.set("stride", 1);

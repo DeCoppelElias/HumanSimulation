@@ -179,11 +179,30 @@ class WorldTest {
     void anEditReachesItsOwnWorldOnly() {
         World edited = new World(3, 3, 1, RABBITS);
         World other = new World(3, 3, 1, RABBITS);
-        edited.submit(new Command.SetSetting("rabbit", "eatingCharge", 20));
         edited.submit(new Command.Spawn("rabbit", 1));
         other.submit(new Command.Spawn("rabbit", 1));
+        edited.advance();
+        other.advance();
+        edited.submit(new Command.SetSetting("rabbit", "eatingCharge", 20));
         assertThat(edited.advance().census().population()).containsEntry("rabbit", 0);
         assertThat(other.advance().census().population()).containsEntry("rabbit", 1);
+    }
+
+    @Test
+    void theFoodDropReadsItsWorldsValues() {
+        World world = new World(10, 10, 1, List.of(TestSpecies.food()), List.of(new FoodDrop("food")));
+        world.submit(new Command.SetSetting("world", "foodDropInterval", 2));
+        world.submit(new Command.SetSetting("world", "foodPerDrop", 3));
+        world.advance();
+        assertThat(world.advance().census().population()).containsEntry("food", 3);
+    }
+
+    @Test
+    void declarationsListTheWorldThenEachSpeciesByName() {
+        World world = new World(3, 3, 1, List.of(Rabbit.species(), Grass.species()), List.of(new FoodDrop("grass")));
+        assertThat(world.declarations())
+                .extracting(SettingDeclaration::owner)
+                .startsWith("world", "world", "grass", "rabbit");
     }
 
     @Test

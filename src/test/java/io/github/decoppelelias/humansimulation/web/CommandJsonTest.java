@@ -72,6 +72,9 @@ class CommandJsonTest {
                         Map.entry("value", 2.0));
         assertThat(CommandJson.toJson(new Command.RestoreDefaults(Optional.of("rabbit"), Optional.empty())))
                 .containsExactly(Map.entry("type", "restoreDefaults"), Map.entry("owner", "rabbit"));
+        assertThat(CommandJson.toJson(new Command.RestoreDefaults(Optional.of("rabbit"), Optional.of("stride"))))
+                .containsExactly(
+                        Map.entry("type", "restoreDefaults"), Map.entry("owner", "rabbit"), Map.entry("key", "stride"));
         assertThat(CommandJson.toJson(new Command.RestoreDefaults(Optional.empty(), Optional.empty())))
                 .containsExactly(Map.entry("type", "restoreDefaults"));
     }

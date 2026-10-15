@@ -10,11 +10,12 @@ class GrassTest {
         Species grass = Grass.species();
         SettingValues values = new SettingValues(grass.settings());
         assertThat(values.number("nourishment")).isEqualTo(15);
-        assertThat(grass.parts())
-                .singleElement()
-                .satisfies(part -> assertThat(
-                                ((Edible) part.apply(new Spawn(grass.baseline(), grass, values))).amount())
-                        .isEqualTo(15));
+        assertThat(grass.parts()).singleElement().satisfies(part -> {
+            Edible edible = (Edible) part.apply(new Spawn(grass.baseline(), grass, values));
+            assertThat(edible.amount()).isEqualTo(15);
+            values.set("nourishment", 20);
+            assertThat(edible.amount()).isEqualTo(20);
+        });
     }
 
     @Test
