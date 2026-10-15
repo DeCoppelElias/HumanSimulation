@@ -61,4 +61,18 @@ class CommandJsonTest {
         assertThat(CommandJson.toJson(new Command.Reset(7)))
                 .containsExactly(Map.entry("type", "reset"), Map.entry("seed", 7L));
     }
+
+    @Test
+    void writesTheSettingCommandsWithOnlyTheFieldsTheyHave() {
+        assertThat(CommandJson.toJson(new Command.SetSetting("rabbit", "stride", 2)))
+                .containsExactly(
+                        Map.entry("type", "setSetting"),
+                        Map.entry("owner", "rabbit"),
+                        Map.entry("key", "stride"),
+                        Map.entry("value", 2.0));
+        assertThat(CommandJson.toJson(new Command.RestoreDefaults(Optional.of("rabbit"), Optional.empty())))
+                .containsExactly(Map.entry("type", "restoreDefaults"), Map.entry("owner", "rabbit"));
+        assertThat(CommandJson.toJson(new Command.RestoreDefaults(Optional.empty(), Optional.empty())))
+                .containsExactly(Map.entry("type", "restoreDefaults"));
+    }
 }

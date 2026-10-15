@@ -45,6 +45,17 @@ final class CommandJson {
                 json.put("type", "reset");
                 json.put("seed", reset.seed());
             }
+            case Command.SetSetting set -> {
+                json.put("type", "setSetting");
+                json.put("owner", set.owner());
+                json.put("key", set.key());
+                json.put("value", set.value());
+            }
+            case Command.RestoreDefaults restore -> {
+                json.put("type", "restoreDefaults");
+                restore.owner().ifPresent(owner -> json.put("owner", owner));
+                restore.key().ifPresent(key -> json.put("key", key));
+            }
         }
         return json;
     }

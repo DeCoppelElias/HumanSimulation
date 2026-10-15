@@ -66,6 +66,24 @@ final class SettingTable {
         key.ifPresentOrElse(values::restore, values::restoreAll);
     }
 
+    /** Every value that differs from its default, in panel order, as the commands that set it. */
+    List<Command.SetSetting> edits() {
+        List<Command.SetSetting> edits = new ArrayList<>();
+        owners.forEach((owner, values) -> {
+            for (Setting setting : values.declared().declared()) {
+                switch (setting) {
+                    case Setting.Scalar scalar -> {
+                        double value = values.number(scalar.key());
+                        if (value != scalar.defaultValue()) {
+                            edits.add(new Command.SetSetting(owner, scalar.key(), value));
+                        }
+                    }
+                }
+            }
+        });
+        return edits;
+    }
+
     SortedMap<String, Map<String, Double>> current() {
         SortedMap<String, Map<String, Double>> current = new TreeMap<>();
         owners.forEach((owner, values) -> current.put(owner, values.current()));

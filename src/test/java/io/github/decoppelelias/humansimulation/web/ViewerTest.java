@@ -40,7 +40,7 @@ class ViewerTest {
 
     private static StreamEvent.Day day(int number) {
         return new StreamEvent.Day(
-                new WorldSnapshot(1, number, 1, 1, List.of(), List.of()), new CensusRow(number, Map.of()));
+                new WorldSnapshot(1, number, 1, 1, List.of(), List.of(), Map.of()), new CensusRow(number, Map.of()));
     }
 
     @Test

@@ -7,6 +7,7 @@ import static org.assertj.core.groups.Tuple.tuple;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.random.RandomGeneratorFactory;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
@@ -172,6 +173,73 @@ class WorldTest {
         for (int i = 0; i < 10; i++) {
             assertThat(world.advance()).isEqualTo(fresh.advance());
         }
+    }
+
+    @Test
+    void anEditReachesItsOwnWorldOnly() {
+        World edited = new World(3, 3, 1, RABBITS);
+        World other = new World(3, 3, 1, RABBITS);
+        edited.submit(new Command.SetSetting("rabbit", "eatingCharge", 20));
+        edited.submit(new Command.Spawn("rabbit", 1));
+        other.submit(new Command.Spawn("rabbit", 1));
+        assertThat(edited.advance().census().population()).containsEntry("rabbit", 0);
+        assertThat(other.advance().census().population()).containsEntry("rabbit", 1);
+    }
+
+    @Test
+    void aBadSettingCommandChangesNothing() {
+        World world = new World(3, 3, 1, RABBITS);
+        WorldSnapshot before = world.applyPending();
+        assertThatThrownBy(() -> world.submit(new Command.SetSetting("rabbit", "stride", 9)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("stride");
+        assertThatThrownBy(() -> world.submit(new Command.SetSetting("wolf", "stride", 2)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("wolf");
+        assertThatThrownBy(() -> world.submit(new Command.RestoreDefaults(Optional.of("rabbit"), Optional.of("wings"))))
+                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new Command.RestoreDefaults(Optional.empty(), Optional.of("stride")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("stride");
+        assertThat(world.applyPending()).isEqualTo(before);
+        assertThat(world.log()).isEmpty();
+    }
+
+    @Test
+    void theSnapshotCarriesTheCurrentValues() {
+        World world = new World(3, 3, 1, List.of(Grass.species(), Rabbit.species()), List.of(new FoodDrop("grass")));
+        world.submit(new Command.SetSetting("rabbit", "stride", 2));
+        WorldSnapshot snapshot = world.applyPending();
+        assertThat(snapshot.settings()).containsOnlyKeys("grass", "rabbit", "world");
+        assertThat(snapshot.settings().get("rabbit")).containsEntry("stride", 2.0);
+        assertThat(snapshot.settings().get("world")).containsEntry("grassPerDrop", 7.0);
+    }
+
+    @Test
+    void restoreDefaultsPutsTheDeclaredValuesBack() {
+        World world = new World(3, 3, 1, RABBITS);
+        world.submit(new Command.SetSetting("rabbit", "stride", 2));
+        world.submit(new Command.SetSetting("rabbit", "eatingCharge", 2));
+        world.submit(new Command.RestoreDefaults(Optional.of("rabbit"), Optional.of("stride")));
+        assertThat(world.applyPending().settings().get("rabbit"))
+                .containsEntry("stride", 3.0)
+                .containsEntry("eatingCharge", 2.0);
+        world.submit(new Command.RestoreDefaults(Optional.empty(), Optional.empty()));
+        assertThat(world.applyPending().settings().get("rabbit")).containsEntry("eatingCharge", 1.0);
+    }
+
+    @Test
+    void aResetKeepsEditedSettingsAndLogsThem() {
+        World world = new World(3, 3, 1, List.of(Grass.species(), Rabbit.species()), List.of(new FoodDrop("grass")));
+        world.submit(new Command.SetSetting("rabbit", "stride", 2));
+        world.submit(new Command.SetSetting("world", "grassPerDrop", 3));
+        world.submit(new Command.Reset(7));
+        assertThat(world.applyPending().settings().get("rabbit")).containsEntry("stride", 2.0);
+        assertThat(world.log())
+                .containsExactly(
+                        new LoggedCommand(0, new Command.Reset(7)),
+                        new LoggedCommand(0, new Command.SetSetting("world", "grassPerDrop", 3)),
+                        new LoggedCommand(0, new Command.SetSetting("rabbit", "stride", 2)));
     }
 
     @Test

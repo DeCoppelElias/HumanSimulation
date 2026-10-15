@@ -68,6 +68,11 @@ public final class World {
         return new DayReport(snapshot(), census());
     }
 
+    /** Every declared setting in panel order. They never change for a world. */
+    public List<SettingDeclaration> declarations() {
+        return table.declarations();
+    }
+
     public List<LoggedCommand> log() {
         return List.copyOf(log);
     }
@@ -87,7 +92,7 @@ public final class World {
             }
             tiles.add(new WorldSnapshot.TileView(at, Map.of(), standing));
         }
-        return new WorldSnapshot(seed, day, width, height, List.copyOf(species.keySet()), tiles);
+        return new WorldSnapshot(seed, day, width, height, List.copyOf(species.keySet()), tiles, table.current());
     }
 
     private List<Decision> decide() {
@@ -234,6 +239,8 @@ public final class World {
                 }
             }
             case Command.Reset _ -> {}
+            case Command.SetSetting set -> table.check(set.owner(), set.key(), set.value());
+            case Command.RestoreDefaults restore -> table.checkScope(restore.owner(), restore.key());
         }
     }
 
@@ -242,6 +249,10 @@ public final class World {
             Command command = pending.poll();
             apply(command);
             log.add(new LoggedCommand(day, command));
+            if (command instanceof Command.Reset) {
+                // A reset keeps edited settings, so the new log carries them and the run still replays from it.
+                table.edits().forEach(edit -> log.add(new LoggedCommand(day, edit)));
+            }
         }
     }
 
@@ -255,6 +266,8 @@ public final class World {
             }
             case Command.SpawnAt spawnAt -> place(speciesNamed(spawnAt.species()), spawnAt.at());
             case Command.Reset reset -> start(reset.seed());
+            case Command.SetSetting set -> table.set(set.owner(), set.key(), set.value());
+            case Command.RestoreDefaults restore -> table.restore(restore.owner(), restore.key());
         }
     }
 
