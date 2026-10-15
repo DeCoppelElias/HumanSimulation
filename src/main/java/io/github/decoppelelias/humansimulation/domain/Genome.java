@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.random.RandomGenerator;
 
 record Genome(List<GeneSpec> layout, Map<String, Double> scalars) {
     Genome {
@@ -25,6 +26,24 @@ record Genome(List<GeneSpec> layout, Map<String, Double> scalars) {
         if (!undeclared.isEmpty()) {
             throw new IllegalArgumentException("genes " + undeclared + " are not in the layout");
         }
+    }
+
+    boolean declares(String key) {
+        return scalars.containsKey(key);
+    }
+
+    /** Each gene in layout order moves by a uniform offset within its mutation size, clamped to its bounds. */
+    Genome mutated(RandomGenerator random) {
+        Map<String, Double> next = new TreeMap<>();
+        for (GeneSpec spec : layout) {
+            switch (spec) {
+                case GeneSpec.Scalar scalar -> {
+                    double offset = (random.nextDouble() * 2 - 1) * scalar.mutationSize();
+                    next.put(scalar.key(), Math.clamp(scalars.get(scalar.key()) + offset, scalar.min(), scalar.max()));
+                }
+            }
+        }
+        return new Genome(layout, next);
     }
 
     double scalar(String key) {
