@@ -50,17 +50,36 @@ class RabbitTest {
                 .extracting(
                         Setting.Scalar::min, Setting.Scalar::max, Setting.Scalar::step, Setting.Scalar::defaultValue)
                 .containsExactly(0.0, 1.0, 0.01, 0.03);
+        assertThat(settings.whole("breedInterval")).isEqualTo(15);
+        assertThat(settings.number("childReserve")).isEqualTo(15);
+        assertThat(settings.number("breedingLoss")).isEqualTo(30);
+        assertThat(settings.number("parentMargin")).isEqualTo(5);
+        assertThat(settings.declared().scalar("breedInterval"))
+                .extracting(Setting.Scalar::min, Setting.Scalar::max)
+                .containsExactly(1.0, 100.0);
+        assertThat(settings.declared().scalar("breedingLoss"))
+                .extracting(Setting.Scalar::min, Setting.Scalar::max)
+                .containsExactly(0.0, 200.0);
     }
 
     @Test
-    void isBornWithAMetabolismAndTheScoringBrain() {
+    void isBornWithAMetabolismAFertilityAndTheScoringBrain() {
         Species rabbit = Rabbit.species();
-        Spawn spawn = new Spawn(rabbit.baseline(), rabbit, new SettingValues(rabbit.settings()), 0, Optional.empty());
+        Spawn spawn = new Spawn(rabbit.baseline(), rabbit, new SettingValues(rabbit.settings()), 4, Optional.empty());
         assertThat(rabbit.brain())
                 .hasValueSatisfying(factory -> assertThat(factory.apply(spawn)).isInstanceOf(ScoringBrain.class));
-        assertThat(rabbit.parts())
-                .singleElement()
-                .satisfies(part -> assertThat(part.apply(spawn)).isInstanceOf(Metabolism.class));
+        assertThat(rabbit.parts()).hasSize(2);
+        assertThat(rabbit.parts().get(0).apply(spawn)).isInstanceOf(Metabolism.class);
+        assertThat(rabbit.parts().get(1).apply(spawn).ownView()).isEqualTo(new Fertility.Since(4));
+    }
+
+    @Test
+    void aZeroBreedingIntervalIsRejected() {
+        World world = new World(3, 3, 1, List.of(Rabbit.species()));
+        assertThatThrownBy(() -> world.submit(new Command.SetSetting("rabbit", "breedInterval", 0)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("breedInterval")
+                .hasMessageContaining("outside");
     }
 
     @Test

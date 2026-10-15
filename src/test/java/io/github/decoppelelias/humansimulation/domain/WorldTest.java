@@ -278,6 +278,18 @@ class WorldTest {
     }
 
     @Test
+    void rabbitsBreedOnTheirOwn() {
+        World world = new World(20, 20, 3, List.of(Grass.species(), Rabbit.species()), List.of(new FoodDrop("grass")));
+        world.submit(new Command.Spawn("rabbit", 10));
+        world.submit(new Command.Spawn("grass", 100));
+        int most = 0;
+        for (int day = 0; day < 60; day++) {
+            most = Math.max(most, world.advance().census().population().get("rabbit"));
+        }
+        assertThat(most).isGreaterThan(10);
+    }
+
+    @Test
     void anIllegalBreedChangesNothing() {
         World world = new World(3, 3, 1, List.of(TestSpecies.walker(new Intent.Breed())));
         world.submit(new Command.SpawnAt("walker", new GridPosition(1, 1)));
