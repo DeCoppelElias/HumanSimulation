@@ -53,6 +53,14 @@ describe("the API client", () => {
         expect(calls[0].init?.body).toBe("{}");
     });
 
+    test("fetches a world's setting declarations", async () => {
+        const calls: Call[] = [];
+        const api = createApi(fakeFetch(Response.json([]), calls));
+        expect(await api.settings("w1")).toEqual([]);
+        expect(calls[0].url).toBe("/worlds/w1/settings");
+        expect(calls[0].init?.method).toBe("GET");
+    });
+
     test("the world's id is encoded in the path", async () => {
         const calls: Call[] = [];
         const api = createApi(fakeFetch(Response.json([]), calls));

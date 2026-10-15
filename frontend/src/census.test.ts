@@ -2,7 +2,11 @@ import { describe, expect, test } from "vitest";
 import { firstGap, merge, receive, refreshed, speciesIn, toSeries } from "./census";
 import type { CensusRow } from "./types";
 
-const row = (day: number, rabbit = 10) => ({ day, population: { rabbit } });
+const row = (day: number, rabbit = 10): CensusRow => ({
+    day,
+    population: { rabbit },
+    geneMeans: {},
+});
 
 describe("the census history", () => {
     test("the next day appends", () => {
@@ -59,8 +63,8 @@ describe("the census history", () => {
 
     test("series are a day column and one column per species", () => {
         const history: CensusRow[] = [
-            { day: 1, population: { rabbit: 10, wolf: 1 } },
-            { day: 2, population: { rabbit: 12 } },
+            { day: 1, population: { rabbit: 10, wolf: 1 }, geneMeans: {} },
+            { day: 2, population: { rabbit: 12 }, geneMeans: {} },
         ];
         expect(speciesIn(history)).toEqual(["rabbit", "wolf"]);
         expect(toSeries(history, ["rabbit", "wolf"])).toEqual([

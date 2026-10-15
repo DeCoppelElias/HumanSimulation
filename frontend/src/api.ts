@@ -3,6 +3,7 @@ import type {
     Command,
     DayReport,
     PlayState,
+    SettingDeclaration,
     WorldSnapshot,
     WorldSummary,
 } from "./types";
@@ -57,6 +58,7 @@ export function createApi(fetchFn: typeof fetch = (input, init) => fetch(input, 
             json<PlayState>("PUT", `${world(id)}/rate`, { daysPerSecond }),
         census: (id: string, from: number) =>
             json<CensusRow[]>("GET", `${world(id)}/census?from=${from}`),
+        settings: (id: string) => json<SettingDeclaration[]>("GET", `${world(id)}/settings`),
         resetCensus: async (id: string) => {
             await request("DELETE", `${world(id)}/census`);
         },

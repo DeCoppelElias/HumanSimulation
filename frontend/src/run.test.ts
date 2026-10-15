@@ -9,6 +9,7 @@ const at = (seed: number, day: number): WorldSnapshot => ({
     height: 1,
     species: [],
     tiles: [],
+    settings: {},
 });
 
 describe("a new run", () => {
