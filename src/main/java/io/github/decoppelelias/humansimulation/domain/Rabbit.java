@@ -14,6 +14,7 @@ public final class Rabbit {
                 new GeneSpec.Scalar("hungerDrive", 0, 10, 0.4),
                 new GeneSpec.Scalar("rabbitPull", -2, 2, 0.1),
                 new GeneSpec.Scalar("whim", 0.05, 5, 0.1),
+                new GeneSpec.Scalar("breedPull", 0, 5, 0.2),
                 new GeneSpec.Scalar(World.SPEED, 0, 1, 0.05));
         Genome baseline = new Genome(
                 layout,
@@ -28,6 +29,8 @@ public final class Rabbit {
                         -0.2,
                         "whim",
                         0.5,
+                        "breedPull",
+                        1.0,
                         World.SPEED,
                         0.5));
         Settings settings = new Settings(List.of(
@@ -55,7 +58,7 @@ public final class Rabbit {
                         0.03),
                 new Setting.Scalar(
                         Metabolism.STARTING_RESERVE, "Reserve a spawned rabbit starts with, in days.", 0, 100, 1, 15),
-                new Setting.Scalar(World.STRIDE, "Farthest a rabbit can walk in one day, in tiles.", 1, 5, 1, 3)));
+                new Setting.Scalar(MoveRule.STRIDE, "Farthest a rabbit can walk in one day, in tiles.", 1, 5, 1, 3)));
         return new Species(
                 "rabbit", "rabbit", layout, baseline, settings, Optional.of(ScoringBrain::of), List.of(Metabolism::of));
     }

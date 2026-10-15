@@ -18,6 +18,7 @@ class RabbitTest {
                         new GeneSpec.Scalar("hungerDrive", 0, 10, 0.4),
                         new GeneSpec.Scalar("rabbitPull", -2, 2, 0.1),
                         new GeneSpec.Scalar("whim", 0.05, 5, 0.1),
+                        new GeneSpec.Scalar("breedPull", 0, 5, 0.2),
                         new GeneSpec.Scalar("speed", 0, 1, 0.05));
     }
 
@@ -25,6 +26,7 @@ class RabbitTest {
     void startsFromItsBaselineGenome() {
         assertThat(Rabbit.species().baseline().scalars())
                 .containsExactly(
+                        Map.entry("breedPull", 1.0),
                         Map.entry("grassPull", 1.0),
                         Map.entry("hungerDrive", 2.0),
                         Map.entry("rabbitPull", -0.2),

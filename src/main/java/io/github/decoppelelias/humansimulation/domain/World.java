@@ -16,7 +16,6 @@ import java.util.random.RandomGeneratorFactory;
 
 public final class World {
     private static final String ALGORITHM = "L64X128MixRandom";
-    static final String STRIDE = "stride";
     static final String SPEED = "speed";
 
     private final int width;
@@ -109,37 +108,21 @@ public final class World {
         List<Decision> decisions = new ArrayList<>();
         for (int id : entityIds()) {
             Entity entity = entities.get(id);
-            entity.brain().ifPresent(brain -> {
-                Options options = new Options(
-                        grid.directions(),
-                        landings(
-                                grid,
-                                entity.position(),
-                                table.of(entity.species().name())));
-                decisions.add(new Decision(
-                        id, brain.decide(CircularSense.perceive(entity, grid, entities), options, random)));
-            });
+            entity.brain()
+                    .ifPresent(brain -> decisions.add(new Decision(
+                            id,
+                            brain.decide(CircularSense.perceive(entity, grid, entities), options(entity), random))));
         }
         return decisions;
     }
 
-    /** Staying, then each direction one tile at a time up to the stride, stopping at the edge. */
-    static List<Options.Landing> landings(Grid grid, GridPosition from, SettingValues settings) {
-        List<Options.Landing> landings = new ArrayList<>();
-        landings.add(new Options.Landing(new Intent.Idle(), 0, 0));
-        int stride = settings.declares(STRIDE) ? settings.whole(STRIDE) : 0;
-        for (Direction direction : grid.directions()) {
-            GridPosition at = from;
-            for (int distance = 1; distance <= stride; distance++) {
-                at = grid.step(at, direction);
-                if (!grid.contains(at)) {
-                    break;
-                }
-                landings.add(new Options.Landing(
-                        new Intent.Move(direction, distance), at.x() - from.x(), at.y() - from.y()));
-            }
-        }
-        return landings;
+    /** Idling, then each rule's offer in a fixed order. Every action a creature can take is listed here. */
+    private Options options(Entity entity) {
+        List<Option> offered = new ArrayList<>();
+        offered.add(new Option.Idle());
+        offered.addAll(MoveRule.options(
+                grid, entity.position(), table.of(entity.species().name())));
+        return new Options(grid.directions(), offered);
     }
 
     /**
@@ -169,21 +152,10 @@ public final class World {
                 continue;
             }
             switch (decision.intent()) {
-                case Intent.Move move -> walk(entity, move);
+                case Intent.Move move -> MoveRule.resolve(grid, entity, move);
+                case Intent.Breed _ -> {}
                 case Intent.Idle _ -> {}
             }
-        }
-    }
-
-    private void walk(Entity entity, Intent.Move move) {
-        for (int i = 0; i < move.distance(); i++) {
-            GridPosition next = grid.step(entity.position(), move.direction());
-            if (!grid.contains(next)) {
-                return;
-            }
-            grid.remove(entity.id(), entity.position());
-            grid.place(entity.id(), next);
-            entity.moveTo(next);
         }
     }
 

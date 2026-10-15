@@ -63,7 +63,7 @@ final class TestSpecies {
             options.add(offered);
             return new Intent.Idle();
         };
-        Settings settings = new Settings(List.of(new Setting.Scalar(World.STRIDE, "Farthest walk.", 1, 5, 1, 3)));
+        Settings settings = new Settings(List.of(new Setting.Scalar(MoveRule.STRIDE, "Farthest walk.", 1, 5, 1, 3)));
         return new Species("recorder", "recorder", layout, baseline, settings, Optional.of(spawn -> brain), List.of());
     }
 }
