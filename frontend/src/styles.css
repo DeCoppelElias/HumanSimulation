@@ -42,3 +42,27 @@ footer {
     font-size: 12px;
     color: #666;
 }
+.settings {
+    grid-column: 1 / -1;
+}
+.settings-head {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+.settings fieldset {
+    margin: 8px 0;
+}
+.setting {
+    display: grid;
+    grid-template-columns: 10em 14em 4em 2em;
+    gap: 4px 8px;
+    align-items: center;
+}
+.setting small {
+    grid-column: 1 / -1;
+    color: #666;
+}
+.setting.edited .setting-name {
+    font-weight: bold;
+}
