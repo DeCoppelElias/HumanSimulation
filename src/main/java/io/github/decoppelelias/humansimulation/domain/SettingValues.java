@@ -1,6 +1,5 @@
 package io.github.decoppelelias.humansimulation.domain;
 
-import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -35,20 +34,11 @@ final class SettingValues {
         return (int) Math.round(current.get(key));
     }
 
-    /**
-     * Checks before it changes anything, so a refused value leaves the old one. A value the check let through within
-     * its tolerance is stored exactly on its step, so it never reads as edited when it is the default.
-     */
+    /** Checks before it changes anything, so a refused value leaves the old one. */
     void set(String key, double value) {
         Setting.Scalar scalar = declared.scalar(key);
         scalar.check(value);
-        long steps = Math.round((value - scalar.min()) / scalar.step());
-        // Decimal arithmetic, so 35 steps of 0.01 store as 0.35 rather than 0.35000000000000003.
-        current.put(
-                key,
-                BigDecimal.valueOf(scalar.min())
-                        .add(BigDecimal.valueOf(scalar.step()).multiply(BigDecimal.valueOf(steps)))
-                        .doubleValue());
+        current.put(key, scalar.onStep(value));
     }
 
     void restore(String key) {
