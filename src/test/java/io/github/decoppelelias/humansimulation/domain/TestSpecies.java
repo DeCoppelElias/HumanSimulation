@@ -61,20 +61,32 @@ final class TestSpecies {
                 List.of(spawn -> new Edible(() -> 5)));
     }
 
-    /** A species named "breeder" that breeds whenever offered and keeps the options it saw; it starts with 100. */
+    /**
+     * A species named "breeder" that breeds whenever offered, idles otherwise and keeps the options it saw. It starts
+     * with 100, walks one tile, and its view range spreads widely, so a child shows whose genome it came from.
+     */
     static Species breeder(List<Options> seen) {
-        List<GeneSpec> layout = List.of(new GeneSpec.Scalar("viewRange", 1, 10, 1.0));
-        Brain brain = (perception, options, random) -> {
+        return breeder((perception, options, random) -> {
             seen.add(options);
             return options.offered().contains(new Option.Breed()) ? new Intent.Breed() : new Intent.Idle();
-        };
+        });
+    }
+
+    /** A breeder whose brain asks to breed every day, offered or not. */
+    static Species eagerBreeder() {
+        return breeder((perception, options, random) -> new Intent.Breed());
+    }
+
+    private static Species breeder(Brain brain) {
+        List<GeneSpec> layout = List.of(new GeneSpec.Scalar("viewRange", 1, 10, 4.0));
         List<Setting> declared = new ArrayList<>(metabolism(1, 100).declared());
         declared.addAll(breeding().declared());
+        declared.add(new Setting.Scalar(MoveRule.STRIDE, "Farthest walk.", 1, 5, 1, 1));
         return new Species(
                 "breeder",
                 "breeder",
                 layout,
-                new Genome(layout, Map.of("viewRange", 1.0)),
+                new Genome(layout, Map.of("viewRange", 5.0)),
                 new Settings(declared),
                 Optional.of(spawn -> brain),
                 List.of(Metabolism::of, spawn -> new Fertility(spawn.day())));

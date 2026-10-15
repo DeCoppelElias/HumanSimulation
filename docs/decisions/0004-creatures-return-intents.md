@@ -134,8 +134,10 @@ perception's shape is [0013](0013-perception-is-one-type.md).
 The resolve step owns legality.
 
 Each action has one rule in the world, such as `MoveRule` and `BreedRule`, with
-two methods: `options(entity)` says what the action offers this creature today,
-and `resolve(entity, intent)` applies the chosen intent. The offer and the
+two methods: `options` says what the action offers a creature today, and
+`resolve` applies the chosen intent, each taking the creature and whatever else
+it reads, such as the grid or the day. The rules hold no state, since the world
+rebuilds its grid on a reset. The offer and the
 outcome live in one class, so they cannot drift apart, and they stay two checks,
 since the resolver runs after faster creatures have acted. The world's
 `options(entity)` calls each rule in the fixed order, and the resolve switch

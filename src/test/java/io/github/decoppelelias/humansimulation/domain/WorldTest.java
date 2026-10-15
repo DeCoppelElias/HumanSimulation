@@ -214,9 +214,10 @@ class WorldTest {
         }
         assertThat(seen)
                 .hasSize(15)
-                .allSatisfy(options -> assertThat(options.offered()).containsExactly(new Option.Idle()));
+                .allSatisfy(options -> assertThat(options.offered()).doesNotContain(new Option.Breed()));
         world.advance();
-        assertThat(seen.get(15).offered()).containsExactly(new Option.Idle(), new Option.Breed());
+        List<Option> offered = seen.get(15).offered();
+        assertThat(offered).hasSize(6).startsWith(new Option.Idle()).endsWith(new Option.Breed());
     }
 
     @Test
@@ -271,7 +272,7 @@ class WorldTest {
                     .orElseThrow()
                     .genome()
                     .scalar("viewRange");
-            assertThat(child).isBetween(Math.max(1, parent - 1), parent + 1);
+            assertThat(child).isBetween(Math.max(1, parent - 4), Math.min(10, parent + 4));
             differ += child != parent ? 1 : 0;
         }
         assertThat(differ).isGreaterThan(5);
@@ -291,9 +292,20 @@ class WorldTest {
 
     @Test
     void anIllegalBreedChangesNothing() {
-        World world = new World(3, 3, 1, List.of(TestSpecies.walker(new Intent.Breed())));
-        world.submit(new Command.SpawnAt("walker", new GridPosition(1, 1)));
-        assertThat(world.advance().census().population()).containsEntry("walker", 1);
+        World walkers = new World(3, 3, 1, List.of(TestSpecies.walker(new Intent.Breed())));
+        walkers.submit(new Command.SpawnAt("walker", new GridPosition(1, 1)));
+        assertThat(walkers.advance().census().population()).containsEntry("walker", 1);
+
+        World eager = new World(3, 3, 1, List.of(TestSpecies.eagerBreeder()));
+        eager.submit(new Command.SpawnAt("breeder", new GridPosition(1, 1)));
+        assertThat(eager.advance().census().population()).containsEntry("breeder", 1);
+        assertThat(reserveOf(eager, 0)).isEqualTo(99);
+        assertThat(eager.entity(0)
+                        .orElseThrow()
+                        .part(Fertility.class)
+                        .orElseThrow()
+                        .ownView())
+                .isEqualTo(new Fertility.Since(0));
     }
 
     @Test
