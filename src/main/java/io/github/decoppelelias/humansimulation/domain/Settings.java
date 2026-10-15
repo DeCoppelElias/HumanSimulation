@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-/** The settings a species or a world process declares. Every read goes through here, and reads the default. */
+/** The settings a species or a world process declares, with their defaults. A world holds the current values. */
 record Settings(List<Setting> declared) {
     static final Settings NONE = new Settings(List.of());
 
@@ -20,18 +20,6 @@ record Settings(List<Setting> declared) {
 
     boolean declares(String key) {
         return declared.stream().anyMatch(setting -> setting.key().equals(key));
-    }
-
-    double number(String key) {
-        return scalar(key).defaultValue();
-    }
-
-    int whole(String key) {
-        Setting.Scalar scalar = scalar(key);
-        if (!scalar.whole()) {
-            throw new IllegalArgumentException("setting " + key + " is not a whole number");
-        }
-        return (int) scalar.defaultValue();
     }
 
     Setting.Scalar scalar(String key) {

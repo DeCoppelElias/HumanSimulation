@@ -19,6 +19,6 @@ public final class Grass {
                 new Genome(List.of(), Map.of()),
                 settings,
                 Optional.empty(),
-                List.of(spawn -> new Edible(spawn.species().settings().number(NOURISHMENT))));
+                List.of(spawn -> new Edible(() -> spawn.settings().number(NOURISHMENT))));
     }
 }

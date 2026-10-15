@@ -10,11 +10,11 @@ final class Metabolism implements Component {
     /** The reserve counts days at the default charge; days left reads the live charge and interval. */
     record Own(double reserve, int daysLeft) {}
 
-    private final Settings settings;
+    private final SettingValues settings;
     private double reserve;
     private int daysSinceCharge;
 
-    Metabolism(Settings settings) {
+    Metabolism(SettingValues settings) {
         this.settings = settings;
         this.reserve = settings.number(STARTING_RESERVE);
     }

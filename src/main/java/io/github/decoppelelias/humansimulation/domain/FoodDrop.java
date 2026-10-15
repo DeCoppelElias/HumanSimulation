@@ -17,9 +17,8 @@ public record FoodDrop(String species) implements WorldProcess {
     }
 
     /** How many land at the end of the given day, counted from one. */
-    int dropsOn(int completedDay) {
-        Settings settings = settings();
-        return completedDay % settings.whole(interval()) == 0 ? settings.whole(perDrop()) : 0;
+    int dropsOn(int completedDay, SettingValues world) {
+        return completedDay % world.whole(interval()) == 0 ? world.whole(perDrop()) : 0;
     }
 
     private String perDrop() {

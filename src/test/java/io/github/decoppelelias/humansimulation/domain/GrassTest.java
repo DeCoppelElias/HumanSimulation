@@ -8,11 +8,13 @@ class GrassTest {
     @Test
     void isEdibleForItsNourishment() {
         Species grass = Grass.species();
-        assertThat(grass.settings().number("nourishment")).isEqualTo(15);
+        SettingValues values = new SettingValues(grass.settings());
+        assertThat(values.number("nourishment")).isEqualTo(15);
         assertThat(grass.parts())
                 .singleElement()
-                .satisfies(part -> assertThat(part.apply(new Spawn(grass.baseline(), grass)))
-                        .isEqualTo(new Edible(15)));
+                .satisfies(part -> assertThat(
+                                ((Edible) part.apply(new Spawn(grass.baseline(), grass, values))).amount())
+                        .isEqualTo(15));
     }
 
     @Test

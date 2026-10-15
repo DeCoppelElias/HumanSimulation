@@ -222,7 +222,7 @@ class WorldTest {
 
     @Test
     void aSpeciesWithNoStrideIsOfferedOnlyStaying() {
-        assertThat(World.landings(new Grid(5, 5), new GridPosition(2, 2), Settings.NONE))
+        assertThat(World.landings(new Grid(5, 5), new GridPosition(2, 2), new SettingValues(Settings.NONE)))
                 .extracting(Options.Landing::intent)
                 .containsExactly(new Intent.Idle());
     }

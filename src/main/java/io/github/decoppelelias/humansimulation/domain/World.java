@@ -18,6 +18,7 @@ public final class World {
     private final int height;
     private final SortedMap<String, Species> species;
     private final List<WorldProcess> processes;
+    private final SettingTable table;
     private final ArrayDeque<Command> pending = new ArrayDeque<>();
     private final List<LoggedCommand> log = new ArrayList<>();
     private final TreeMap<Integer, Entity> entities = new TreeMap<>();
@@ -42,6 +43,7 @@ public final class World {
                 case FoodDrop drop -> speciesNamed(drop.species());
             }
         }
+        this.table = new SettingTable(this.species.values(), this.processes);
         start(seed);
     }
 
@@ -95,7 +97,10 @@ public final class World {
             entity.brain().ifPresent(brain -> {
                 Options options = new Options(
                         grid.directions(),
-                        landings(grid, entity.position(), entity.species().settings()));
+                        landings(
+                                grid,
+                                entity.position(),
+                                table.of(entity.species().name())));
                 decisions.add(new Decision(
                         id, brain.decide(CircularSense.perceive(entity, grid, entities), options, random)));
             });
@@ -104,7 +109,7 @@ public final class World {
     }
 
     /** Staying, then each direction one tile at a time up to the stride, stopping at the edge. */
-    static List<Options.Landing> landings(Grid grid, GridPosition from, Settings settings) {
+    static List<Options.Landing> landings(Grid grid, GridPosition from, SettingValues settings) {
         List<Options.Landing> landings = new ArrayList<>();
         landings.add(new Options.Landing(new Intent.Idle(), 0, 0));
         int stride = settings.declares(STRIDE) ? settings.whole(STRIDE) : 0;
@@ -191,7 +196,7 @@ public final class World {
             switch (process) {
                 case FoodDrop drop -> {
                     Species kind = speciesNamed(drop.species());
-                    for (int i = drop.dropsOn(day + 1); i > 0; i--) {
+                    for (int i = drop.dropsOn(day + 1, table.of(SettingTable.WORLD)); i > 0; i--) {
                         place(kind, randomTile());
                     }
                 }
@@ -254,7 +259,7 @@ public final class World {
     }
 
     private void place(Species kind, GridPosition at) {
-        Spawn spawn = new Spawn(kind.baseline(), kind);
+        Spawn spawn = new Spawn(kind.baseline(), kind, table.of(kind.name()));
         Entity entity = new Entity(
                 nextId++,
                 kind,

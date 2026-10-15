@@ -36,7 +36,7 @@ final class TestSpecies {
                 new Genome(layout, Map.of("viewRange", 1.0)),
                 metabolism(interval, startingReserve),
                 Optional.of(spawn -> brain),
-                List.of(spawn -> new Metabolism(spawn.species().settings())));
+                List.of(spawn -> new Metabolism(spawn.settings())));
     }
 
     /** A species named "food", worth five, with no brain. */
@@ -48,7 +48,7 @@ final class TestSpecies {
                 new Genome(List.of(), Map.of()),
                 Settings.NONE,
                 Optional.empty(),
-                List.of(spawn -> new Edible(5)));
+                List.of(spawn -> new Edible(() -> 5)));
     }
 
     /** A species named "recorder", seeing one tile and walking up to three, whose brain idles and keeps its inputs. */

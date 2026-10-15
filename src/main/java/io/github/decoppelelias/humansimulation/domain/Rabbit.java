@@ -36,6 +36,6 @@ public final class Rabbit {
                 baseline,
                 settings,
                 Optional.of(ScoringBrain::of),
-                List.of(spawn -> new Metabolism(spawn.species().settings())));
+                List.of(spawn -> new Metabolism(spawn.settings())));
     }
 }

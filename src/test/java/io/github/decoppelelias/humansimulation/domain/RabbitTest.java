@@ -33,7 +33,7 @@ class RabbitTest {
 
     @Test
     void declaresItsSettings() {
-        Settings settings = Rabbit.species().settings();
+        SettingValues settings = new SettingValues(Rabbit.species().settings());
         assertThat(settings.whole("eatingInterval")).isEqualTo(1);
         assertThat(settings.number("eatingCharge")).isEqualTo(1);
         assertThat(settings.number("startingReserve")).isEqualTo(15);
@@ -43,7 +43,7 @@ class RabbitTest {
     @Test
     void isBornWithAMetabolismAndTheScoringBrain() {
         Species rabbit = Rabbit.species();
-        Spawn spawn = new Spawn(rabbit.baseline(), rabbit);
+        Spawn spawn = new Spawn(rabbit.baseline(), rabbit, new SettingValues(rabbit.settings()));
         assertThat(rabbit.brain())
                 .hasValueSatisfying(factory -> assertThat(factory.apply(spawn)).isInstanceOf(ScoringBrain.class));
         assertThat(rabbit.parts())
