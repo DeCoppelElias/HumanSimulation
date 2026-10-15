@@ -11,15 +11,69 @@ import org.junit.jupiter.api.Test;
 
 class CommandJsonTest {
     private static CommandJson.Body body(String type) {
+        return setting(type, Optional.empty(), Optional.empty(), Optional.empty());
+    }
+
+    private static CommandJson.Body setting(
+            String type, Optional<String> owner, Optional<String> key, Optional<Double> value) {
         return new CommandJson.Body(
-                Optional.of(type), Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
+                Optional.of(type),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                owner,
+                key,
+                value);
     }
 
     @Test
     void readsASpawn() {
         CommandJson.Body spawn = new CommandJson.Body(
-                Optional.of("spawn"), Optional.of("rabbit"), Optional.of(3), Optional.empty(), Optional.empty());
+                Optional.of("spawn"),
+                Optional.of("rabbit"),
+                Optional.of(3),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty());
         assertThat(CommandJson.toCommand(spawn, () -> 0L)).isEqualTo(new Command.Spawn("rabbit", 3));
+    }
+
+    @Test
+    void readsASetSetting() {
+        assertThat(CommandJson.toCommand(
+                        setting("setSetting", Optional.of("rabbit"), Optional.of("stride"), Optional.of(2.0)),
+                        () -> 0L))
+                .isEqualTo(new Command.SetSetting("rabbit", "stride", 2));
+    }
+
+    @Test
+    void readsARestoreOfEverythingAGroupOrOneSetting() {
+        assertThat(CommandJson.toCommand(body("restoreDefaults"), () -> 0L))
+                .isEqualTo(new Command.RestoreDefaults(Optional.empty(), Optional.empty()));
+        assertThat(CommandJson.toCommand(
+                        setting("restoreDefaults", Optional.of("rabbit"), Optional.empty(), Optional.empty()),
+                        () -> 0L))
+                .isEqualTo(new Command.RestoreDefaults(Optional.of("rabbit"), Optional.empty()));
+        assertThat(CommandJson.toCommand(
+                        setting("restoreDefaults", Optional.of("rabbit"), Optional.of("stride"), Optional.empty()),
+                        () -> 0L))
+                .isEqualTo(new Command.RestoreDefaults(Optional.of("rabbit"), Optional.of("stride")));
+    }
+
+    @Test
+    void aSetSettingNeedsAnOwnerAKeyAndAValue() {
+        assertThatThrownBy(() -> CommandJson.toCommand(
+                        setting("setSetting", Optional.of("rabbit"), Optional.of("stride"), Optional.empty()),
+                        () -> 0L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("value");
+        assertThatThrownBy(() -> CommandJson.toCommand(
+                        setting("setSetting", Optional.empty(), Optional.of("stride"), Optional.of(2.0)), () -> 0L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("owner");
     }
 
     @Test
@@ -29,6 +83,9 @@ class CommandJsonTest {
                 Optional.of("rabbit"),
                 Optional.empty(),
                 Optional.of(new GridPosition(3, 4)),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
                 Optional.empty());
         assertThat(CommandJson.toCommand(spawnAt, () -> 0L))
                 .isEqualTo(new Command.SpawnAt("rabbit", new GridPosition(3, 4)));
