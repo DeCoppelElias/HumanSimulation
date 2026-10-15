@@ -3,6 +3,7 @@ package io.github.decoppelelias.humansimulation.web;
 import io.github.decoppelelias.humansimulation.domain.CensusRow;
 import io.github.decoppelelias.humansimulation.domain.Command;
 import io.github.decoppelelias.humansimulation.domain.DayReport;
+import io.github.decoppelelias.humansimulation.domain.SettingDeclaration;
 import io.github.decoppelelias.humansimulation.domain.Species;
 import io.github.decoppelelias.humansimulation.domain.World;
 import io.github.decoppelelias.humansimulation.domain.WorldProcess;
@@ -45,6 +46,7 @@ final class WorldHost {
 
     private final String id;
     private final World world;
+    private final List<SettingDeclaration> declarations;
     private final ScheduledExecutorService thread;
     private final List<CensusRow> history = new ArrayList<>();
     private final Set<Viewer> viewers = new CopyOnWriteArraySet<>();
@@ -60,6 +62,7 @@ final class WorldHost {
     WorldHost(String id, int width, int height, long seed, List<Species> species, List<WorldProcess> processes) {
         this.id = id;
         this.world = new World(width, height, seed, species, processes);
+        this.declarations = world.declarations();
         this.thread = Executors.newSingleThreadScheduledExecutor(
                 Thread.ofPlatform().name("world-" + id).daemon().factory());
         this.latest = world.snapshot();
@@ -71,6 +74,11 @@ final class WorldHost {
 
     WorldSnapshot snapshot() {
         return latest;
+    }
+
+    /** Fixed for the world's life, so it is read without the world's thread. */
+    List<SettingDeclaration> declarations() {
+        return declarations;
     }
 
     Summary summary() {

@@ -457,6 +457,51 @@ class ApiTest {
         return client.post("/worlds/" + id + "/commands", json);
     }
 
+    @Test
+    void settingsListsTheDeclarationsWorldFirst() {
+        String id = newWorld();
+        JsonNode declarations = client.get("/worlds/" + id + "/settings").json();
+        assertThat(declarations.get(0).get("owner").asString()).isEqualTo("world");
+        assertThat(declarations.get(0).get("key").asString()).isEqualTo("grassPerDrop");
+        assertThat(declarations.get(0).get("description").asString()).isNotBlank();
+        assertThat(declarations.findValuesAsString("key")).contains("nourishment", "breedingLoss", "parentMargin");
+        assertThat(client.get("/worlds/nope/settings").status()).isEqualTo(404);
+    }
+
+    @Test
+    void aSettingEditShowsInTheSnapshot() {
+        String id = newWorld();
+        JsonNode edited = command(id, "{\"type\":\"setSetting\",\"owner\":\"rabbit\",\"key\":\"stride\",\"value\":2}")
+                .json();
+        assertThat(edited.get("settings").get("rabbit").get("stride").asDouble())
+                .isEqualTo(2);
+        JsonNode restored = command(id, "{\"type\":\"restoreDefaults\",\"owner\":\"rabbit\"}")
+                .json();
+        assertThat(restored.get("settings").get("rabbit").get("stride").asDouble())
+                .isEqualTo(3);
+    }
+
+    @Test
+    void aBadSettingIs400() {
+        String id = newWorld();
+        assertThat(command(id, "{\"type\":\"setSetting\",\"owner\":\"rabbit\",\"key\":\"stride\",\"value\":9}")
+                        .status())
+                .isEqualTo(400);
+        assertThat(command(id, "{\"type\":\"restoreDefaults\",\"key\":\"stride\"}")
+                        .status())
+                .isEqualTo(400);
+    }
+
+    @Test
+    void theCensusCarriesGeneMeans() {
+        String id = newWorld();
+        spawn(id, 3);
+        client.post("/worlds/" + id + "/step", "");
+        JsonNode row = client.get("/worlds/" + id + "/census").json().get(0);
+        assertThat(row.get("geneMeans").get("rabbit").get("breedPull").asDouble())
+                .isBetween(0.8, 1.2);
+    }
+
     private HttpTestClient.Response spawn(String id, int count) {
         return command(id, "{\"type\":\"spawn\",\"species\":\"rabbit\",\"count\":" + count + "}");
     }
