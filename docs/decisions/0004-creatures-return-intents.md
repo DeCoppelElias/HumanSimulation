@@ -135,11 +135,11 @@ The resolve step owns legality.
 
 Each action has one rule in the world, such as `MoveRule` and `BreedRule`, with
 two methods: `options` says what the action offers a creature today, and
-`resolve` applies the chosen intent, each taking the creature and whatever else
-it reads, such as the grid or the day. The rules hold no state, since the world
-rebuilds its grid on a reset. The offer and the
-outcome live in one class, so they cannot drift apart, and they stay two checks,
-since the resolver runs after faster creatures have acted. The world's
+`resolve` applies the chosen intent. Each takes what it reads, such as the
+creature, its position, the grid or the day, and holds no state, since the world
+rebuilds its grid on a reset. The offer and the outcome live in one class, so
+they cannot drift apart, and they stay two checks, since the resolver runs after
+faster creatures have acted. The world's
 `options(entity)` calls each rule in the fixed order, and the resolve switch
 hands each intent to its rule, so those two places list every action. Idling
 needs no rule, since it is always allowed and changes nothing. A component
