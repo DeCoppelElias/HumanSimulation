@@ -118,10 +118,11 @@ public final class World {
 
     /** Idling, then each rule's offer in a fixed order. Every action a creature can take is listed here. */
     private Options options(Entity entity) {
+        SettingValues settings = table.of(entity.species().name());
         List<Option> offered = new ArrayList<>();
         offered.add(new Option.Idle());
-        offered.addAll(MoveRule.options(
-                grid, entity.position(), table.of(entity.species().name())));
+        offered.addAll(MoveRule.options(grid, entity.position(), settings));
+        BreedRule.options(entity, settings, day).ifPresent(offered::add);
         return new Options(grid.directions(), offered);
     }
 
@@ -153,7 +154,13 @@ public final class World {
             }
             switch (decision.intent()) {
                 case Intent.Move move -> MoveRule.resolve(grid, entity, move);
-                case Intent.Breed _ -> {}
+                case Intent.Breed _ ->
+                    BreedRule.resolve(entity, table.of(entity.species().name()), day)
+                            .ifPresent(reserve -> place(
+                                    entity.species(),
+                                    entity.position(),
+                                    entity.genome().mutated(random),
+                                    Optional.of(reserve)));
                 case Intent.Idle _ -> {}
             }
         }
@@ -198,7 +205,7 @@ public final class World {
                     Species kind = speciesNamed(drop.species());
                     for (int i = drop.dropsOn(day + 1, table.of(SettingTable.WORLD)); i > 0; i--) {
                         GridPosition at = randomTile();
-                        place(kind, at, kind.baseline().mutated(random));
+                        place(kind, at, kind.baseline().mutated(random), Optional.empty());
                     }
                 }
             }
@@ -258,12 +265,12 @@ public final class World {
                 Species kind = speciesNamed(spawn.species());
                 for (int i = 0; i < spawn.count(); i++) {
                     GridPosition at = randomTile();
-                    place(kind, at, kind.baseline().mutated(random));
+                    place(kind, at, kind.baseline().mutated(random), Optional.empty());
                 }
             }
             case Command.SpawnAt spawnAt -> {
                 Species kind = speciesNamed(spawnAt.species());
-                place(kind, spawnAt.at(), kind.baseline().mutated(random));
+                place(kind, spawnAt.at(), kind.baseline().mutated(random), Optional.empty());
             }
             case Command.Reset reset -> start(reset.seed());
             case Command.SetSetting set -> table.set(set.owner(), set.key(), set.value());
@@ -271,8 +278,8 @@ public final class World {
         }
     }
 
-    private void place(Species kind, GridPosition at, Genome genome) {
-        Spawn spawn = new Spawn(genome, kind, table.of(kind.name()));
+    private void place(Species kind, GridPosition at, Genome genome, Optional<Double> reserve) {
+        Spawn spawn = new Spawn(genome, kind, table.of(kind.name()), day, reserve);
         Entity entity = new Entity(
                 nextId++,
                 kind,

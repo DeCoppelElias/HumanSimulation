@@ -1,5 +1,6 @@
 package io.github.decoppelelias.humansimulation.domain;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -58,6 +59,25 @@ final class TestSpecies {
                 Settings.NONE,
                 Optional.empty(),
                 List.of(spawn -> new Edible(() -> 5)));
+    }
+
+    /** A species named "breeder" that breeds whenever offered and keeps the options it saw; it starts with 100. */
+    static Species breeder(List<Options> seen) {
+        List<GeneSpec> layout = List.of(new GeneSpec.Scalar("viewRange", 1, 10, 1.0));
+        Brain brain = (perception, options, random) -> {
+            seen.add(options);
+            return options.offered().contains(new Option.Breed()) ? new Intent.Breed() : new Intent.Idle();
+        };
+        List<Setting> declared = new ArrayList<>(metabolism(1, 100).declared());
+        declared.addAll(breeding().declared());
+        return new Species(
+                "breeder",
+                "breeder",
+                layout,
+                new Genome(layout, Map.of("viewRange", 1.0)),
+                new Settings(declared),
+                Optional.of(spawn -> brain),
+                List.of(Metabolism::of, spawn -> new Fertility(spawn.day())));
     }
 
     /**

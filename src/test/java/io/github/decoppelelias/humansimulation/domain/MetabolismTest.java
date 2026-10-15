@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.within;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
 class MetabolismTest {
@@ -51,11 +52,21 @@ class MetabolismTest {
     @Test
     void aSpawnedMemberStartsFromTheStartingReserve() {
         Species eater = TestSpecies.eater(1, 15);
-        Metabolism metabolism = Metabolism.of(new Spawn(eater.baseline(), eater, new SettingValues(eater.settings())));
+        Metabolism metabolism = Metabolism.of(
+                new Spawn(eater.baseline(), eater, new SettingValues(eater.settings()), 0, Optional.empty()));
         assertThat(metabolism.ownView()).isEqualTo(new Metabolism.Own(15, 15));
         Species rabbit = Rabbit.species();
-        Metabolism charged = Metabolism.of(new Spawn(rabbit.baseline(), rabbit, new SettingValues(rabbit.settings())));
+        Metabolism charged = Metabolism.of(
+                new Spawn(rabbit.baseline(), rabbit, new SettingValues(rabbit.settings()), 0, Optional.empty()));
         assertThat(charged.ownView()).isEqualTo(new Metabolism.Own(15, 13));
+    }
+
+    @Test
+    void aChildStartsFromWhatItsParentPaid() {
+        Species eater = TestSpecies.eater(1, 15);
+        Metabolism metabolism = Metabolism.of(
+                new Spawn(eater.baseline(), eater, new SettingValues(eater.settings()), 3, Optional.of(14.0)));
+        assertThat(metabolism.ownView()).isEqualTo(new Metabolism.Own(14, 14));
     }
 
     @Test

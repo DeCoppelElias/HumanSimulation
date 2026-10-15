@@ -55,7 +55,7 @@ class RabbitTest {
     @Test
     void isBornWithAMetabolismAndTheScoringBrain() {
         Species rabbit = Rabbit.species();
-        Spawn spawn = new Spawn(rabbit.baseline(), rabbit, new SettingValues(rabbit.settings()));
+        Spawn spawn = new Spawn(rabbit.baseline(), rabbit, new SettingValues(rabbit.settings()), 0, Optional.empty());
         assertThat(rabbit.brain())
                 .hasValueSatisfying(factory -> assertThat(factory.apply(spawn)).isInstanceOf(ScoringBrain.class));
         assertThat(rabbit.parts())

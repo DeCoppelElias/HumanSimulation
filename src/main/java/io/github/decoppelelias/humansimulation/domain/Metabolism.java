@@ -23,8 +23,12 @@ final class Metabolism implements Component {
         this.reserve = reserve;
     }
 
+    /** A child starts from what its parent paid, a spawned member from the starting reserve. */
     static Metabolism of(Spawn spawn) {
-        return new Metabolism(spawn.settings(), spawn.genome(), spawn.settings().number(STARTING_RESERVE));
+        return new Metabolism(
+                spawn.settings(),
+                spawn.genome(),
+                spawn.reserve().orElseGet(() -> spawn.settings().number(STARTING_RESERVE)));
     }
 
     @Override

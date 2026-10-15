@@ -196,6 +196,94 @@ class WorldTest {
                 .isNotEqualTo(world.entity(21).orElseThrow().genome());
     }
 
+    private static double reserveOf(World world, int id) {
+        return world.entity(id)
+                .orElseThrow()
+                .part(Metabolism.class)
+                .orElseThrow()
+                .reserve();
+    }
+
+    @Test
+    void breedingIsOfferedOnlyOnceTheWindowOpens() {
+        List<Options> seen = new ArrayList<>();
+        World world = new World(3, 3, 1, List.of(TestSpecies.breeder(seen)));
+        world.submit(new Command.SpawnAt("breeder", new GridPosition(1, 1)));
+        for (int i = 0; i < 15; i++) {
+            world.advance();
+        }
+        assertThat(seen)
+                .hasSize(15)
+                .allSatisfy(options -> assertThat(options.offered()).containsExactly(new Option.Idle()));
+        world.advance();
+        assertThat(seen.get(15).offered()).containsExactly(new Option.Idle(), new Option.Breed());
+    }
+
+    @Test
+    void breedingSpawnsAChildOnItsParentsTile() {
+        World world = new World(3, 3, 1, List.of(TestSpecies.breeder(new ArrayList<>())));
+        world.submit(new Command.SpawnAt("breeder", new GridPosition(1, 1)));
+        DayReport report = world.advance();
+        for (int i = 1; i < 16; i++) {
+            report = world.advance();
+        }
+        assertThat(report.census().population()).containsEntry("breeder", 2);
+        assertThat(report.snapshot().tiles().get(4).entities())
+                .extracting(WorldSnapshot.EntityView::id)
+                .containsExactly(0, 1);
+        assertThat(reserveOf(world, 0)).isEqualTo(39);
+        assertThat(reserveOf(world, 1)).isEqualTo(14);
+    }
+
+    @Test
+    void aChildFirstActsTheDayAfterItsBirth() {
+        List<Options> seen = new ArrayList<>();
+        World world = new World(3, 3, 1, List.of(TestSpecies.breeder(seen)));
+        world.submit(new Command.SpawnAt("breeder", new GridPosition(1, 1)));
+        for (int i = 0; i < 16; i++) {
+            world.advance();
+        }
+        assertThat(seen).hasSize(16);
+        world.advance();
+        assertThat(seen).hasSize(18);
+    }
+
+    @Test
+    void aChildCarriesItsParentsGenomeMutated() {
+        World world = new World(5, 5, 1, List.of(TestSpecies.breeder(new ArrayList<>())));
+        for (int x = 0; x < 5; x++) {
+            for (int y = 0; y < 5; y++) {
+                world.submit(new Command.SpawnAt("breeder", new GridPosition(x, y)));
+            }
+        }
+        WorldSnapshot snapshot = world.applyPending();
+        for (int i = 0; i < 16; i++) {
+            snapshot = world.advance().snapshot();
+        }
+        int differ = 0;
+        for (WorldSnapshot.TileView tile : snapshot.tiles()) {
+            assertThat(tile.entities()).hasSize(2);
+            double parent = world.entity(tile.entities().get(0).id())
+                    .orElseThrow()
+                    .genome()
+                    .scalar("viewRange");
+            double child = world.entity(tile.entities().get(1).id())
+                    .orElseThrow()
+                    .genome()
+                    .scalar("viewRange");
+            assertThat(child).isBetween(Math.max(1, parent - 1), parent + 1);
+            differ += child != parent ? 1 : 0;
+        }
+        assertThat(differ).isGreaterThan(5);
+    }
+
+    @Test
+    void anIllegalBreedChangesNothing() {
+        World world = new World(3, 3, 1, List.of(TestSpecies.walker(new Intent.Breed())));
+        world.submit(new Command.SpawnAt("walker", new GridPosition(1, 1)));
+        assertThat(world.advance().census().population()).containsEntry("walker", 1);
+    }
+
     @Test
     void anEditReachesItsOwnWorldOnly() {
         World edited = new World(3, 3, 1, RABBITS);
