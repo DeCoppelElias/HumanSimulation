@@ -6,7 +6,7 @@ import java.util.Map;
 
 /** The sense a creature has when its species declares no other: everything within its view range. */
 final class CircularSense {
-    private static final String VIEW_RANGE = "viewRange";
+    static final String VIEW_RANGE = "viewRange";
 
     private CircularSense() {}
 

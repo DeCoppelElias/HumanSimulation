@@ -36,7 +36,7 @@ final class TestSpecies {
                 new Genome(layout, Map.of("viewRange", 1.0)),
                 metabolism(interval, startingReserve),
                 Optional.of(spawn -> brain),
-                List.of(spawn -> new Metabolism(spawn.settings())));
+                List.of(Metabolism::of));
     }
 
     /** A species named "food", worth five, with no brain. */

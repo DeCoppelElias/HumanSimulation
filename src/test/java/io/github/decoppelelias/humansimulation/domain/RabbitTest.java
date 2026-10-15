@@ -17,7 +17,8 @@ class RabbitTest {
                         new GeneSpec.Scalar("grassPull", 0, 5, 0.2),
                         new GeneSpec.Scalar("hungerDrive", 0, 10, 0.4),
                         new GeneSpec.Scalar("rabbitPull", -2, 2, 0.1),
-                        new GeneSpec.Scalar("whim", 0.05, 5, 0.1));
+                        new GeneSpec.Scalar("whim", 0.05, 5, 0.1),
+                        new GeneSpec.Scalar("speed", 0, 1, 0.05));
     }
 
     @Test
@@ -27,6 +28,7 @@ class RabbitTest {
                         Map.entry("grassPull", 1.0),
                         Map.entry("hungerDrive", 2.0),
                         Map.entry("rabbitPull", -0.2),
+                        Map.entry("speed", 0.5),
                         Map.entry("viewRange", 3.0),
                         Map.entry("whim", 0.5));
     }
@@ -38,6 +40,8 @@ class RabbitTest {
         assertThat(settings.number("eatingCharge")).isEqualTo(1);
         assertThat(settings.number("startingReserve")).isEqualTo(15);
         assertThat(settings.whole("stride")).isEqualTo(3);
+        assertThat(settings.number("speedCharge")).isEqualTo(0.1);
+        assertThat(settings.number("viewCharge")).isEqualTo(0.03);
     }
 
     @Test

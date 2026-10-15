@@ -6,17 +6,25 @@ final class Metabolism implements Component {
     static final String EATING_INTERVAL = "eatingInterval";
     static final String EATING_CHARGE = "eatingCharge";
     static final String STARTING_RESERVE = "startingReserve";
+    static final String SPEED_CHARGE = "speedCharge";
+    static final String VIEW_CHARGE = "viewCharge";
 
-    /** The reserve counts days at the default charge; days left reads the live charge and interval. */
+    /** The reserve, and the days left at the live charge and interval, genes included. */
     record Own(double reserve, int daysLeft) {}
 
     private final SettingValues settings;
+    private final Genome genome;
     private double reserve;
     private int daysSinceCharge;
 
-    Metabolism(SettingValues settings) {
+    Metabolism(SettingValues settings, Genome genome, double reserve) {
         this.settings = settings;
-        this.reserve = settings.number(STARTING_RESERVE);
+        this.genome = genome;
+        this.reserve = reserve;
+    }
+
+    static Metabolism of(Spawn spawn) {
+        return new Metabolism(spawn.settings(), spawn.genome(), spawn.settings().number(STARTING_RESERVE));
     }
 
     @Override
@@ -43,15 +51,27 @@ final class Metabolism implements Component {
         daysSinceCharge++;
         if (daysSinceCharge >= settings.whole(EATING_INTERVAL)) {
             daysSinceCharge = 0;
-            reserve -= settings.number(EATING_CHARGE);
+            reserve -= charge();
         }
         return reserve >= 0;
+    }
+
+    /** Eating, plus speed and the tiles in view where the species declares both the gene and its charge. */
+    private double charge() {
+        double charge = settings.number(EATING_CHARGE);
+        if (genome.declares(World.SPEED) && settings.declares(SPEED_CHARGE)) {
+            charge += genome.scalar(World.SPEED) * settings.number(SPEED_CHARGE);
+        }
+        if (genome.declares(CircularSense.VIEW_RANGE) && settings.declares(VIEW_CHARGE)) {
+            charge += Math.round(genome.scalar(CircularSense.VIEW_RANGE)) * settings.number(VIEW_CHARGE);
+        }
+        return charge;
     }
 
     /** The carrier survives every charge its reserve covers and dies at the next. */
     private int daysLeft() {
         int interval = settings.whole(EATING_INTERVAL);
-        long charges = (long) Math.floor(reserve / settings.number(EATING_CHARGE));
+        long charges = (long) Math.floor(reserve / charge());
         long days = charges * interval + Math.max(1, interval - daysSinceCharge) - 1;
         return (int) Math.min(Integer.MAX_VALUE, Math.max(0, days));
     }

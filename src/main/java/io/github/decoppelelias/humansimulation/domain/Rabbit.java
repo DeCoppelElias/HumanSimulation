@@ -13,10 +13,23 @@ public final class Rabbit {
                 new GeneSpec.Scalar("grassPull", 0, 5, 0.2),
                 new GeneSpec.Scalar("hungerDrive", 0, 10, 0.4),
                 new GeneSpec.Scalar("rabbitPull", -2, 2, 0.1),
-                new GeneSpec.Scalar("whim", 0.05, 5, 0.1));
+                new GeneSpec.Scalar("whim", 0.05, 5, 0.1),
+                new GeneSpec.Scalar(World.SPEED, 0, 1, 0.05));
         Genome baseline = new Genome(
                 layout,
-                Map.of("viewRange", 3.0, "grassPull", 1.0, "hungerDrive", 2.0, "rabbitPull", -0.2, "whim", 0.5));
+                Map.of(
+                        "viewRange",
+                        3.0,
+                        "grassPull",
+                        1.0,
+                        "hungerDrive",
+                        2.0,
+                        "rabbitPull",
+                        -0.2,
+                        "whim",
+                        0.5,
+                        World.SPEED,
+                        0.5));
         Settings settings = new Settings(List.of(
                 new Setting.Scalar(
                         Metabolism.EATING_INTERVAL,
@@ -27,15 +40,23 @@ public final class Rabbit {
                         1),
                 new Setting.Scalar(Metabolism.EATING_CHARGE, "Reserve a rabbit pays at each charge.", 1, 100, 1, 1),
                 new Setting.Scalar(
+                        Metabolism.SPEED_CHARGE,
+                        "Reserve a rabbit pays per unit of speed at each charge.",
+                        0,
+                        2,
+                        0.01,
+                        0.1),
+                new Setting.Scalar(
+                        Metabolism.VIEW_CHARGE,
+                        "Reserve a rabbit pays per tile of view at each charge.",
+                        0,
+                        1,
+                        0.01,
+                        0.03),
+                new Setting.Scalar(
                         Metabolism.STARTING_RESERVE, "Reserve a spawned rabbit starts with, in days.", 0, 100, 1, 15),
                 new Setting.Scalar(World.STRIDE, "Farthest a rabbit can walk in one day, in tiles.", 1, 5, 1, 3)));
         return new Species(
-                "rabbit",
-                "rabbit",
-                layout,
-                baseline,
-                settings,
-                Optional.of(ScoringBrain::of),
-                List.of(spawn -> new Metabolism(spawn.settings())));
+                "rabbit", "rabbit", layout, baseline, settings, Optional.of(ScoringBrain::of), List.of(Metabolism::of));
     }
 }
