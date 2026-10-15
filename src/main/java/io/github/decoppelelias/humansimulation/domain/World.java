@@ -3,17 +3,21 @@ package io.github.decoppelelias.humansimulation.domain;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalDouble;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.function.IntFunction;
 import java.util.random.RandomGenerator;
 import java.util.random.RandomGeneratorFactory;
 
 public final class World {
     private static final String ALGORITHM = "L64X128MixRandom";
     static final String STRIDE = "stride";
+    static final String SPEED = "speed";
 
     private final int width;
     private final int height;
@@ -60,7 +64,7 @@ public final class World {
 
     public DayReport advance() {
         drain();
-        List<Decision> order = dayOrder(decide(), random);
+        List<Decision> order = dayOrder(decide(), this::speedOf, random);
         resolve(order);
         feed(order);
         metabolise();
@@ -138,11 +142,24 @@ public final class World {
         return landings;
     }
 
-    /** Shuffled from id order with the world's generator, so the draw replays. */
-    static List<Decision> dayOrder(List<Decision> decisions, RandomGenerator random) {
+    /**
+     * Shuffled from id order with the world's generator, so the draw replays, then sorted fastest first. The sort is
+     * stable, so equal speeds keep the shuffle, and anything without a speed gene goes last.
+     */
+    static List<Decision> dayOrder(
+            List<Decision> decisions, IntFunction<OptionalDouble> speedOf, RandomGenerator random) {
         List<Decision> order = new ArrayList<>(decisions);
         Collections.shuffle(order, random);
+        order.sort(Comparator.comparingDouble(decision -> {
+            OptionalDouble speed = speedOf.apply(decision.entityId());
+            return speed.isPresent() ? -speed.getAsDouble() : Double.POSITIVE_INFINITY;
+        }));
         return order;
+    }
+
+    private OptionalDouble speedOf(int id) {
+        Genome genome = entities.get(id).genome();
+        return genome.declares(SPEED) ? OptionalDouble.of(genome.scalar(SPEED)) : OptionalDouble.empty();
     }
 
     private void resolve(List<Decision> order) {

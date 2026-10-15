@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalDouble;
 import java.util.random.RandomGeneratorFactory;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
@@ -337,16 +338,58 @@ class WorldTest {
         int stillInIdOrder = 0;
         for (long seed = 0; seed < 20; seed++) {
             List<Decision> order = World.dayOrder(
-                    byId, RandomGeneratorFactory.of("L64X128MixRandom").create(seed));
+                    byId,
+                    id -> OptionalDouble.empty(),
+                    RandomGeneratorFactory.of("L64X128MixRandom").create(seed));
             assertThat(order).containsExactlyInAnyOrderElementsOf(byId);
             assertThat(order)
                     .isEqualTo(World.dayOrder(
-                            byId, RandomGeneratorFactory.of("L64X128MixRandom").create(seed)));
+                            byId,
+                            id -> OptionalDouble.empty(),
+                            RandomGeneratorFactory.of("L64X128MixRandom").create(seed)));
             if (order.equals(byId)) {
                 stillInIdOrder++;
             }
         }
         assertThat(stillInIdOrder).isZero();
+    }
+
+    private static List<Decision> idle(int count) {
+        return IntStream.range(0, count)
+                .mapToObj(id -> new Decision(id, new Intent.Idle()))
+                .toList();
+    }
+
+    @Test
+    void theFasterActFirst() {
+        List<Decision> order = World.dayOrder(
+                idle(6),
+                id -> OptionalDouble.of(id * 0.1),
+                RandomGeneratorFactory.of("L64X128MixRandom").create(1));
+        assertThat(order).extracting(Decision::entityId).containsExactly(5, 4, 3, 2, 1, 0);
+    }
+
+    @Test
+    void equalSpeedsAreDrawnAtRandom() {
+        int stillInIdOrder = 0;
+        for (long seed = 0; seed < 20; seed++) {
+            List<Decision> order = World.dayOrder(
+                    idle(10),
+                    id -> OptionalDouble.of(0.5),
+                    RandomGeneratorFactory.of("L64X128MixRandom").create(seed));
+            stillInIdOrder += order.equals(idle(10)) ? 1 : 0;
+        }
+        assertThat(stillInIdOrder).isZero();
+    }
+
+    @Test
+    void withoutASpeedGeneActsLast() {
+        List<Decision> order = World.dayOrder(
+                idle(4),
+                id -> id >= 2 ? OptionalDouble.of(id) : OptionalDouble.empty(),
+                RandomGeneratorFactory.of("L64X128MixRandom").create(3));
+        assertThat(order).extracting(Decision::entityId).startsWith(3, 2);
+        assertThat(order.subList(2, 4)).extracting(Decision::entityId).containsExactlyInAnyOrder(0, 1);
     }
 
     @Test
