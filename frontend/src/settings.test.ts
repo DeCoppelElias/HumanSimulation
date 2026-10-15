@@ -72,17 +72,35 @@ describe("the settings panel", () => {
         });
     });
 
-    test("a release on the snapshot's value, or with no draft, sends nothing", () => {
+    test("a release on the value last sent, or with no draft, sends nothing", () => {
         const values = { rabbit: { viewCharge: 0.05 } };
         expect(release({ "rabbit.viewCharge": 0.05 }, {}, charge, values)).toEqual({
             drafts: {},
             pending: {},
             command: null,
         });
+        expect(
+            release({ "rabbit.viewCharge": 0.06 }, { "rabbit.viewCharge": 0.06 }, charge, values),
+        ).toEqual({
+            drafts: {},
+            pending: { "rabbit.viewCharge": 0.06 },
+            command: null,
+        });
         expect(release({}, { "rabbit.viewCharge": 0.06 }, charge, values)).toEqual({
             drafts: {},
             pending: { "rabbit.viewCharge": 0.06 },
             command: null,
+        });
+    });
+
+    test("dragging back to the snapshot's value before the world shows the last one sends it", () => {
+        const values = { rabbit: { viewCharge: 0.05 } };
+        expect(
+            release({ "rabbit.viewCharge": 0.05 }, { "rabbit.viewCharge": 0.06 }, charge, values),
+        ).toEqual({
+            drafts: {},
+            pending: { "rabbit.viewCharge": 0.05 },
+            command: { type: "setSetting", owner: "rabbit", key: "viewCharge", value: 0.05 },
         });
     });
 

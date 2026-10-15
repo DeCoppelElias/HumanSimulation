@@ -69,7 +69,7 @@ export function formatValue(value: number, declaration: SettingDeclaration): str
     return value.toFixed(decimals(declaration));
 }
 
-/** A released slider sends its draft once, on its step, and holds it as pending; nothing when it ends where it began. */
+/** A released slider sends its draft once, on its step, and holds it as pending; nothing when it ends on the value last sent. */
 export function release(
     drafts: Held,
     pending: Held,
@@ -83,8 +83,8 @@ export function release(
         return { drafts: remaining, pending, command: null };
     }
     const value = onStep(draft, declaration);
-    if (value === currentValue(declaration, values)) {
-        return { drafts: remaining, pending: withoutKey(pending, key), command: null };
+    if (value === (pending[key] ?? currentValue(declaration, values))) {
+        return { drafts: remaining, pending, command: null };
     }
     return {
         drafts: remaining,
