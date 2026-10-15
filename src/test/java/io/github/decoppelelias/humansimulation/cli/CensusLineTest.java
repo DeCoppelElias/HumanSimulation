@@ -9,19 +9,19 @@ import org.junit.jupiter.api.Test;
 class CensusLineTest {
     @Test
     void writesTheSeedTheDayAndThePopulation() {
-        assertThat(CensusLine.format(42, new CensusRow(1, Map.of("rabbit", 10))))
+        assertThat(CensusLine.format(42, new CensusRow(1, Map.of("rabbit", 10), Map.of())))
                 .isEqualTo("{\"seed\":42,\"day\":1,\"population\":{\"rabbit\":10}}");
     }
 
     @Test
     void listsSpeciesByName() {
-        assertThat(CensusLine.format(-3, new CensusRow(7, Map.of("wolf", 0, "rabbit", 4))))
+        assertThat(CensusLine.format(-3, new CensusRow(7, Map.of("wolf", 0, "rabbit", 4), Map.of())))
                 .isEqualTo("{\"seed\":-3,\"day\":7,\"population\":{\"rabbit\":4,\"wolf\":0}}");
     }
 
     @Test
     void escapesQuotesAndBackslashesInNames() {
-        assertThat(CensusLine.format(1, new CensusRow(1, Map.of("a\"b\\c", 1))))
+        assertThat(CensusLine.format(1, new CensusRow(1, Map.of("a\"b\\c", 1), Map.of())))
                 .isEqualTo("{\"seed\":1,\"day\":1,\"population\":{\"a\\\"b\\\\c\":1}}");
     }
 }

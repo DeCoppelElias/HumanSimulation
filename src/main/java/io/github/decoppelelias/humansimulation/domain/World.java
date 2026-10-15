@@ -216,15 +216,40 @@ public final class World {
         return new GridPosition(random.nextInt(width), random.nextInt(height));
     }
 
+    /** A species with no members or no genes has no means, since a zero would read as a real one. */
     private CensusRow census() {
         Map<String, Integer> population = new TreeMap<>();
+        Map<String, List<Genome>> genomes = new TreeMap<>();
         for (String name : species.keySet()) {
             population.put(name, 0);
+            genomes.put(name, new ArrayList<>());
         }
         for (int id : entityIds()) {
-            population.merge(entities.get(id).species().name(), 1, Integer::sum);
+            Entity entity = entities.get(id);
+            population.merge(entity.species().name(), 1, Integer::sum);
+            genomes.get(entity.species().name()).add(entity.genome());
         }
-        return new CensusRow(day, population);
+        Map<String, Map<String, Double>> means = new TreeMap<>();
+        genomes.forEach((name, members) -> {
+            List<GeneSpec> layout = species.get(name).geneLayout();
+            if (members.isEmpty() || layout.isEmpty()) {
+                return;
+            }
+            Map<String, Double> mean = new TreeMap<>();
+            for (GeneSpec spec : layout) {
+                switch (spec) {
+                    case GeneSpec.Scalar scalar ->
+                        mean.put(
+                                scalar.key(),
+                                members.stream()
+                                        .mapToDouble(genome -> genome.scalar(scalar.key()))
+                                        .average()
+                                        .orElseThrow());
+                }
+            }
+            means.put(name, mean);
+        });
+        return new CensusRow(day, population, means);
     }
 
     private List<Integer> entityIds() {

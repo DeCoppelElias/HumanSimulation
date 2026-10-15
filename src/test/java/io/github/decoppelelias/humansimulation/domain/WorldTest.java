@@ -2,6 +2,7 @@ package io.github.decoppelelias.humansimulation.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.within;
 import static org.assertj.core.groups.Tuple.tuple;
 
 import java.util.ArrayList;
@@ -112,7 +113,24 @@ class WorldTest {
         world.submit(new Command.Spawn("rabbit", 3));
         DayReport report = world.advance();
         assertThat(report.snapshot().day()).isEqualTo(1);
-        assertThat(report.census()).isEqualTo(new CensusRow(1, Map.of("rabbit", 3)));
+        assertThat(report.census().day()).isEqualTo(1);
+        assertThat(report.census().population()).isEqualTo(Map.of("rabbit", 3));
+    }
+
+    @Test
+    void theCensusAveragesEachGenePerSpecies() {
+        World world = new World(
+                3, 3, 1, List.of(TestSpecies.walker(new Intent.Idle()), TestSpecies.food(), TestSpecies.eater(1, 50)));
+        world.submit(new Command.SpawnAt("walker", new GridPosition(0, 0)));
+        world.submit(new Command.SpawnAt("walker", new GridPosition(1, 0)));
+        world.submit(new Command.SpawnAt("food", new GridPosition(2, 0)));
+        CensusRow row = world.advance().census();
+        double expected = (world.entity(0).orElseThrow().genome().scalar("viewRange")
+                        + world.entity(1).orElseThrow().genome().scalar("viewRange"))
+                / 2;
+        assertThat(row.geneMeans()).containsOnlyKeys("walker");
+        assertThat(row.geneMeans().get("walker")).containsOnlyKeys("viewRange");
+        assertThat(row.geneMeans().get("walker").get("viewRange")).isCloseTo(expected, within(1e-12));
     }
 
     @Test
