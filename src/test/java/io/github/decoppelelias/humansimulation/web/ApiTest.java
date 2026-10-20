@@ -464,6 +464,7 @@ class ApiTest {
         assertThat(declarations.get(0).get("owner").asString()).isEqualTo("world");
         assertThat(declarations.get(0).get("key").asString()).isEqualTo("grassPerDrop");
         assertThat(declarations.get(0).get("description").asString()).isNotBlank();
+        assertThat(declarations.findValuesAsString("shape")).containsOnly("scalar");
         assertThat(declarations.findValuesAsString("owner"))
                 .startsWith("world", "world", "grass", "rabbit")
                 .containsOnly("world", "grass", "rabbit");

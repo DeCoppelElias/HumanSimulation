@@ -15,6 +15,24 @@ class SettingValuesTest {
     }
 
     @Test
+    void aToggleReadsAsOnOrOff() {
+        SettingValues values =
+                new SettingValues(new Settings(List.of(new Setting.Toggle("mutation", "Mutate.", true))));
+        assertThat(values.on("mutation")).isTrue();
+        values.set("mutation", 0);
+        assertThat(values.on("mutation")).isFalse();
+        values.restoreAll();
+        assertThat(values.on("mutation")).isTrue();
+    }
+
+    @Test
+    void aScalarIsNotAToggle() {
+        assertThatThrownBy(() -> values().on("stride"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("stride");
+    }
+
+    @Test
     void startsAtTheDefaults() {
         SettingValues values = values();
         assertThat(values.whole("stride")).isEqualTo(3);

@@ -24,7 +24,7 @@ class SettingTableTest {
                 .startsWith("world", "world", "grass", "rabbit");
         assertThat(table.declarations().getFirst())
                 .isEqualTo(new SettingDeclaration(
-                        "world", "grassPerDrop", "How many grass land in each drop.", 1, 100, 1, 7));
+                        "world", "grassPerDrop", "scalar", "How many grass land in each drop.", 1, 100, 1, 7));
     }
 
     @Test

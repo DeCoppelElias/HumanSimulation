@@ -71,13 +71,10 @@ final class SettingTable {
         List<Command.SetSetting> edits = new ArrayList<>();
         owners.forEach((owner, values) -> {
             for (Setting setting : values.declared().declared()) {
-                switch (setting) {
-                    case Setting.Scalar scalar -> {
-                        double value = values.number(scalar.key());
-                        if (value != scalar.defaultValue()) {
-                            edits.add(new Command.SetSetting(owner, scalar.key(), value));
-                        }
-                    }
+                Setting.Scalar scalar = values.declared().scalar(setting.key());
+                double value = values.number(scalar.key());
+                if (value != scalar.defaultValue()) {
+                    edits.add(new Command.SetSetting(owner, scalar.key(), value));
                 }
             }
         });
@@ -94,17 +91,21 @@ final class SettingTable {
         List<SettingDeclaration> declarations = new ArrayList<>();
         owners.forEach((owner, values) -> {
             for (Setting setting : values.declared().declared()) {
-                switch (setting) {
-                    case Setting.Scalar scalar ->
-                        declarations.add(new SettingDeclaration(
-                                owner,
-                                scalar.key(),
-                                scalar.description(),
-                                scalar.min(),
-                                scalar.max(),
-                                scalar.step(),
-                                scalar.defaultValue()));
-                }
+                Setting.Scalar scalar = values.declared().scalar(setting.key());
+                String shape =
+                        switch (setting) {
+                            case Setting.Scalar _ -> "scalar";
+                            case Setting.Toggle _ -> "toggle";
+                        };
+                declarations.add(new SettingDeclaration(
+                        owner,
+                        scalar.key(),
+                        shape,
+                        scalar.description(),
+                        scalar.min(),
+                        scalar.max(),
+                        scalar.step(),
+                        scalar.defaultValue()));
             }
         });
         return List.copyOf(declarations);
