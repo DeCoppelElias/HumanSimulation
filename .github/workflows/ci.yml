@@ -31,9 +31,9 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Check the docs agree with each other
+      - name: Check the docs agree with each other, and test the tools
         shell: bash
-        run: python tools/docs-check.py && python tools/test_docs_check.py
+        run: python tools/docs-check.py && python tools/test_docs_check.py && python tools/test_compare.py
 
       - name: Build, check formatting and run tests
         # bash on both runners, so ./mvnw is the same command everywhere.

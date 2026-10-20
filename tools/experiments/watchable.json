@@ -1,0 +1,8 @@
+{
+  "about": "The world the page starts from, with no ramp. Entry 7 expects rabbits alive on day 1000 in at least 8 of 10 seeds.",
+  "seeds": "1-10",
+  "days": 1000,
+  "variants": {
+    "defaults": []
+  }
+}

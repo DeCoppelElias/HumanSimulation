@@ -2,10 +2,24 @@
 
 It reports and never judges. What a result should show is written on the
 roadmap entry that runs it.
+
+    python tools/compare.py tools/experiments/selection-gate.json
+    python tools/compare.py --seeds 1-3 --days 200 --variant base= --variant cheap="--set rabbit.speedCharge=0.05"
+
+It needs the jar, from ./mvnw package -Pskip-frontend.
 """
 
+import argparse
+import concurrent.futures
 import json
+import os
+import shlex
 import statistics
+import subprocess
+import sys
+from pathlib import Path
+
+DEFAULT_JAR = Path(__file__).resolve().parent.parent / "target" / "HumanSimulation.jar"
 
 
 def parse_seeds(text):
@@ -144,3 +158,79 @@ def format_text(reports, per_seed):
                     out.append(f"{variant} {seed} day {run['measuredOn']}: {genes}")
         out.append("")
     return "\n".join(out)
+
+
+def parse_args(argv):
+    parser = argparse.ArgumentParser(description="Run variants of a world over seeds and report how each fared.")
+    parser.add_argument("preset", nargs="?", help="a JSON preset, such as tools/experiments/selection-gate.json")
+    parser.add_argument("--seeds", help="an inclusive range such as 1-10")
+    parser.add_argument("--days", type=int)
+    parser.add_argument("--flags", default="", help="run flags shared by every variant, quoted")
+    parser.add_argument("--variant", action="append", default=[], help='NAME="run flags", repeatable')
+    parser.add_argument("--species", action="append", help="report only these, repeatable")
+    parser.add_argument("--floor", type=int, default=5, help="fewest members for gene means to count")
+    parser.add_argument("--jobs", type=int, default=os.cpu_count())
+    parser.add_argument("--jar", default=str(DEFAULT_JAR))
+    parser.add_argument("--json", action="store_true")
+    parser.add_argument("--per-seed", action="store_true")
+    return parser.parse_args(argv)
+
+
+def plan(preset, args):
+    shared = list(preset.get("flags", [])) + shlex.split(args.flags)
+    if args.variant:
+        own = {}
+        for entry in args.variant:
+            name, _, flags = entry.partition("=")
+            own[name] = shlex.split(flags)
+    else:
+        own = preset.get("variants", {})
+    if not own:
+        raise ValueError("no variants: give a preset or --variant NAME=FLAGS")
+    seeds = args.seeds or preset.get("seeds")
+    days = args.days or preset.get("days")
+    if seeds is None or days is None:
+        raise ValueError("seeds and days come from the preset or --seeds and --days")
+    return {
+        "seeds": parse_seeds(seeds),
+        "days": days,
+        "variants": {name: shared + list(flags) for name, flags in own.items()},
+        "species": args.species or preset.get("species"),
+    }
+
+
+def command(jar, seed, days, flags):
+    return ["java", "-jar", str(jar), "run", "--seed", str(seed), "--days", str(days), *flags]
+
+
+def run_world(jar, seed, days, flags):
+    done = subprocess.run(command(jar, seed, days, flags), capture_output=True, text=True)
+    if done.returncode != 0:
+        raise RuntimeError(f"seed {seed} with {' '.join(flags) or 'no flags'}: {done.stderr.strip()}")
+    return done.stdout.splitlines()
+
+
+def main(argv):
+    args = parse_args(argv)
+    preset = json.loads(Path(args.preset).read_text(encoding="utf-8")) if args.preset else {}
+    chosen = plan(preset, args)
+    if not Path(args.jar).exists():
+        sys.exit(f"no jar at {args.jar}; build it with ./mvnw package -Pskip-frontend")
+    variants, seeds = list(chosen["variants"]), chosen["seeds"]
+    with concurrent.futures.ThreadPoolExecutor(max_workers=args.jobs) as pool:
+        futures = {
+            (variant, seed): pool.submit(run_world, args.jar, seed, chosen["days"], chosen["variants"][variant])
+            for variant in variants
+            for seed in seeds
+        }
+        lines = {key: future.result() for key, future in futures.items()}
+    species = chosen["species"] or species_in(next(iter(lines.values())))
+    reports = {}
+    for one in species:
+        results = {key: summarise(found, one, args.floor) for key, found in lines.items()}
+        reports[one] = report(results, variants, seeds, one)
+    print(json.dumps(reports, indent=2) if args.json else format_text(reports, args.per_seed))
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])

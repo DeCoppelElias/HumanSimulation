@@ -1,0 +1,17 @@
+{
+  "about": "Entry 7's gate: rabbits that mutate against clones that cannot, as grass per drop falls from 7 to 1. Expectations are in docs/roadmap/07-rabbit-learns.md.",
+  "seeds": "1-10",
+  "days": 1000,
+  "flags": [
+    "--set-at", "100:world.grassPerDrop=6",
+    "--set-at", "200:world.grassPerDrop=5",
+    "--set-at", "300:world.grassPerDrop=4",
+    "--set-at", "400:world.grassPerDrop=3",
+    "--set-at", "500:world.grassPerDrop=2",
+    "--set-at", "600:world.grassPerDrop=1"
+  ],
+  "variants": {
+    "control": ["--set", "world.mutation=0"],
+    "mutating": []
+  }
+}

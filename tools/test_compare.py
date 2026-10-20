@@ -115,5 +115,41 @@ class TextTest(unittest.TestCase):
         self.assertNotIn("pass", text.lower())
 
 
+class PresetTest(unittest.TestCase):
+    PRESET = {
+        "seeds": "1-10",
+        "days": 1000,
+        "flags": ["--set-at", "100:world.grassPerDrop=6"],
+        "variants": {"control": ["--set", "world.mutation=0"], "mutating": []},
+    }
+
+    def test_flags_override_the_preset(self):
+        chosen = compare.plan(self.PRESET, compare.parse_args(["--seeds", "11-12", "--days", "50"]))
+        self.assertEqual(chosen["seeds"], [11, 12])
+        self.assertEqual(chosen["days"], 50)
+
+    def test_each_variant_gets_the_shared_flags_and_only_its_own(self):
+        chosen = compare.plan(self.PRESET, compare.parse_args([]))
+        self.assertEqual(
+            chosen["variants"],
+            {
+                "control": ["--set-at", "100:world.grassPerDrop=6", "--set", "world.mutation=0"],
+                "mutating": ["--set-at", "100:world.grassPerDrop=6"],
+            },
+        )
+
+    def test_variants_on_the_command_line_replace_the_presets(self):
+        args = compare.parse_args(["--variant", "cheap=--set rabbit.speedCharge=0.05", "--variant", "base="])
+        chosen = compare.plan(self.PRESET, args)
+        self.assertEqual(list(chosen["variants"]), ["cheap", "base"])
+        self.assertEqual(chosen["variants"]["base"], ["--set-at", "100:world.grassPerDrop=6"])
+
+    def test_a_run_command_names_the_seed_days_and_flags(self):
+        self.assertEqual(
+            compare.command("app.jar", 3, 20, ["--set", "world.mutation=0"]),
+            ["java", "-jar", "app.jar", "run", "--seed", "3", "--days", "20", "--set", "world.mutation=0"],
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
