@@ -131,17 +131,27 @@ class TextTest(unittest.TestCase):
         self.assertIn("mutating later than control: 1 of 1, ties 0, earlier 0", text)
         self.assertNotIn("pass", text.lower())
 
-    def test_counts_survivors_per_variant(self):
-        results = {("defaults", 1): run(None), ("defaults", 2): run(300), ("defaults", 3): run(None)}
-        text = compare.format_text({"rabbit": compare.report(results, ["defaults"], [1, 2, 3], "rabbit")}, False)
-        self.assertIn("defaults alive at the end: 2 of 3", text)
+    def test_counts_survivors_per_variant_and_shows_an_absent_run(self):
+        results = {
+            ("defaults", 1): run(None),
+            ("defaults", 2): run(300),
+            ("defaults", 3): run(None),
+            ("defaults", 4): run(0),
+        }
+        text = compare.format_text(
+            {"rabbit": compare.report(results, ["defaults"], [1, 2, 3, 4], "rabbit")}, False
+        )
+        self.assertIn("defaults alive at the end: 2 of 4", text)
+        self.assertRegex(text, r"\n4 +absent\n")
 
     def test_per_seed_names_each_gene_and_a_run_that_never_reached_the_floor(self):
         thin = dict(run(40), measuredOn=None, genes={})
         results = {("mutating", 1): run(None, speed=0.95), ("mutating", 2): thin}
-        text = compare.format_text({"rabbit": compare.report(results, ["mutating"], [1, 2], "rabbit")}, True)
+        text = compare.format_text(
+            {"rabbit": compare.report(results, ["mutating"], [1, 2], "rabbit", floor=7)}, True
+        )
         self.assertIn("mutating 1 day 100: speed=0.95", text)
-        self.assertIn("mutating 2 never had 5 or more", text)
+        self.assertIn("mutating 2 never had 7 or more", text)
 
 
 class RunFailureTest(unittest.TestCase):
@@ -156,6 +166,10 @@ class RunFailureTest(unittest.TestCase):
         with self.assertRaises(compare.RunFailed) as caught:
             compare.check_output("bad", 1, 2, "", "\x1b[31m\x1b[1mno setting wings\x1b[21m\x1b[0m\nUsage: run")
         self.assertEqual(str(caught.exception), "bad, seed 1: no setting wings")
+
+    def test_a_run_that_crashes_partway_is_a_failure_whatever_it_printed(self):
+        with self.assertRaises(compare.RunFailed):
+            compare.check_output("control", 3, 1, line(1, 8) + "\n" + line(2, 8), "OutOfMemoryError")
 
     def test_a_run_that_prints_nothing_is_a_failure(self):
         with self.assertRaises(compare.RunFailed):
