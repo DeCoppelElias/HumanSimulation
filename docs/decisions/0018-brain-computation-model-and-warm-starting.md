@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-05. Revised 2026-09-27.
+Accepted, 2026-09-05. Revised 2026-10-20.
 
 ## Context
 
@@ -48,7 +48,8 @@ begins from useful behaviour. The weight gene shape arrives with it, per
 Warm starting lives in the species. A species carries a baseline genome
 alongside its gene layout, per [0003](0003-entities-carry-components.md), and
 every first-generation member starts from that baseline with mutation applied
-rather than from random values. This holds for any brain.
+rather than from random values. This holds for any brain. With the world's
+`mutation` setting off, a control run, it starts from the baseline exactly.
 
 ## Consequences
 

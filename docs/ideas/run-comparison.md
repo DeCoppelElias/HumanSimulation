@@ -1,6 +1,6 @@
 # Run comparison
 
-Status: idea.
+Status: planned, roadmap entry 7.
 
 ## What it does
 

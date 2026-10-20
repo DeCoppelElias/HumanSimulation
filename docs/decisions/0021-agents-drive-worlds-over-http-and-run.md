@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-10-01. Revised 2026-10-15.
+Accepted, 2026-10-01. Revised 2026-10-20.
 
 ## Context
 
@@ -53,6 +53,22 @@ lands on a different day each time, and the agent has to poll to know when the
 world got there. Raising the rate's ceiling to agent speeds would also let a
 person's slider pick speeds no page can draw.
 
+Comparing runs across many seeds was first meant to be a batch mode in `run`,
+running the seeds in parallel in one process with a summary line per seed, and
+overrides were meant to come from a file as well as the command line. A batch
+saves JVM startup and warmup per seed, about half a second of a run that takes
+three. A script that starts one `run` per seed in parallel gets most of that
+speed, and it is where the comparison has to live anyway, since what to compare
+changes faster than Java does. A file of overrides saves retyping a long command,
+which a shell repeats for free, and tuned values become defaults in code rather
+than a file to pass around. The file is kept in
+`docs/ideas/run-settings-file.md`.
+
+A comparison could also judge its result, such as calling a variant the winner
+when it survives longer. That bakes one experiment's notion of success into a
+tool every experiment shares, and it decides for the reader what the numbers
+mean, which hides a result that passes for the wrong reason.
+
 ## Decision
 
 The jar has three entry points. `serve` is the default and opens the browser.
@@ -64,8 +80,9 @@ Lines, one object per day.
 drawn from the clock. `--width` and `--height` default to 20. `--spawn
 rabbit=10` gives a starting population, can be repeated once per species, and
 defaults to ten rabbits, and any `--spawn` given replaces that default rather
-than adding to it. Each line is a census row with the seed added, since batch
-runs put many seeds into one stream and a line should stand on its own:
+than adding to it. Each line is a census row with the seed added, since a
+comparison gathers many seeds' lines together and a line should stand on its
+own:
 
     {"seed":42,"day":1,"population":{"grass":0,"rabbit":10},"geneMeans":{"rabbit":{"breedPull":1.01,"grassPull":1.03,...}}}
 
@@ -99,9 +116,20 @@ second.
 Worlds are addressed by id, so one server holds several, such as a control and a
 variant side by side.
 
-`run` gains a batch mode over many seeds in one process when the selection gate
-in roadmap entry 7 needs it, and a configuration file overriding declared
-settings once there are settings worth overriding.
+`run` overrides any declared setting with `--set owner.key=value`, repeatable,
+sent as a `SetSetting` on day 0 and checked like an edit from the panel.
+`--set-at DAY:owner.key=value` sends it once DAY days are complete, which is how
+a world gets harsher partway through a run. `--set` is `--set-at 0`.
+
+A comparison script in `tools/` runs variants of a world over a range of seeds,
+one `run` per seed and variant in parallel. A variant is a name and a list of
+`run` flags, passed through untouched, and the seeds, days, grid and starting
+population are shared. It reports, per species, the day each world died out,
+its population, and each gene's mean against its mean on day 1, taken on the
+last day with enough members to mean something. It never judges: what a result
+should show is written as acceptance lines on the roadmap entry that runs it,
+and the agent checks the report against them. A named experiment is a preset
+in `tools/experiments/`, and flags override it.
 
 ## Consequences
 
@@ -119,3 +147,8 @@ out to drive worlds step by step often enough to justify it.
 
 JSON Lines makes `run` output easy to parse, diff and plot, and nested fields
 such as gene means need no new format.
+
+The comparison script knows no species, gene or setting by name. It reads them
+from the census, so a new species appears in its report unchanged, and a preset
+naming a setting that no longer exists fails in `run` with the setting's name.
+Each comparison pays JVM startup once per run, a fraction of each run's time.

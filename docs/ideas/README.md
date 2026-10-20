@@ -60,6 +60,8 @@ that settled it.
   by id.
 - [Run comparison](run-comparison.md) one shared way for an agent to tell
   whether a variant did better.
+- [Run settings file](run-settings-file.md) many `run` overrides kept in one
+  file.
 - [Stomach capacity](stomach-capacity.md) a limit on what a creature can hold,
   which makes how much to eat a decision.
 - [World persistence](world-persistence.md) a server's worlds surviving a

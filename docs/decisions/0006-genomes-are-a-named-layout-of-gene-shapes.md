@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-03. Revised 2026-10-15.
+Accepted, 2026-09-03. Revised 2026-10-20.
 
 ## Context
 
@@ -81,7 +81,9 @@ and real work.
 
 The species carries a baseline genome alongside the layout, and first-generation
 members start from it with mutation applied, per
-[0018](0018-brain-computation-model-and-warm-starting.md).
+[0018](0018-brain-computation-model-and-warm-starting.md). A world with its
+`mutation` setting off, per [0017](0017-every-number-is-a-setting-or-a-gene.md),
+copies genomes exactly instead.
 
 A gene nothing reads does nothing, so a new trait still needs a brain or a
 system that consults it.
