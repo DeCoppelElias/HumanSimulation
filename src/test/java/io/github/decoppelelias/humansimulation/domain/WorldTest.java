@@ -305,6 +305,57 @@ class WorldTest {
     }
 
     @Test
+    void mutationIsOnByDefault() {
+        World world = new World(5, 5, 1, RABBITS);
+        assertThat(world.snapshot().settings().get("world")).containsEntry("mutation", 1.0);
+    }
+
+    @Test
+    void withMutationOffASpawnIsTheBaseline() {
+        World world = new World(10, 10, 1, RABBITS);
+        world.submit(new Command.SetSetting("world", "mutation", 0));
+        world.submit(new Command.Spawn("rabbit", 30));
+        WorldSnapshot snapshot = world.applyPending();
+        Genome baseline = Rabbit.species().baseline();
+        int seen = 0;
+        for (WorldSnapshot.TileView tile : snapshot.tiles()) {
+            for (WorldSnapshot.EntityView view : tile.entities()) {
+                assertThat(world.entity(view.id()).orElseThrow().genome()).isEqualTo(baseline);
+                seen++;
+            }
+        }
+        assertThat(seen).isEqualTo(30);
+    }
+
+    @Test
+    void withMutationOffAChildCopiesItsParent() {
+        World world = new World(5, 5, 1, List.of(TestSpecies.breeder(new ArrayList<>())));
+        for (int x = 0; x < 5; x++) {
+            for (int y = 0; y < 5; y++) {
+                world.submit(new Command.SpawnAt("breeder", new GridPosition(x, y)));
+            }
+        }
+        world.applyPending();
+        world.submit(new Command.SetSetting("world", "mutation", 0));
+        WorldSnapshot snapshot = world.applyPending();
+        for (int i = 0; i < 16; i++) {
+            snapshot = world.advance().snapshot();
+        }
+        Genome baseline = TestSpecies.breeder(new ArrayList<>()).baseline();
+        int parentsOffBaseline = 0;
+        for (WorldSnapshot.TileView tile : snapshot.tiles()) {
+            assertThat(tile.entities()).hasSize(2);
+            Genome parent =
+                    world.entity(tile.entities().get(0).id()).orElseThrow().genome();
+            Genome child =
+                    world.entity(tile.entities().get(1).id()).orElseThrow().genome();
+            assertThat(child).isEqualTo(parent);
+            parentsOffBaseline += parent.equals(baseline) ? 0 : 1;
+        }
+        assertThat(parentsOffBaseline).isGreaterThan(5);
+    }
+
+    @Test
     void rabbitsBreedOnTheirOwn() {
         World world = new World(20, 20, 3, List.of(Grass.species(), Rabbit.species()), List.of(new FoodDrop("grass")));
         world.submit(new Command.Spawn("rabbit", 10));
@@ -361,7 +412,7 @@ class WorldTest {
         World world = new World(3, 3, 1, List.of(Rabbit.species(), Grass.species()), List.of(new FoodDrop("grass")));
         assertThat(world.declarations())
                 .extracting(SettingDeclaration::owner)
-                .startsWith("world", "world", "grass", "rabbit");
+                .startsWith("world", "world", "world", "grass", "rabbit");
     }
 
     @Test

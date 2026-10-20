@@ -17,6 +17,14 @@ import java.util.random.RandomGeneratorFactory;
 public final class World {
     private static final String ALGORITHM = "L64X128MixRandom";
     static final String SPEED = "speed";
+    static final String MUTATION = "mutation";
+
+    /** Settings the world declares itself, ahead of its processes' in the World group. */
+    static final Settings OWN = new Settings(List.of(new Setting.Toggle(
+            MUTATION,
+            "Children and spawns vary from their parent or baseline. Off, they are exact copies and the world stops"
+                    + " evolving.",
+            true)));
 
     private final int width;
     private final int height;
@@ -159,7 +167,7 @@ public final class World {
                             .ifPresent(reserve -> place(
                                     entity.species(),
                                     entity.position(),
-                                    entity.genome().mutated(random),
+                                    inherit(entity.genome()),
                                     Optional.of(reserve)));
                 case Intent.Idle _ -> {}
             }
@@ -205,11 +213,16 @@ public final class World {
                     Species kind = speciesNamed(drop.species());
                     for (int i = drop.dropsOn(day + 1, table.of(SettingTable.WORLD)); i > 0; i--) {
                         GridPosition at = randomTile();
-                        place(kind, at, kind.baseline().mutated(random), Optional.empty());
+                        place(kind, at, inherit(kind.baseline()), Optional.empty());
                     }
                 }
             }
         }
+    }
+
+    /** A genome passed on, to a child from its parent or to a spawn from its species' baseline. */
+    private Genome inherit(Genome genome) {
+        return table.of(SettingTable.WORLD).on(MUTATION) ? genome.mutated(random) : genome;
     }
 
     private GridPosition randomTile() {
@@ -290,12 +303,12 @@ public final class World {
                 Species kind = speciesNamed(spawn.species());
                 for (int i = 0; i < spawn.count(); i++) {
                     GridPosition at = randomTile();
-                    place(kind, at, kind.baseline().mutated(random), Optional.empty());
+                    place(kind, at, inherit(kind.baseline()), Optional.empty());
                 }
             }
             case Command.SpawnAt spawnAt -> {
                 Species kind = speciesNamed(spawnAt.species());
-                place(kind, spawnAt.at(), kind.baseline().mutated(random), Optional.empty());
+                place(kind, spawnAt.at(), inherit(kind.baseline()), Optional.empty());
             }
             case Command.Reset reset -> start(reset.seed());
             case Command.SetSetting set -> table.set(set.owner(), set.key(), set.value());

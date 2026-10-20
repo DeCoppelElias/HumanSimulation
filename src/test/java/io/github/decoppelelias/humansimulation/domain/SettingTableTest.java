@@ -21,10 +21,25 @@ class SettingTableTest {
         assertThat(table.of("rabbit").whole("stride")).isEqualTo(3);
         assertThat(table.declarations())
                 .extracting(SettingDeclaration::owner)
-                .startsWith("world", "world", "grass", "rabbit");
-        assertThat(table.declarations().getFirst())
+                .startsWith("world", "world", "world", "grass", "rabbit");
+        assertThat(table.declarations().get(1))
                 .isEqualTo(new SettingDeclaration(
                         "world", "grassPerDrop", "scalar", "How many grass land in each drop.", 1, 100, 1, 7));
+    }
+
+    @Test
+    void theWorldsOwnSettingsComeFirst() {
+        SettingDeclaration first = table().declarations().getFirst();
+        assertThat(first.owner()).isEqualTo("world");
+        assertThat(first.key()).isEqualTo("mutation");
+        assertThat(first.shape()).isEqualTo("toggle");
+        assertThat(first.defaultValue()).isEqualTo(1);
+    }
+
+    @Test
+    void aWorldWithNoProcessesStillOwnsMutation() {
+        assertThat(new SettingTable(List.of(), List.of()).of("world").on("mutation"))
+                .isTrue();
     }
 
     @Test

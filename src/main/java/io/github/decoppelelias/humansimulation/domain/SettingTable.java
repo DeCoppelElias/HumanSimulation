@@ -17,7 +17,7 @@ final class SettingTable {
     private final Map<String, SettingValues> owners = new LinkedHashMap<>();
 
     SettingTable(Collection<Species> species, List<WorldProcess> processes) {
-        List<Setting> world = new ArrayList<>();
+        List<Setting> world = new ArrayList<>(World.OWN.declared());
         for (WorldProcess process : processes) {
             world.addAll(declared(process).declared());
         }
