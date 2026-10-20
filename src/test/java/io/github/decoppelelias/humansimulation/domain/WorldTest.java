@@ -315,6 +315,9 @@ class WorldTest {
         World world = new World(10, 10, 1, RABBITS);
         world.submit(new Command.SetSetting("world", "mutation", 0));
         world.submit(new Command.Spawn("rabbit", 30));
+        for (int x = 0; x < 10; x++) {
+            world.submit(new Command.SpawnAt("rabbit", new GridPosition(x, 0)));
+        }
         WorldSnapshot snapshot = world.applyPending();
         Genome baseline = Rabbit.species().baseline();
         int seen = 0;
@@ -324,7 +327,7 @@ class WorldTest {
                 seen++;
             }
         }
-        assertThat(seen).isEqualTo(30);
+        assertThat(seen).isEqualTo(40);
     }
 
     @Test
