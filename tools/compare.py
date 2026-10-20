@@ -13,6 +13,7 @@ import argparse
 import concurrent.futures
 import json
 import os
+import re
 import shlex
 import statistics
 import subprocess
@@ -34,22 +35,26 @@ def rows_of(lines):
     return [json.loads(line) for line in lines if line.strip()]
 
 
-def species_in(lines):
-    """Every species with gene means on day 1, so a species with no genes, like grass, is left out."""
-    return sorted(rows_of(lines)[0]["geneMeans"])
+def species_in(runs):
+    """Every species with gene means on day 1 of any run, so a species with no genes, like grass, is left out."""
+    return sorted({species for lines in runs for species in rows_of(lines)[0]["geneMeans"]})
 
 
 def summarise(lines, species, floor):
+    """A run that never had the species dies on day 0, so it reads as absent rather than dying on day 1."""
     rows = rows_of(lines)
     counts = [row["population"].get(species, 0) for row in rows]
-    died_on = next((row["day"] for row, count in zip(rows, counts) if count == 0), None)
+    if not any(counts):
+        died_on = 0
+    else:
+        died_on = next((row["day"] for row, count in zip(rows, counts) if count == 0), None)
     alive = [count for count in counts if count > 0]
     measured = [row for row, count in zip(rows, counts) if count >= floor]
     return {
         "diedOn": died_on,
         "meanPopulation": statistics.mean(alive) if alive else 0,
         "peak": max(counts, default=0),
-        "start": rows[0]["geneMeans"].get(species, {}),
+        "start": next((row["geneMeans"][species] for row in rows if species in row["geneMeans"]), {}),
         "measuredOn": measured[-1]["day"] if measured else None,
         "genes": measured[-1]["geneMeans"].get(species, {}) if measured else {},
     }
@@ -59,7 +64,7 @@ def _lasted(died_on):
     return float("inf") if died_on is None else died_on
 
 
-def report(results, variants, seeds, species):
+def report(results, variants, seeds, species, floor=5):
     """Each variant after the first is counted against the first, seed by seed."""
     reference = variants[0]
     outlasts = []
@@ -87,7 +92,7 @@ def report(results, variants, seeds, species):
             pairs = [
                 (results[(variant, seed)]["genes"][gene], results[(variant, seed)]["start"][gene])
                 for seed in seeds
-                if gene in results[(variant, seed)]["genes"]
+                if gene in results[(variant, seed)]["genes"] and gene in results[(variant, seed)]["start"]
             ]
             ended = [value for value, _ in pairs]
             genes[gene][variant] = {
@@ -99,6 +104,7 @@ def report(results, variants, seeds, species):
             }
     return {
         "species": species,
+        "floor": floor,
         "seeds": seeds,
         "variants": variants,
         "outlasts": outlasts,
@@ -114,15 +120,19 @@ def _number(value):
 def format_text(reports, per_seed):
     out = []
     for species, one in reports.items():
-        variants, seeds = one["variants"], one["seeds"]
+        variants, seeds, floor = one["variants"], one["seeds"], one["floor"]
         out.append(f"{species}: survival, the day the last one died")
         out.append("seed  " + "".join(f"{variant:>12}" for variant in variants))
         for seed in seeds:
             cells = []
             for variant in variants:
                 died_on = one["runs"][f"{variant}:{seed}"]["diedOn"]
-                cells.append(f"{'alive' if died_on is None else died_on:>12}")
+                shown = "alive" if died_on is None else "absent" if died_on == 0 else died_on
+                cells.append(f"{shown:>12}")
             out.append(f"{seed:<6}" + "".join(cells))
+        for variant in variants:
+            alive = sum(one["runs"][f"{variant}:{seed}"]["diedOn"] is None for seed in seeds)
+            out.append(f"{variant} alive at the end: {alive} of {len(seeds)}")
         for pair in one["outlasts"]:
             out.append(
                 f"{pair['variant']} later than {pair['reference']}: {pair['later']} of {len(seeds)},"
@@ -154,6 +164,9 @@ def format_text(reports, per_seed):
             for variant in variants:
                 for seed in seeds:
                     run = one["runs"][f"{variant}:{seed}"]
+                    if run["measuredOn"] is None:
+                        out.append(f"{variant} {seed} never had {floor} or more")
+                        continue
                     genes = " ".join(f"{gene}={value:.2f}" for gene, value in sorted(run["genes"].items()))
                     out.append(f"{variant} {seed} day {run['measuredOn']}: {genes}")
         out.append("")
@@ -203,11 +216,24 @@ def command(jar, seed, days, flags):
     return ["java", "-jar", str(jar), "run", "--seed", str(seed), "--days", str(days), *flags]
 
 
-def run_world(jar, seed, days, flags):
-    done = subprocess.run(command(jar, seed, days, flags), capture_output=True, text=True)
-    if done.returncode != 0:
-        raise RuntimeError(f"seed {seed} with {' '.join(flags) or 'no flags'}: {done.stderr.strip()}")
-    return done.stdout.splitlines()
+class RunFailed(Exception):
+    pass
+
+
+def check_output(variant, seed, returncode, stdout, stderr):
+    """Only the first line of stderr, since picocli follows a usage error with the whole help text."""
+    if returncode != 0 or not stdout.strip():
+        plain = re.sub(r"\x1b\[[0-9;]*m", "", stderr).strip()
+        reason = plain.splitlines()[0] if plain else "run printed nothing"
+        raise RunFailed(f"{variant}, seed {seed}: {reason}")
+    return stdout.splitlines()
+
+
+def run_world(jar, variant, seed, days, flags):
+    done = subprocess.run(
+        command(jar, seed, days, flags), capture_output=True, text=True, encoding="utf-8", errors="replace"
+    )
+    return check_output(variant, seed, done.returncode, done.stdout, done.stderr)
 
 
 def main(argv):
@@ -217,18 +243,25 @@ def main(argv):
     if not Path(args.jar).exists():
         sys.exit(f"no jar at {args.jar}; build it with ./mvnw package -Pskip-frontend")
     variants, seeds = list(chosen["variants"]), chosen["seeds"]
-    with concurrent.futures.ThreadPoolExecutor(max_workers=args.jobs) as pool:
-        futures = {
-            (variant, seed): pool.submit(run_world, args.jar, seed, chosen["days"], chosen["variants"][variant])
-            for variant in variants
-            for seed in seeds
-        }
-        lines = {key: future.result() for key, future in futures.items()}
-    species = chosen["species"] or species_in(next(iter(lines.values())))
+    pool = concurrent.futures.ThreadPoolExecutor(max_workers=args.jobs)
+    futures = {
+        pool.submit(run_world, args.jar, variant, seed, chosen["days"], chosen["variants"][variant]): (variant, seed)
+        for variant in variants
+        for seed in seeds
+    }
+    lines = {}
+    try:
+        for future in concurrent.futures.as_completed(futures):
+            lines[futures[future]] = future.result()
+    except RunFailed as failure:
+        pool.shutdown(cancel_futures=True)
+        sys.exit(str(failure))
+    pool.shutdown()
+    species = chosen["species"] or species_in(lines.values())
     reports = {}
     for one in species:
         results = {key: summarise(found, one, args.floor) for key, found in lines.items()}
-        reports[one] = report(results, variants, seeds, one)
+        reports[one] = report(results, variants, seeds, one, args.floor)
     print(json.dumps(reports, indent=2) if args.json else format_text(reports, args.per_seed))
 
 
