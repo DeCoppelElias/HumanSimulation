@@ -56,7 +56,8 @@ public final class RunCommand implements Callable<Integer> {
     @Option(
             names = "--set-at",
             paramLabel = "DAY:OWNER.KEY=VALUE",
-            description = "Override a setting once DAY days are complete. Repeatable. 0 is the same as --set.")
+            description = "Override a setting once DAY days are complete. Repeatable. On one day, --set comes first,"
+                    + " then --set-at in the order given, and the last value for a key wins.")
     private List<String> setAt = List.of();
 
     @Override
@@ -72,7 +73,7 @@ public final class RunCommand implements Callable<Integer> {
             int colon = entry.indexOf(':');
             int day = colon < 1 ? -1 : dayOf(entry.substring(0, colon));
             if (day < 0) {
-                throw usage("--set-at takes DAY:OWNER.KEY=VALUE with DAY 0 or more, got " + entry);
+                throw usage("--set-at takes DAY:OWNER.KEY=VALUE with DAY a whole number from 0, got " + entry);
             }
             Command.SetSetting edit = setting("--set-at", entry.substring(colon + 1));
             if (day == 0) {
@@ -81,6 +82,7 @@ public final class RunCommand implements Callable<Integer> {
                 later.computeIfAbsent(day, _ -> new ArrayList<>()).add(edit);
             }
         }
+        // A world built the same way checks the later overrides, so a bad one fails before the first line prints.
         World scratch = start(worldSeed, dayZero);
         later.values().forEach(edits -> edits.forEach(edit -> submit(scratch, edit)));
         World world = start(worldSeed, dayZero);
@@ -101,7 +103,6 @@ public final class RunCommand implements Callable<Integer> {
         }
     }
 
-    /** Checked against a world built the same way, so a bad later override fails before the first line prints. */
     private void submit(World world, Command command) {
         try {
             world.submit(command);
@@ -147,7 +148,7 @@ public final class RunCommand implements Callable<Integer> {
         return population;
     }
 
-    /** OWNER.KEY=VALUE, where a toggle also takes true or false. */
+    /** OWNER.KEY=VALUE, where true and false read as 1 and 0. */
     private Command.SetSetting setting(String flag, String entry) {
         int dot = entry.indexOf('.');
         int equals = entry.indexOf('=');
