@@ -6,9 +6,11 @@ import io.github.decoppelelias.humansimulation.domain.Grass;
 import io.github.decoppelelias.humansimulation.domain.Rabbit;
 import io.github.decoppelelias.humansimulation.domain.World;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.Callable;
 import picocli.CommandLine;
@@ -51,20 +53,61 @@ public final class RunCommand implements Callable<Integer> {
             description = "Override a setting from day 0, before the starting population spawns. Repeatable.")
     private List<String> set = List.of();
 
+    @Option(
+            names = "--set-at",
+            paramLabel = "DAY:OWNER.KEY=VALUE",
+            description = "Override a setting once DAY days are complete. Repeatable. 0 is the same as --set.")
+    private List<String> setAt = List.of();
+
     @Override
     public Integer call() {
         if (days < 1) {
             throw usage("--days must be at least 1, got " + days);
         }
         long worldSeed = seed.orElseGet(System::nanoTime);
-        World world = start(
-                worldSeed, set.stream().map(entry -> setting("--set", entry)).toList());
+        List<Command.SetSetting> dayZero = new ArrayList<>();
+        set.forEach(entry -> dayZero.add(setting("--set", entry)));
+        SortedMap<Integer, List<Command.SetSetting>> later = new TreeMap<>();
+        for (String entry : setAt) {
+            int colon = entry.indexOf(':');
+            int day = colon < 1 ? -1 : dayOf(entry.substring(0, colon));
+            if (day < 0) {
+                throw usage("--set-at takes DAY:OWNER.KEY=VALUE with DAY 0 or more, got " + entry);
+            }
+            Command.SetSetting edit = setting("--set-at", entry.substring(colon + 1));
+            if (day == 0) {
+                dayZero.add(edit);
+            } else {
+                later.computeIfAbsent(day, _ -> new ArrayList<>()).add(edit);
+            }
+        }
+        World scratch = start(worldSeed, dayZero);
+        later.values().forEach(edits -> edits.forEach(edit -> submit(scratch, edit)));
+        World world = start(worldSeed, dayZero);
         PrintWriter out = spec.commandLine().getOut();
-        for (int i = 0; i < days; i++) {
+        for (int completed = 0; completed < days; completed++) {
+            later.getOrDefault(completed, List.of()).forEach(world::submit);
             out.print(CensusLine.format(worldSeed, world.advance().census()) + "\n");
         }
         out.flush();
         return CommandLine.ExitCode.OK;
+    }
+
+    private static int dayOf(String text) {
+        try {
+            return Integer.parseInt(text);
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
+
+    /** Checked against a world built the same way, so a bad later override fails before the first line prints. */
+    private void submit(World world, Command command) {
+        try {
+            world.submit(command);
+        } catch (IllegalArgumentException e) {
+            throw usage(e.getMessage());
+        }
     }
 
     private World start(long worldSeed, List<Command.SetSetting> dayZero) {

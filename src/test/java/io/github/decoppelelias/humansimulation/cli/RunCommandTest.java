@@ -153,4 +153,47 @@ class RunCommandTest {
             assertThat(result.err()).as(bad).containsAnyOf("--set takes OWNER.KEY=VALUE", "--set needs a number");
         }
     }
+
+    @Test
+    void aSetAtTakesEffectAfterItsDay() {
+        Result result = run(
+                "--seed",
+                "1",
+                "--days",
+                "2",
+                "--spawn",
+                "grass=1",
+                "--set",
+                "world.grassPerDrop=3",
+                "--set-at",
+                "1:world.grassDropInterval=1");
+        assertThat(result.exitCode()).isZero();
+        String[] lines = result.out().split("\n");
+        assertThat(lines[0]).contains("\"grass\":1,");
+        assertThat(lines[1]).contains("\"grass\":4,");
+    }
+
+    @Test
+    void aSetAtZeroIsASet() {
+        assertThat(run("--seed", "1", "--days", "1", "--set-at", "0:rabbit.startingReserve=0")
+                        .out())
+                .startsWith("{\"seed\":1,\"day\":1,\"population\":{\"grass\":0,\"rabbit\":0},");
+    }
+
+    @Test
+    void aBadSetAtFailsBeforeTheFirstLine() {
+        Result result = run("--seed", "1", "--days", "10", "--set-at", "5:rabbit.stride=9");
+        assertThat(result.exitCode()).isEqualTo(CommandLine.ExitCode.USAGE);
+        assertThat(result.out()).isEmpty();
+        assertThat(result.err()).contains("stride", "outside");
+    }
+
+    @Test
+    void aMalformedSetAtIsAUsageError() {
+        for (String bad : List.of("rabbit.stride=3", "-1:rabbit.stride=3", "x:rabbit.stride=3", "1:stride=3")) {
+            Result result = run("--seed", "1", "--days", "1", "--set-at", bad);
+            assertThat(result.exitCode()).as(bad).isEqualTo(CommandLine.ExitCode.USAGE);
+            assertThat(result.err()).as(bad).containsAnyOf("--set-at takes DAY:", "--set-at takes OWNER.KEY=VALUE");
+        }
+    }
 }
