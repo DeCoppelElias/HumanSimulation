@@ -45,13 +45,20 @@ public final class RunCommand implements Callable<Integer> {
             description = "Starting population, once per species. Replaces the default of rabbit=10.")
     private List<String> spawn = List.of();
 
+    @Option(
+            names = "--set",
+            paramLabel = "OWNER.KEY=VALUE",
+            description = "Override a setting from day 0, before the starting population spawns. Repeatable.")
+    private List<String> set = List.of();
+
     @Override
     public Integer call() {
         if (days < 1) {
             throw usage("--days must be at least 1, got " + days);
         }
         long worldSeed = seed.orElseGet(System::nanoTime);
-        World world = start(worldSeed);
+        World world = start(
+                worldSeed, set.stream().map(entry -> setting("--set", entry)).toList());
         PrintWriter out = spec.commandLine().getOut();
         for (int i = 0; i < days; i++) {
             out.print(CensusLine.format(worldSeed, world.advance().census()) + "\n");
@@ -60,7 +67,7 @@ public final class RunCommand implements Callable<Integer> {
         return CommandLine.ExitCode.OK;
     }
 
-    private World start(long worldSeed) {
+    private World start(long worldSeed, List<Command.SetSetting> dayZero) {
         try {
             World world = new World(
                     width,
@@ -68,6 +75,7 @@ public final class RunCommand implements Callable<Integer> {
                     worldSeed,
                     List.of(Grass.species(), Rabbit.species()),
                     List.of(new FoodDrop("grass")));
+            dayZero.forEach(world::submit);
             new TreeMap<>(spawn.isEmpty() ? STARTING_POPULATION : startingPopulation())
                     .forEach((name, count) -> world.submit(new Command.Spawn(name, count)));
             return world;
@@ -94,6 +102,29 @@ public final class RunCommand implements Callable<Integer> {
             }
         }
         return population;
+    }
+
+    /** OWNER.KEY=VALUE, where a toggle also takes true or false. */
+    private Command.SetSetting setting(String flag, String entry) {
+        int dot = entry.indexOf('.');
+        int equals = entry.indexOf('=');
+        if (dot < 1 || equals < dot + 2 || equals == entry.length() - 1) {
+            throw usage(flag + " takes OWNER.KEY=VALUE, got " + entry);
+        }
+        String raw = entry.substring(equals + 1);
+        double value =
+                switch (raw) {
+                    case "true" -> 1;
+                    case "false" -> 0;
+                    default -> {
+                        try {
+                            yield Double.parseDouble(raw);
+                        } catch (NumberFormatException e) {
+                            throw usage(flag + " needs a number, true or false, got " + raw);
+                        }
+                    }
+                };
+        return new Command.SetSetting(entry.substring(0, dot), entry.substring(dot + 1, equals), value);
     }
 
     private ParameterException usage(String message) {
