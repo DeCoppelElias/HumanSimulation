@@ -3,6 +3,7 @@ import {
     RESTORE_ALL,
     anyEdited,
     currentValue,
+    flip,
     formatValue,
     groups,
     isEdited,
@@ -24,6 +25,7 @@ const declaration = (
 ): SettingDeclaration => ({
     owner,
     key,
+    shape: "scalar",
     description: `${key}.`,
     min,
     max: 100,
@@ -145,5 +147,40 @@ describe("the settings panel", () => {
         ).toEqual({
             "world.grassPerDrop": 3,
         });
+    });
+});
+
+const mutation: SettingDeclaration = {
+    owner: "world",
+    key: "mutation",
+    shape: "toggle",
+    description: "Mutate.",
+    min: 0,
+    max: 1,
+    step: 1,
+    defaultValue: 1,
+};
+
+describe("a toggle", () => {
+    test("a click sends the opposite of what it shows and holds it", () => {
+        const flipped = flip({}, mutation, { world: { mutation: 1 } });
+        expect(flipped.command).toEqual({
+            type: "setSetting",
+            owner: "world",
+            key: "mutation",
+            value: 0,
+        });
+        expect(flipped.pending).toEqual({ "world.mutation": 0 });
+    });
+
+    test("a second click before the snapshot catches up flips the held value", () => {
+        const flipped = flip({ "world.mutation": 0 }, mutation, { world: { mutation: 1 } });
+        expect(flipped.command).toEqual({
+            type: "setSetting",
+            owner: "world",
+            key: "mutation",
+            value: 1,
+        });
+        expect(flipped.pending).toEqual({ "world.mutation": 1 });
     });
 });

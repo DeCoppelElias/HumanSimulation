@@ -59,6 +59,10 @@ footer {
     gap: 4px 8px;
     align-items: center;
 }
+.setting input[type="checkbox"] {
+    grid-column: span 2;
+    justify-self: start;
+}
 .setting small {
     grid-column: 1 / -1;
     color: #666;

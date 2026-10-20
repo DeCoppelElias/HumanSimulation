@@ -4,6 +4,7 @@ import { messageOf } from "./messages";
 import {
     RESTORE_ALL,
     anyEdited,
+    flip,
     formatValue,
     groups,
     heldKey,
@@ -87,24 +88,45 @@ export function SettingsPanel({ api, id, values, onError }: Props) {
                         return (
                             <div key={key} className={edited ? "setting edited" : "setting"}>
                                 <span className="setting-name">{declaration.key}</span>
-                                <input
-                                    type="range"
-                                    aria-label={`${group.label} ${declaration.key}`}
-                                    aria-describedby={described}
-                                    min={declaration.min}
-                                    max={declaration.max}
-                                    step={declaration.step}
-                                    value={shown}
-                                    onChange={(event) => {
-                                        const value = Number(event.target.value);
-                                        setDrafts((current) => ({ ...current, [key]: value }));
-                                    }}
-                                    onPointerUp={() => commit(declaration)}
-                                    onPointerCancel={() => commit(declaration)}
-                                    onKeyUp={() => commit(declaration)}
-                                    onBlur={() => commit(declaration)}
-                                />
-                                <output>{formatValue(shown, declaration)}</output>
+                                {declaration.shape === "toggle" ? (
+                                    <input
+                                        type="checkbox"
+                                        aria-label={`${group.label} ${declaration.key}`}
+                                        aria-describedby={described}
+                                        checked={shown === 1}
+                                        onChange={() => {
+                                            const flipped = flip(pending, declaration, values);
+                                            setPending(flipped.pending);
+                                            send(flipped.command, () =>
+                                                setPending((current) => withoutKey(current, key)),
+                                            );
+                                        }}
+                                    />
+                                ) : (
+                                    <>
+                                        <input
+                                            type="range"
+                                            aria-label={`${group.label} ${declaration.key}`}
+                                            aria-describedby={described}
+                                            min={declaration.min}
+                                            max={declaration.max}
+                                            step={declaration.step}
+                                            value={shown}
+                                            onChange={(event) => {
+                                                const value = Number(event.target.value);
+                                                setDrafts((current) => ({
+                                                    ...current,
+                                                    [key]: value,
+                                                }));
+                                            }}
+                                            onPointerUp={() => commit(declaration)}
+                                            onPointerCancel={() => commit(declaration)}
+                                            onKeyUp={() => commit(declaration)}
+                                            onBlur={() => commit(declaration)}
+                                        />
+                                        <output>{formatValue(shown, declaration)}</output>
+                                    </>
+                                )}
                                 <button
                                     disabled={!edited}
                                     aria-label={`Restore ${group.label} ${declaration.key}`}

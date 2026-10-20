@@ -93,6 +93,19 @@ export function release(
     };
 }
 
+/** A toggle sends the opposite of what it shows, so a second click before the snapshot undoes the first. */
+export function flip(
+    pending: Held,
+    declaration: SettingDeclaration,
+    values: Settings,
+): { pending: Held; command: Command } {
+    const value = shownValue({}, pending, declaration, values) === 1 ? 0 : 1;
+    return {
+        pending: { ...pending, [heldKey(declaration)]: value },
+        command: { type: "setSetting", owner: declaration.owner, key: declaration.key, value },
+    };
+}
+
 /** Lets go of every value sent that the snapshot now shows. */
 export function settle(pending: Held, declarations: SettingDeclaration[], values: Settings): Held {
     return Object.fromEntries(
