@@ -678,6 +678,18 @@ class WorldTest {
         }
     }
 
+    /** The eater at 0,0 pays its 1 on day 1 and starves on day 2; the one at 1,1 eats and lives on. */
+    @Test
+    void theCensusCountsTheDaysDeathsByCause() {
+        World world = new World(3, 3, 1, List.of(TestSpecies.eater(1, 1), TestSpecies.food()));
+        world.submit(new Command.SpawnAt("eater", new GridPosition(0, 0)));
+        world.submit(new Command.SpawnAt("eater", new GridPosition(1, 1)));
+        world.submit(new Command.SpawnAt("food", new GridPosition(1, 1)));
+        assertThat(world.advance().census().deaths()).isEqualTo(Map.of("food", Map.of("eaten", 1)));
+        assertThat(world.advance().census().deaths()).isEqualTo(Map.of("eater", Map.of("starved", 1)));
+        assertThat(world.advance().census().deaths()).isEmpty();
+    }
+
     @Test
     void onlyTheFirstPartToNameACauseEndsItsCarrier() {
         List<String> ticked = new ArrayList<>();

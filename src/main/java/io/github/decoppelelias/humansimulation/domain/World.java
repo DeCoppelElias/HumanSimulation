@@ -35,6 +35,9 @@ public final class World {
     private final ArrayDeque<Command> pending = new ArrayDeque<>();
     private final List<LoggedCommand> log = new ArrayList<>();
     private final TreeMap<Integer, Entity> entities = new TreeMap<>();
+    /** This day's removals per species and cause, cleared as each day starts. */
+    private final Map<String, Map<String, Integer>> deaths = new TreeMap<>();
+
     private Grid grid;
     private long seed;
     private RandomGenerator random;
@@ -71,6 +74,7 @@ public final class World {
     }
 
     public DayReport advance() {
+        deaths.clear();
         drain();
         List<Decision> order = dayOrder(decide(), this::speedOf, random);
         resolve(order);
@@ -266,7 +270,7 @@ public final class World {
             }
             means.put(name, mean);
         });
-        return new CensusRow(day, population, means);
+        return new CensusRow(day, population, means, deaths);
     }
 
     private List<Integer> entityIds() {
@@ -345,6 +349,7 @@ public final class World {
         }
         entities.remove(id);
         grid.remove(id, entity.position());
+        deaths.computeIfAbsent(entity.species().name(), name -> new TreeMap<>()).merge(cause, 1, Integer::sum);
     }
 
     private Species speciesNamed(String name) {
@@ -360,6 +365,7 @@ public final class World {
         random = RandomGeneratorFactory.of(ALGORITHM).create(newSeed);
         grid = new Grid(width, height);
         entities.clear();
+        deaths.clear();
         log.clear();
         nextId = 0;
         day = 0;

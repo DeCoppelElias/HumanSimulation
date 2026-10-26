@@ -21,21 +21,29 @@ final class CensusLine {
                     .append(entry.getValue());
             separator = ",";
         }
-        line.append("},\"geneMeans\":{");
-        separator = "";
-        for (Map.Entry<String, Map<String, Double>> species : row.geneMeans().entrySet()) {
-            line.append(separator).append(JsonStrings.quote(species.getKey())).append(":{");
+        line.append("},\"geneMeans\":");
+        nested(line, row.geneMeans());
+        line.append(",\"deaths\":");
+        nested(line, row.deaths());
+        return line.append('}').toString();
+    }
+
+    private static void nested(StringBuilder line, Map<String, ? extends Map<String, ?>> groups) {
+        line.append('{');
+        String separator = "";
+        for (Map.Entry<String, ? extends Map<String, ?>> group : groups.entrySet()) {
+            line.append(separator).append(JsonStrings.quote(group.getKey())).append(":{");
             String inner = "";
-            for (Map.Entry<String, Double> gene : species.getValue().entrySet()) {
+            for (Map.Entry<String, ?> entry : group.getValue().entrySet()) {
                 line.append(inner)
-                        .append(JsonStrings.quote(gene.getKey()))
+                        .append(JsonStrings.quote(entry.getKey()))
                         .append(':')
-                        .append(gene.getValue());
+                        .append(entry.getValue());
                 inner = ",";
             }
             line.append('}');
             separator = ",";
         }
-        return line.append("}}").toString();
+        line.append('}');
     }
 }

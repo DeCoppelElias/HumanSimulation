@@ -55,14 +55,15 @@ class RunCommandTest {
     @Test
     void spawnsGrassAndCountsIt() {
         assertThat(run("--seed", "1", "--days", "1", "--spawn", "grass=3").out())
-                .isEqualTo("{\"seed\":1,\"day\":1,\"population\":{\"grass\":3,\"rabbit\":0},\"geneMeans\":{}}\n");
+                .isEqualTo(
+                        "{\"seed\":1,\"day\":1,\"population\":{\"grass\":3,\"rabbit\":0},\"geneMeans\":{},\"deaths\":{}}\n");
     }
 
     @Test
     void theSeedDefaultsToTheClockAndIsPrinted() {
         assertThat(run("--days", "1").out())
                 .matches("\\{\"seed\":-?\\d+,\"day\":1,\"population\":\\{\"grass\":0,\"rabbit\":10},"
-                        + "\"geneMeans\":\\{\"rabbit\":\\{.*}}}\n");
+                        + "\"geneMeans\":\\{\"rabbit\":\\{.*}},\"deaths\":\\{.*}}\n");
     }
 
     @Test
