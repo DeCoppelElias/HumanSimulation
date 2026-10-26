@@ -19,7 +19,7 @@ class GrassTest {
     }
 
     @Test
-    void withersAfterTwelveDaysByDefault() {
+    void declaresATwelveDayLifespan() {
         Species grass = Grass.species();
         SettingValues values = new SettingValues(grass.settings());
         assertThat(values.whole("lifespan")).isEqualTo(12);

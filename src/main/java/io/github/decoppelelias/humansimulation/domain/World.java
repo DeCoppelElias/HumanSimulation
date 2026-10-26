@@ -200,7 +200,7 @@ public final class World {
         }
     }
 
-    /** Ticks each entity's parts in id order. The stream is lazy, so the first cause ends it and later parts wait. */
+    /** Ticks each entity's parts in id order. The stream is lazy, so the first cause ends it and its later parts are not ticked. */
     private void tick() {
         for (int id : entityIds()) {
             Entity entity = entities.get(id);

@@ -732,7 +732,9 @@ class WorldTest {
                 List.of(spawn -> new Ends("first", ticked), spawn -> new Ends("second", ticked)));
         World world = new World(3, 3, 1, List.of(doomed));
         world.submit(new Command.Spawn("doomed", 1));
-        assertThat(world.advance().census().population()).containsEntry("doomed", 0);
+        CensusRow row = world.advance().census();
+        assertThat(row.population()).containsEntry("doomed", 0);
+        assertThat(row.deaths()).isEqualTo(Map.of("doomed", Map.of("first", 1)));
         assertThat(ticked).containsExactly("first");
     }
 
