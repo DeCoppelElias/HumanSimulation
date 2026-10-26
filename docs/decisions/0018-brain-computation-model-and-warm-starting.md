@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-05. Revised 2026-10-20.
+Accepted, 2026-09-05. Revised 2026-10-26.
 
 ## Context
 
@@ -49,7 +49,10 @@ Warm starting lives in the species. A species carries a baseline genome
 alongside its gene layout, per [0003](0003-entities-carry-components.md), and
 every first-generation member starts from that baseline with mutation applied
 rather than from random values. This holds for any brain. With the world's
-`mutation` setting off, a control run, it starts from the baseline exactly.
+`mutation` setting off, a control run, it starts from the baseline exactly. A
+spawn may override some of the baseline's genes for its members, per
+[0007](0007-state-leaves-as-a-snapshot-commands-go-in.md), which is how an
+experiment starts a population from a worse genome than the species' own.
 
 ## Consequences
 

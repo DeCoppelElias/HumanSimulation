@@ -21,6 +21,9 @@ the fixed-rules brain is the first entry such a library would hold.
 
 ## What it would touch
 
+A spawn already takes gene overrides, per
+[0007](../decisions/0007-state-leaves-as-a-snapshot-commands-go-in.md), so
+loading a saved genome into spawned creatures is a spawn with every gene given.
 Genomes, species and their layouts need a stable serialised form, which is
 cheap while they are plain records. Loading needs a command, per
 [0007](../decisions/0007-state-leaves-as-a-snapshot-commands-go-in.md). A

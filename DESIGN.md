@@ -325,7 +325,8 @@ controls. An agent drives worlds over the same API with no browser open.
 A `run` command advances a seeded world for a given number of days and prints
 the census as JSON Lines, with population and the mean of each gene per
 species. It overrides any setting from the command line, on day 0 or on a
-later day, so a run can get harsher as it goes. A comparison script runs
+later day, so a run can get harsher as it goes, and any gene of its starting
+population, so a run can start from a worse genome than the species' own. A comparison script runs
 variants of a world over many seeds and reports how each fared, and the roadmap
 entry that runs it says what the report should show. Together they are the only
 thing that catches a build which compiles, passes every test, and quietly stops
@@ -337,7 +338,8 @@ A world is built from its width and height, a seed, the set of species it knows
 and its world processes, and starts empty. Its starting population is spawn commands, which
 whoever creates the world sends on day 0 and again after a reset, so the seed
 and the command log describe a run from its first creature. A spawn names its
-species, and each member is drawn from its species' baseline genome. Spawning
+species, and each member is drawn from its species' baseline genome, with any
+genes the spawn overrides put in its place. Spawning
 works on any day, which is how creatures are added to a running world.
 Everything else follows from advancing days. The same construction serves the
 web interface and the `run` command, which is what makes a watched run and a

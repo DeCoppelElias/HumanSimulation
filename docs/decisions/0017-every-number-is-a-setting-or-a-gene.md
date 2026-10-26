@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-27. Revised 2026-10-20.
+Accepted, 2026-09-27. Revised 2026-10-26.
 
 ## Context
 
@@ -144,7 +144,10 @@ follows from being able to edit anything, and its description says so.
 Because commands drain at the day boundary, a live read is stable within a day.
 
 Worlds on one server share species objects and never share an edit. Changing a
-default is a code change, and no command can do it.
+default is a code change, and no command can do it. The same holds for a
+species' baseline genome: a spawn can override genes for the members it
+creates, per [0007](0007-state-leaves-as-a-snapshot-commands-go-in.md), and
+the species keeps its own.
 
 A logged `RestoreDefaults` replays to the defaults of the build replaying it, so
 a log replayed on a build with other defaults diverges there. Replay is promised

@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-10-01. Revised 2026-10-20.
+Accepted, 2026-10-01. Revised 2026-10-26.
 
 ## Context
 
@@ -120,6 +120,13 @@ variant side by side.
 sent as a `SetSetting` on day 0 and checked like an edit from the panel.
 `--set-at DAY:owner.key=value` sends it once DAY days are complete, which is how
 a world gets harsher partway through a run. `--set` is `--set-at 0`.
+
+`--gene species.gene=value`, repeatable, overrides a gene of that species'
+starting spawn, so an experiment can start a population from a worse genome
+than its species' baseline. It rides on the `Spawn` command, per
+[0007](0007-state-leaves-as-a-snapshot-commands-go-in.md), so the log still
+describes the run. The HTTP API takes the same overrides as an optional `genes`
+field on a spawn, and the page sends none.
 
 A comparison script in `tools/` runs variants of a world over a range of seeds,
 one `run` per seed and variant in parallel. A variant is a name and a list of
