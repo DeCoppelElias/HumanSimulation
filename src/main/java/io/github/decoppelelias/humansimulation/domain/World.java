@@ -18,6 +18,7 @@ public final class World {
     private static final String ALGORITHM = "L64X128MixRandom";
     static final String SPEED = "speed";
     static final String MUTATION = "mutation";
+    static final String EATEN = "eaten";
 
     /** Settings the world declares itself, ahead of its processes' in the World group. */
     static final Settings OWN = new Settings(List.of(new Setting.Toggle(
@@ -74,7 +75,7 @@ public final class World {
         List<Decision> order = dayOrder(decide(), this::speedOf, random);
         resolve(order);
         feed(order);
-        metabolise();
+        tick();
         runProcesses();
         day++;
         return new DayReport(snapshot(), census());
@@ -187,7 +188,7 @@ public final class World {
                     if (id != eater.id() && other != null) {
                         other.part(Edible.class).ifPresent(edible -> {
                             metabolism.credit(edible.amount());
-                            remove(id);
+                            remove(id, EATEN);
                         });
                     }
                 }
@@ -195,13 +196,16 @@ public final class World {
         }
     }
 
-    /** Charges every reserve in id order and removes anything below zero. */
-    private void metabolise() {
+    /** Ticks each entity's parts in id order. The stream is lazy, so the first cause ends it and later parts wait. */
+    private void tick() {
         for (int id : entityIds()) {
             Entity entity = entities.get(id);
-            if (entity != null
-                    && entity.part(Metabolism.class).map(m -> !m.tick()).orElse(false)) {
-                remove(id);
+            if (entity != null) {
+                entity.parts().stream()
+                        .map(Component::tick)
+                        .flatMap(Optional::stream)
+                        .findFirst()
+                        .ifPresent(cause -> remove(id, cause));
             }
         }
     }
@@ -331,7 +335,7 @@ public final class World {
     }
 
     /** Checks everything before changing anything, so a failed removal leaves the world whole. */
-    void remove(int id) {
+    void remove(int id, String cause) {
         Entity entity = entities.get(id);
         if (entity == null) {
             throw new IllegalArgumentException("there is no entity " + id + " to remove");

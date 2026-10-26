@@ -92,11 +92,11 @@ class MetabolismTest {
     }
 
     @Test
-    void survivesAtZeroAndNotBelow() {
+    void survivesAtZeroAndStarvesBelow() {
         Metabolism metabolism = metabolism(1, 1, 1);
-        assertThat(metabolism.tick()).isTrue();
+        assertThat(metabolism.tick()).isEmpty();
         assertThat(metabolism.ownView()).isEqualTo(new Metabolism.Own(0, 0));
-        assertThat(metabolism.tick()).isFalse();
+        assertThat(metabolism.tick()).contains(Metabolism.STARVED);
     }
 
     @Test

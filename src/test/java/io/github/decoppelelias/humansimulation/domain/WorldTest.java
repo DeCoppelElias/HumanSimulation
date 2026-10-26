@@ -648,10 +648,51 @@ class WorldTest {
         World world = new World(5, 5, 1, RABBITS);
         world.submit(new Command.Spawn("rabbit", 2));
         WorldSnapshot before = world.applyPending();
-        assertThatThrownBy(() -> world.remove(7))
+        assertThatThrownBy(() -> world.remove(7, World.EATEN))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("7");
         assertThat(world.snapshot()).isEqualTo(before);
+    }
+
+    /** Ends its carrier on its first tick, naming its cause, and records that it was ticked. */
+    private record Ends(String cause, List<String> ticked) implements Component {
+        @Override
+        public Class<? extends Component> key() {
+            return Ends.class;
+        }
+
+        @Override
+        public Record ownView() {
+            return this;
+        }
+
+        @Override
+        public Optional<Record> seenView() {
+            return Optional.empty();
+        }
+
+        @Override
+        public Optional<String> tick() {
+            ticked.add(cause);
+            return Optional.of(cause);
+        }
+    }
+
+    @Test
+    void onlyTheFirstPartToNameACauseEndsItsCarrier() {
+        List<String> ticked = new ArrayList<>();
+        Species doomed = new Species(
+                "doomed",
+                "doomed",
+                List.of(),
+                new Genome(List.of(), Map.of()),
+                Settings.NONE,
+                Optional.empty(),
+                List.of(spawn -> new Ends("first", ticked), spawn -> new Ends("second", ticked)));
+        World world = new World(3, 3, 1, List.of(doomed));
+        world.submit(new Command.Spawn("doomed", 1));
+        assertThat(world.advance().census().population()).containsEntry("doomed", 0);
+        assertThat(ticked).containsExactly("first");
     }
 
     @Test

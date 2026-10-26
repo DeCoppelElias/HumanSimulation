@@ -8,6 +8,7 @@ final class Metabolism implements Component {
     static final String STARTING_RESERVE = "startingReserve";
     static final String SPEED_CHARGE = "speedCharge";
     static final String VIEW_CHARGE = "viewCharge";
+    static final String STARVED = "starved";
 
     /** The reserve, and the days left at the live charge and interval, genes included. */
     record Own(double reserve, int daysLeft) {}
@@ -59,14 +60,14 @@ final class Metabolism implements Component {
         reserve -= amount;
     }
 
-    /** One day passes. Returns whether the carrier is still alive. */
-    boolean tick() {
+    @Override
+    public Optional<String> tick() {
         daysSinceCharge++;
         if (daysSinceCharge >= settings.whole(EATING_INTERVAL)) {
             daysSinceCharge = 0;
             reserve -= charge();
         }
-        return reserve >= 0;
+        return reserve >= 0 ? Optional.empty() : Optional.of(STARVED);
     }
 
     /** Eating, plus speed and the tiles in view where the species declares both the gene and its charge. */
