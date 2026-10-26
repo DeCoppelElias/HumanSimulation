@@ -1,6 +1,6 @@
 # Comparison statistics
 
-Status: idea.
+Status: planned, roadmap entry 7.
 
 ## What it does
 
@@ -13,9 +13,9 @@ or more seeds.
 
 ## Why it is interesting
 
-Counts over ten seeds cannot tell a real effect from luck. Entry 7's gate asks
-for 8 of 10, and a variant that truly wins 70% of the time passes that only
-about 38% of the time. Tuning runs on the same ten seeds also fit settings to
+Counts over ten seeds cannot tell a real effect from luck. Entry 7's first
+selection gate asked for 8 of 10, and a variant that truly wins 70% of the
+time passes that only about 38% of the time. Tuning runs on the same ten seeds also fit settings to
 those seeds. Â12 and Mann-Whitney are the usual pair for randomised algorithms
 (Arcuri and Briand, ICSE 2011), and both use every seed's value rather than a
 win or a loss, so a tie no longer counts as a failure.

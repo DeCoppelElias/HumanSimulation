@@ -22,6 +22,6 @@ interval, beside the food spawning from roadmap entry 5.
 ## Open questions
 
 Immigrants carry the species' baseline genome, so every arrival dilutes what
-selection has built. That works against the selection gate in roadmap entry 7,
+selection has built. That works against the selection gate in roadmap entry 9,
 so immigration would need to be off by default, or immigrants would need a
 genome drawn from somewhere other than the baseline.

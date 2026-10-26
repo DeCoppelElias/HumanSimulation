@@ -20,8 +20,10 @@ covers it.
 1. Read the idea file, every decision it links, and `docs/roadmap/`. Note any
    roadmap entry that says it will settle this idea's question.
 2. List the choices adoption forces:
-   - each open question in the idea file: answer now, or defer with the roadmap
-     entry recording that it gets a log entry before it is built;
+   - each open question in the idea file: defer it to the entry's own grill,
+     listed in the entry as a detail to settle there, unless placement or
+     scope depends on it. Elias wants the specifics grilled in the session that
+     builds the entry;
    - scope, meaning what of the idea is in and what waits;
    - placement: a new roadmap entry or folded into an existing one, and what it
      depends on;
@@ -32,10 +34,12 @@ covers it.
 4. Apply them:
    - decision changes through the changing-decisions skill (REQUIRED
      SUB-SKILL), which updates `DESIGN.md` too;
-   - the roadmap entry: a new file in `docs/roadmap/` with the next free
-     number, holding the title, `Status: not started.`, what it builds, what it
+   - the roadmap entry: a new file in `docs/roadmap/` numbered for its place
+     in the build order, per 0001, after renumbering the unfinished entries
+     from that place on, their files and every "entry N" that cites them. It
+     holds the title, `Status: not started.`, what it builds, what it
      depends on, and a See list of the decisions and the idea file, plus its
-     line in `docs/roadmap/README.md` at the place in the order Elias chose;
+     line in `docs/roadmap/README.md`, which runs in ascending number;
    - any roadmap entry that promised to settle the question, rewritten to say
      where it is settled now;
    - the idea's status line: `Status: planned, roadmap entry N.` The file

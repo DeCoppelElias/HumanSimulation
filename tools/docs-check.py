@@ -138,6 +138,12 @@ def check_roadmap(root, findings):
         if f"({path.name})" not in index:
             findings.append(f"{rel} is not in docs/roadmap/README.md")
 
+    # Numbers follow the build order, per 0001, so the list runs in ascending number.
+    listed = [name for name in re.findall(r"\(([^)]+\.md)\)", index) if ROADMAP_FILE.match(name)]
+    for before, after in zip(listed, listed[1:]):
+        if int(after[:2]) < int(before[:2]):
+            findings.append(f"docs/roadmap/README.md lists {after} after {before}")
+
 
 def check(root: Path):
     findings = []

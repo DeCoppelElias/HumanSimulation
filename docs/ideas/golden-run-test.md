@@ -24,7 +24,7 @@ on when regenerating is allowed.
 
 Whether it is worth its overhead, which is why it was left out of roadmap entry
 1. It breaks on every intended behaviour change: each rule in entries 5 and 6
-and each tuned default in entry 7, so regenerating it becomes part of almost
+and each tuned default in entries 8 and 9, so regenerating it becomes part of almost
 every change. What it catches is mostly harmless, since comparisons across
 changes are about the direction of selection over many seeds rather than a
 matching trace, per [0012](../decisions/0012-tests-target-brains-without-a-world.md),

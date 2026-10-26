@@ -21,7 +21,7 @@ three tiles. Its genes were the chances in those rolls.
 Keeping that shape, as a scalar for wandering against food and a distribution
 over the food choices, was the first alternative. A gene that shifts weight
 between named strategies flips a creature between discrete behaviours, so
-selection is hard to see working, and entry 7 is the gate where it has to be
+selection is hard to see working, and entry 9 is the gate where it has to be
 seen. A brain has no memory, so a random choice made again each day drifts
 between targets where 2022 kept walking to one. A new threat needs a new
 strategy written for it. And a rolled distance walks past food one tile away on

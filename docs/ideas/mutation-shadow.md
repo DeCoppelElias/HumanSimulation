@@ -18,8 +18,8 @@ change helped and selection added nothing measurable.
 ## Why it is interesting
 
 A start near a gene's bound makes a random walk look like learning. Entry 7's
-gate starts `grassPull` at 0.2 with a floor of 0, so mutation alone pushes it up
-on average. Comparing against a neutral shadow is how artificial life separates
+`selection-gate` preset starts `grassPull` at 0.2 with a floor of 0, so
+mutation alone pushes it up on average. Comparing against a neutral shadow is how artificial life separates
 adaptation from drift: Bedau's neutral shadow models and the random-selection
 runs in Yaeger's Polyworld both keep everything except selection.
 

@@ -33,7 +33,7 @@ Whether `World` itself should shed work first, which needs no subpackage.
 After entry 6 it runs the day, checks and applies commands, places entities,
 counts the census and builds the snapshot, in about 360 lines. The census and
 the command switch are the first candidates to move into their own classes,
-since entries 7 to 9 add to both.
+since entries 7 to 11 add to both.
 
 Whether a module descriptor, or an architecture test along the lines of the
 `jdeps` one, could hold the boundary instead of package-private visibility, so

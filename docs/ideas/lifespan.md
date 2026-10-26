@@ -1,6 +1,6 @@
 # Lifespan
 
-Status: idea.
+Status: planned, roadmap entry 8.
 
 ## What it does
 

@@ -144,6 +144,14 @@ class DocsCheckTest(unittest.TestCase):
         )
         self.assertFinding("number 01 is used twice")
 
+    def test_roadmap_index_out_of_build_order(self):
+        self.write("docs/roadmap/02-second.md", ENTRY.replace("# 1.", "# 2."))
+        self.write(
+            "docs/roadmap/README.md",
+            "# Roadmap\n\n1. [Second](02-second.md)\n2. [First](01-first.md)\n",
+        )
+        self.assertFinding("README.md lists 01-first.md after 02-second.md")
+
     def test_superpowers_folder_is_skipped(self):
         self.write("docs/superpowers/plans/p.md", "[x](nowhere.md)\n")
         self.assertEqual([], self.findings())

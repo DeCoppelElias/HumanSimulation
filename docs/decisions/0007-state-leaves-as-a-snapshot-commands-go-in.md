@@ -60,9 +60,9 @@ command, the same lookup written in `run`, the web adapter and the tests. A name
 keeps the command a plain value that reads the same in the log as on the wire.
 
 An experiment sometimes needs a first generation that starts somewhere other
-than the species' baseline, such as roadmap entry 7's gate, which starts rabbits
-from a genome that barely aims for food. `run` could build a species with
-another baseline instead. That leaves the command log silent about what the
+than the species' baseline, such as the `selection-gate` preset from roadmap
+entry 7, which starts rabbits from a genome that barely aims for food. `run`
+could build a species with another baseline instead. That leaves the command log silent about what the
 run started with, so the same seed and log replay differently unless the same
 flag is passed again. Overrides on the spawn put the starting genome in the log.
 

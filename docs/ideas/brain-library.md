@@ -1,6 +1,7 @@
 # Brain library
 
-Status: idea.
+Status: idea. Exporting and spawning genomes through `run` is planned in
+roadmap entry 9.
 
 ## What it does
 

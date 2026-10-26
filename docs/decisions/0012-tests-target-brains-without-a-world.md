@@ -74,9 +74,9 @@ the rule it guarded is kept in `docs/ideas/aggression-at-contested-food.md`.
 A headless runner is built early, as the `run` command from
 [0021](0021-agents-drive-worlds-over-http-and-run.md). It advances a seeded
 world for a given number of days and reports population and gene means. The
-comparison script from 0021 runs it over many seeds and variants, and
-roadmap entry 7's selection gate is its first experiment: rabbits that mutate
-against clones that cannot, in a world getting harsher.
+comparison script from 0021 runs it over many seeds and variants. Roadmap
+entry 9's selection gate is built on both: rabbits that evolved compete against
+the genomes they started from, in one world and each group alone.
 
 ## Consequences
 
