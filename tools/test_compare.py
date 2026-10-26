@@ -163,6 +163,11 @@ class DeathsTest(unittest.TestCase):
         grass = compare.report_all(lines, ["d"], [1, 2, 3], ["grass"], 5)["grass"]
         self.assertEqual(grass["deaths"]["aged"]["d"], {"min": 0.0, "median": 0.25, "max": 0.5, "of": 2})
 
+    def test_a_report_fills_causes_itself(self):
+        results = {("d", 1): dict(run(None), deaths={"aged": 1.0}), ("d", 2): dict(run(None), deaths={"eaten": 1.0})}
+        deaths = compare.report(results, ["d"], [1, 2], "grass")["deaths"]
+        self.assertEqual(deaths["aged"]["d"]["min"], 0.0)
+
     def test_a_single_cause_gets_no_line(self):
         lines = {("d", 1): [dying(1, {"rabbit": {"starved": 2}})]}
         rabbit = compare.report_all(lines, ["d"], [1], ["rabbit"], 5)["rabbit"]
@@ -179,7 +184,9 @@ class DeathsTest(unittest.TestCase):
         self.assertIn("grass: deaths by cause, share min / median / max", text)
         self.assertRegex(text, r"aged +a 0\.25 / 0\.25 / 0\.25 +b 0\.50 / 0\.50 / 0\.50")
         self.assertNotIn("grass: survival", text)
-        self.assertNotIn("grass: population", text)
+        per_seed = compare.format_text(reports, True)
+        self.assertNotIn("grass: population", per_seed)
+        self.assertNotIn("grass: gene means", per_seed)
         self.assertEqual([c["measure"] for c in reports["grass"]["comparisons"]], ["deaths.aged", "deaths.eaten"])
 
 

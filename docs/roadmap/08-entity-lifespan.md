@@ -17,9 +17,10 @@ Its own view reports age and days left, which no brain reads.
 
 The census row gains the day's deaths per species and cause, per
 [0007](../decisions/0007-state-leaves-as-a-snapshot-commands-go-in.md).
-`compare.py` adds one line per species giving each cause's share of its deaths,
-min, median and max across seeds, and a comparison row per cause share, still
-knowing no cause by name. Grass appears in the report through its deaths. The
+`compare.py` adds a deaths section per species, one row per cause giving its
+share of the species' deaths, min, median and max across seeds, and a
+comparison row per cause share, still knowing no cause by name. A species that
+only ever dies of one cause gets no section. Grass appears in the report through its deaths. The
 per-seed population table moves behind `--per-seed`, so the default report
 stays short.
 

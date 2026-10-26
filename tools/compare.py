@@ -40,7 +40,7 @@ def rows_of(lines):
 
 
 def species_in(runs):
-    """Every species with gene means on day 1 of any run, or a death on any day, so grass appears through its deaths."""
+    """Every species with gene means on day 1 of any run, or a death on any day, so a species without genes appears through its deaths."""
     found = set()
     for lines in runs:
         rows = rows_of(lines)
@@ -185,6 +185,7 @@ def adjust_across(reports):
 
 def report(results, variants, seeds, species, floor=5):
     """Each variant after the first is counted against the first, seed by seed."""
+    fill_causes(results)
     reference = variants[0]
     outlasts = []
     for variant in variants[1:]:
@@ -256,7 +257,6 @@ def report_all(lines, variants, seeds, species, floor):
     reports = {}
     for one in species or species_in(lines.values()):
         results = {key: summarise(found, one, floor) for key, found in lines.items()}
-        fill_causes(results)
         reports[one] = report(results, variants, seeds, one, floor)
     adjust_across(reports)
     return reports
@@ -359,7 +359,7 @@ def _per_seed(species, one):
 
 
 def format_text(reports, per_seed):
-    """A species without genes, like grass, shows only its deaths."""
+    """A species without genes shows only its deaths."""
     out = []
     for species, one in reports.items():
         if one["hasGenes"]:
