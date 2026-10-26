@@ -1,6 +1,6 @@
 {
-  "about": "Entry 7's first preset: rabbits that mutate against clones that cannot, both starting from a genome that barely aims for food, as grass per drop falls from 7 to 1. Expectations are in docs/roadmap/07-comparing-runs.md.",
-  "seeds": "1-10",
+  "about": "Rabbits that mutate against clones that cannot, both starting from a genome that barely aims for food, as grass per drop falls from 7 to 1. It does not measure selection: grass waits until eaten, so separate worlds cannot see foraging skill. See docs/roadmap/07-comparing-runs.md.",
+  "seeds": "1-30",
   "days": 1000,
   "flags": [
     "--gene", "rabbit.grassPull=0.2",

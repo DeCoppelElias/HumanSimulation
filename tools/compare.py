@@ -3,7 +3,7 @@
 It reports and never judges. What a result should show is written on the
 roadmap entry that runs it.
 
-    python tools/compare.py tools/experiments/selection-gate.json
+    python tools/compare.py tools/experiments/mutation-ramp.json
     python tools/compare.py --seeds 1-3 --days 200 --variant base= --variant cheap="--set rabbit.speedCharge=0.05"
 
 It needs the jar, from ./mvnw package -Pskip-frontend.
@@ -286,8 +286,8 @@ def format_text(reports, per_seed):
 
 def parse_args(argv):
     parser = argparse.ArgumentParser(description="Run variants of a world over seeds and report how each fared.")
-    parser.add_argument("preset", nargs="?", help="a JSON preset, such as tools/experiments/selection-gate.json")
-    parser.add_argument("--seeds", help="an inclusive range such as 1-10")
+    parser.add_argument("preset", nargs="?", help="a JSON preset, such as tools/experiments/mutation-ramp.json")
+    parser.add_argument("--seeds", help="an inclusive range such as 1-30")
     parser.add_argument("--days", type=int)
     parser.add_argument("--flags", default="", help="run flags shared by every variant, quoted")
     parser.add_argument("--variant", action="append", default=[], help='NAME="run flags", repeatable')
