@@ -1,9 +1,9 @@
 # HumanSimulation
 [![CI](https://github.com/DeCoppelElias/HumanSimulation/actions/workflows/ci.yml/badge.svg)](https://github.com/DeCoppelElias/HumanSimulation/actions/workflows/ci.yml)
 
-A world you watch evolve. Grass falls on a grid every seven days, and rabbits
-walk toward the grass they can see, eat it, and starve when they go too long
-without. A rabbit with enough reserve can breed, and its child inherits its
+A world you watch evolve. Grass falls on a grid every seven days and withers if
+nothing eats it within twelve. Rabbits walk toward the grass they can see, eat
+it, and starve when they go too long without. A rabbit with enough reserve can breed, and its child inherits its
 genes with small mutations, so the population drifts toward whatever works.
 `DESIGN.md` says where it is going and `docs/roadmap/` how far it has got.
 
@@ -37,7 +37,7 @@ address holds the world's id, so a reload or a second tab shows the same world.
 
 Under the chart, the settings panel has a slider for every number the world
 reads, grouped as World, Grass and Rabbit, each with its description: how much
-grass falls and how often, what a rabbit pays a day, how far it walks, and what
+grass falls, how often and how long it lasts, what a rabbit pays a day, how far it walks, and what
 breeding costs. An edit takes effect at the next day and only in that world. An
 edited setting is marked in bold, its ↺ button puts the default back, and
 "Restore all" resets every one. A reset keeps the edits. The World group starts
@@ -50,13 +50,16 @@ Pack Remastered and the grass from Foliage Pack.
 ## Running
 
 `run` advances a seeded world without a page and prints its census as JSON
-Lines, one line per day: the population of each species, and the mean of each
-gene over the members alive that day.
+Lines, one line per day: the population of each species, the mean of each gene
+over the members alive that day, and that day's deaths per species by cause,
+which is `starved`, `eaten` or `aged`.
 
     java -jar target/HumanSimulation.jar run --seed 42 --days 300
-    {"seed":42,"day":1,"population":{"grass":0,"rabbit":10},"geneMeans":{"rabbit":{"breedPull":1.01,...,"viewRange":2.99,"whim":0.53}}}
+    {"seed":42,"day":1,"population":{"grass":0,"rabbit":10},"geneMeans":{"rabbit":{"breedPull":1.01,...,"whim":0.53}},"deaths":{}}
     ...
-    {"seed":42,"day":300,"population":{"grass":1,"rabbit":10},"geneMeans":{"rabbit":{"breedPull":1.12,...,"viewRange":4.01,"whim":0.53}}}
+    {"seed":42,"day":64,"population":{...},"geneMeans":{...},"deaths":{"grass":{"eaten":2},"rabbit":{"starved":1}}}
+    ...
+    {"seed":42,"day":300,"population":{"grass":2,"rabbit":7},"geneMeans":{"rabbit":{"breedPull":1.53,...,"whim":0.62}},"deaths":{}}
 
 `--days` is required. `--seed` defaults to one drawn from the clock, `--width`
 and `--height` to 20. `--spawn SPECIES=COUNT`, once per species, sets the
@@ -85,14 +88,17 @@ variants, and flags on the command line override it. `watchable` is the world
 the page starts from. `mutation-ramp` runs mutating rabbits against clones as
 food runs short.
 
-Per species, the report gives the day each world died out, its population, and
-how far each gene's mean moved from day 1. It then compares each variant with
+Per species, the report gives the day each world died out, how far each gene's
+mean moved from day 1, and each cause's share of the species' deaths, such as
+how much grass withered rather than being eaten. A species without genes, like
+grass, shows only its deaths, and one that only ever dies of one cause shows no
+deaths. It then compares each variant with
 the first on every measure: both medians, Â12 (the chance that a run of the
 variant beats a run of the first, 0.5 meaning no difference), and a
 Mann-Whitney p printed twice. Read the raw p for a measure you chose before
 running, and the Holm p, which allows for every test in the report, when
-scanning for anything that stands out. `--per-seed` adds each seed's genes and
-`--json` prints everything. The script never says which variant won.
+scanning for anything that stands out. `--per-seed` adds each seed's population and
+genes, and `--json` prints everything. The script never says which variant won.
 
 ## Serving
 
