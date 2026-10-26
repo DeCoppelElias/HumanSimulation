@@ -20,7 +20,9 @@ import subprocess
 import sys
 from pathlib import Path
 
-DEFAULT_JAR = Path(__file__).resolve().parent.parent / "target" / "HumanSimulation.jar"
+# A mean of identical genes can come out a few ulps off them.
+ROUNDING = 1e-9
+DEFAULT_JAR =Path(__file__).resolve().parent.parent / "target" / "HumanSimulation.jar"
 
 
 def parse_seeds(text):
@@ -99,7 +101,7 @@ def report(results, variants, seeds, species, floor=5):
                 "min": min(ended, default=None),
                 "median": statistics.median(ended) if ended else None,
                 "max": max(ended, default=None),
-                "above": sum(value > start for value, start in pairs),
+                "above": sum(value - start > ROUNDING for value, start in pairs),
                 "of": len(pairs),
             }
     return {

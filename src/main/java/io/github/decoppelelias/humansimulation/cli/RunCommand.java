@@ -63,7 +63,8 @@ public final class RunCommand implements Callable<Integer> {
     @Option(
             names = "--gene",
             paramLabel = "SPECIES.GENE=VALUE",
-            description = "Start that species' spawn from its baseline with this gene in place. Repeatable.")
+            description = "Start that species' spawn from its baseline with this gene in place. Repeatable, and the"
+                    + " last value for a gene wins.")
     private List<String> gene = List.of();
 
     @Override

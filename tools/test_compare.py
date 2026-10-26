@@ -122,6 +122,13 @@ class GeneReportTest(unittest.TestCase):
         self.assertEqual((genes["min"], genes["median"], genes["max"]), (0.3, 0.45, 0.6))
 
 
+class RoundingTest(unittest.TestCase):
+    def test_a_mean_that_only_differs_by_rounding_is_not_above(self):
+        results = {("control", 1): run(None, speed=0.20000000000000004, start=0.2)}
+        genes = compare.report(results, ["control"], [1], "rabbit")["genes"]["speed"]["control"]
+        self.assertEqual(genes["above"], 0)
+
+
 class TextTest(unittest.TestCase):
     def test_states_the_count_without_a_verdict(self):
         results = {("control", 1): run(300), ("mutating", 1): run(400)}

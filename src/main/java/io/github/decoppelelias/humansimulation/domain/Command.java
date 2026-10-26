@@ -15,6 +15,11 @@ public sealed interface Command {
             if (count < 1) {
                 throw new IllegalArgumentException("spawn at least one " + species + ", got " + count);
             }
+            genes.forEach((gene, value) -> {
+                if (value == null) {
+                    throw new IllegalArgumentException("gene " + gene + " needs a value");
+                }
+            });
             genes = Collections.unmodifiableSortedMap(new TreeMap<>(genes));
         }
 

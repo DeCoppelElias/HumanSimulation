@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.within;
 import static org.assertj.core.groups.Tuple.tuple;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -367,6 +368,15 @@ class WorldTest {
                 .hasMessageContaining("grassPull");
         assertThat(occupied(world.applyPending())).isEmpty();
         assertThat(world.log()).isEmpty();
+    }
+
+    @Test
+    void anOverrideWithNoValueIsRefusedByName() {
+        Map<String, Double> genes = new HashMap<>();
+        genes.put("grassPull", null);
+        assertThatThrownBy(() -> new Command.Spawn("rabbit", 1, genes))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("grassPull");
     }
 
     @Test
