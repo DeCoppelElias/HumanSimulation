@@ -194,11 +194,15 @@ keyed by species name in name order. A species that has died out stays in the
 row at zero, so a chart line does not break at an extinction. The row also
 holds the mean of each gene per species, over the members alive at the end of
 the day, from their raw values. A species with no members or no genes is left
-out of the means, since a zero would read as a real mean.
+out of the means, since a zero would read as a real mean. And it holds the
+day's deaths per species, counted by the cause that ended each one, per
+[0024](0024-a-part-can-end-its-carrier.md). A species with no deaths that day
+is left out, and a reader takes a missing cause as zero.
 
 ```java
 public record CensusRow(int day, Map<String, Integer> population,
-        Map<String, Map<String, Double>> geneMeans) {}
+        Map<String, Map<String, Double>> geneMeans,
+        Map<String, Map<String, Integer>> deaths) {}
 ```
 
 The census row leaves with each day, and its history belongs to the adapter

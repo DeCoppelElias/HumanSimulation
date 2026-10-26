@@ -68,3 +68,6 @@ costs, and what the concrete type shapes are.
 - [0023](0023-rabbits-score-the-tiles-they-can-reach.md) A rabbit scores
   every tile it can reach by its pull toward grass and other rabbits, and picks
   one by softmax.
+- [0024](0024-a-part-can-end-its-carrier.md) Every part updates itself once a
+  day and may end its carrier with a cause, which the census counts; grass has
+  a lifespan and withers.

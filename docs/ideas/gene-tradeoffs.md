@@ -27,7 +27,7 @@ populations more distinct ways to be good, and more for a watcher to notice.
 
 Whatever the trait touches: the `Sense` for view range, the resolver for speed
 and reach.
-The charges in the metabolise step would shrink or go.
+The metabolism's charges would shrink or go.
 
 ## Open questions
 

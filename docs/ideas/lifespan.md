@@ -7,9 +7,13 @@ Status: planned, roadmap entry 8.
 A component that counts its carrier's days and ends the carrier when they run
 out, the way `Metabolism` ends a carrier whose reserve falls below zero. A
 species that declares it sets how long its members last with a setting of its
-own. Grass declares it, so grass left uneaten withers. Rabbits declare it too,
-with a default long enough that it rarely ends one, and the part reports each
-rabbit's age.
+own. Grass declares it, so grass left uneaten withers. Rabbits could declare it
+too, with a default long enough that it rarely ends one, so their age becomes
+visible.
+
+Entry 8 builds the grass half, per
+[0024](../decisions/0024-a-part-can-end-its-carrier.md): a fixed number of days,
+grass only. The rabbit half stays open here.
 
 ## Why it is interesting
 
@@ -38,16 +42,15 @@ A new component, and the day's step that removes the dead asks every part that
 can end its carrier rather than asking `Metabolism` by name. A setting per
 declaring species, per
 [0017](../decisions/0017-every-number-is-a-setting-or-a-gene.md). Entry 7's
-selection gate and its tuned food defaults, since withering changes how much
+tuned food defaults and entry 9's selection gate, since withering changes how much
 grass the world holds. The census or a snapshot gains age if runs are to
 measure it.
 
 ## Open questions
 
-Whether a lifespan is a fixed number of days or a daily chance, which spreads
-deaths out and avoids a whole drop of grass vanishing on one day.
-
-The rabbits' default, and what runs would justify lowering it.
+Whether rabbits declare it, with what default, and what runs would justify
+lowering it. Making their age visible needs an age field in the census and a
+measure in `compare.py`.
 
 Whether a rabbit's lifespan later becomes a gene, which needs a tradeoff to
 stop it pinning to its upper bound, per

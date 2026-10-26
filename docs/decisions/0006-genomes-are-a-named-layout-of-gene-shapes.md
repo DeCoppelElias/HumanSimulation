@@ -29,7 +29,7 @@ A child also needs a starting reserve. A reserve of zero kills it on its first
 metabolism charge unless it has eaten, and it cannot eat on its birth day, per
 [0004](0004-creatures-return-intents.md), so nearly every child would starve. A
 grace period of some days without charges was the other way out. It adds an age
-check to the metabolise step, and it gives every child days of life that no food
+check to the metabolism charge, and it gives every child days of life that no food
 paid for. The endowment was first a fraction of the breeding cost. A fraction
 reads only after multiplying, and a third sits on no slider step.
 

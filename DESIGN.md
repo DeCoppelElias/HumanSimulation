@@ -120,6 +120,12 @@ attached when something catches and removed when it burns out. A component that
 cuts across kinds is written once, and every kind that carries it gets the
 behaviour.
 
+A component may update itself once a day from its own state, and it may end
+its carrier, naming the cause. A metabolism ends it as starved when its reserve
+runs out. A lifespan counts its carrier's days and ends it as aged when they
+run out, so grass left uneaten withers. Anything that needs a neighbour or a
+tile is a rule of the world instead.
+
 A genome holds what varies between individuals of a species and what changes
 between parent and child. The species declares a layout of genes, and every gene
 today is a bounded scalar. Another shape arrives when a gene needs one, such as
@@ -260,10 +266,11 @@ A day runs these steps in order:
 3. Feed. In the same order, a creature takes every edible on its tile,
    crediting its metabolism. A pile taken is gone, so whoever comes later finds
    nothing.
-4. Metabolise. Reserves are charged on the eating interval, one charge covering
-   eating and the speed and view range the creature carries, and anything whose
-   reserve falls below zero dies. A reserve counts days: by default a creature
-   pays one a day for eating.
+4. Tick. Every entity's components update themselves, in id order. Reserves
+   are charged on the eating interval, one charge covering eating and the speed
+   and view range the creature carries, and lifespans count down. Anything a
+   component ends dies. A reserve counts days: by default a creature pays one a
+   day for eating.
 5. World processes, in list order: spawning new food, regrowth, fire.
 6. Clean up. One census row is produced.
 
@@ -323,8 +330,8 @@ carries the world's play state beside its days, so every tab shows the same
 controls. An agent drives worlds over the same API with no browser open.
 
 A `run` command advances a seeded world for a given number of days and prints
-the census as JSON Lines, with population and the mean of each gene per
-species. It overrides any setting from the command line, on day 0 or on a
+the census as JSON Lines, with population, the mean of each gene and the
+day's deaths by cause per species. It overrides any setting from the command line, on day 0 or on a
 later day, so a run can get harsher as it goes, and any gene of its starting
 population, so a run can start from a worse genome than the species' own. A comparison script runs
 variants of a world over many seeds and reports how each fared against the

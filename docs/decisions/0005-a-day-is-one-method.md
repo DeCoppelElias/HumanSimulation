@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-03. Revised 2026-10-15.
+Accepted, 2026-09-03. Revised 2026-10-26.
 
 ## Context
 
@@ -52,7 +52,7 @@ DayReport advance() {
     List<Decision> order = speedOrder(decisions);
     resolve(order);
     feed(order);
-    metabolise();
+    tick();
     for (WorldProcess p : processes) p.run(this);
     day++;
     CensusRow census = takeCensus();
@@ -73,8 +73,10 @@ Commands drain first, per
    child carrying a mutated genome and `childReserve`.
 3. Feed. In the same order, each creature takes every edible on its tile, per
    [0016](0016-feeding-takes-the-tile.md).
-4. Metabolise. On the eating interval, charge the eating cost plus the costs of
-   speed and view range. Anything whose reserve falls below zero dies.
+4. Tick. Every entity's parts update themselves in id order, per
+   [0024](0024-a-part-can-end-its-carrier.md). Metabolism charges the eating
+   cost plus the costs of speed and view range on the eating interval, and a
+   lifespan counts down. Anything a part ends dies.
 5. World processes, in list order: spawning food, regrowth, fire.
 6. Take one census row, and return it with the snapshot.
 

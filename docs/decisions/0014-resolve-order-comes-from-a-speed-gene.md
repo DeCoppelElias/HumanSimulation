@@ -48,7 +48,7 @@ One order is computed per day and both the resolve step and the feed step use
 it, per [0016](0016-feeding-takes-the-tile.md). Every other system iterates in
 ascending id order.
 
-Speed is charged for in the metabolise step, in proportion to the gene, so it
+Speed is charged for by the metabolism, in proportion to the gene, so it
 trades against the reserve that feeds a creature's children. The rabbit's
 `speed` runs from 0 to 1, with a baseline of 0.5 and a mutation size of 0.05,
 since only the ranking matters and the charge sets the scale.
