@@ -271,7 +271,7 @@ public final class World {
 
     private void validate(Command command) {
         switch (command) {
-            case Command.Spawn spawn -> speciesNamed(spawn.species());
+            case Command.Spawn spawn -> speciesNamed(spawn.species()).baseline().with(spawn.genes());
             case Command.SpawnAt spawnAt -> {
                 speciesNamed(spawnAt.species());
                 if (!grid.contains(spawnAt.at())) {
@@ -301,9 +301,10 @@ public final class World {
         switch (command) {
             case Command.Spawn spawn -> {
                 Species kind = speciesNamed(spawn.species());
+                Genome start = kind.baseline().with(spawn.genes());
                 for (int i = 0; i < spawn.count(); i++) {
                     GridPosition at = randomTile();
-                    place(kind, at, inherit(kind.baseline()), Optional.empty());
+                    place(kind, at, inherit(start), Optional.empty());
                 }
             }
             case Command.SpawnAt spawnAt -> {

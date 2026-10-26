@@ -526,6 +526,18 @@ class ApiTest {
         return command(id, "{\"type\":\"spawn\",\"species\":\"rabbit\",\"count\":" + count + "}");
     }
 
+    @Test
+    void aSpawnTakesGeneOverridesAndRefusesAnUnknownGene() {
+        String id = newWorld();
+        assertThat(command(id, "{\"type\":\"spawn\",\"species\":\"rabbit\",\"count\":2,\"genes\":{\"grassPull\":0.2}}")
+                        .status())
+                .isEqualTo(200);
+        HttpTestClient.Response refused =
+                command(id, "{\"type\":\"spawn\",\"species\":\"rabbit\",\"count\":2,\"genes\":{\"wings\":1}}");
+        assertThat(refused.status()).isEqualTo(400);
+        assertThat(refused.body()).contains("wings");
+    }
+
     private String newWorld() {
         return client.post("/worlds", "{\"seed\":42}").json().get("id").asString();
     }

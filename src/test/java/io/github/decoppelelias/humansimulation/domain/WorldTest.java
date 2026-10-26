@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalDouble;
+import java.util.TreeMap;
 import java.util.random.RandomGeneratorFactory;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
@@ -328,6 +329,64 @@ class WorldTest {
             }
         }
         assertThat(seen).isEqualTo(40);
+    }
+
+    @Test
+    void aSpawnsGeneOverridesReplaceThoseGenesOfTheBaseline() {
+        World world = new World(10, 10, 1, RABBITS);
+        world.submit(new Command.SetSetting("world", "mutation", 0));
+        world.submit(new Command.Spawn("rabbit", 5, Map.of("grassPull", 0.2, "whim", 2.0)));
+        Map<String, Double> expected = new TreeMap<>(Rabbit.species().baseline().scalars());
+        expected.put("grassPull", 0.2);
+        expected.put("whim", 2.0);
+        List<Genome> spawned = genomes(world, world.applyPending());
+        assertThat(spawned)
+                .hasSize(5)
+                .allSatisfy(genome -> assertThat(genome.scalars()).isEqualTo(expected));
+    }
+
+    @Test
+    void mutationAppliesAfterTheOverrides() {
+        World world = new World(10, 10, 1, RABBITS);
+        world.submit(new Command.Spawn("rabbit", 20, Map.of("grassPull", 0.2)));
+        List<Genome> spawned = genomes(world, world.applyPending());
+        assertThat(spawned)
+                .extracting(genome -> genome.scalar("grassPull"))
+                .allSatisfy(value -> assertThat(value).isBetween(0.0, 0.4))
+                .anySatisfy(value -> assertThat(value).isNotEqualTo(0.2));
+    }
+
+    @Test
+    void anOverrideOfAnUndeclaredGeneOrOutOfBoundsChangesNothing() {
+        World world = new World(10, 10, 1, RABBITS);
+        assertThatThrownBy(() -> world.submit(new Command.Spawn("rabbit", 3, Map.of("wings", 1.0))))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("wings");
+        assertThatThrownBy(() -> world.submit(new Command.Spawn("rabbit", 3, Map.of("grassPull", 9.0))))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("grassPull");
+        assertThat(occupied(world.applyPending())).isEmpty();
+        assertThat(world.log()).isEmpty();
+    }
+
+    @Test
+    void theLogCarriesTheOverrides() {
+        World world = new World(10, 10, 1, RABBITS);
+        world.submit(new Command.Spawn("rabbit", 2, Map.of("grassPull", 0.2)));
+        world.applyPending();
+        assertThat(world.log())
+                .extracting(LoggedCommand::command)
+                .containsExactly(new Command.Spawn("rabbit", 2, Map.of("grassPull", 0.2)));
+    }
+
+    private static List<Genome> genomes(World world, WorldSnapshot snapshot) {
+        List<Genome> found = new ArrayList<>();
+        for (WorldSnapshot.TileView tile : snapshot.tiles()) {
+            for (WorldSnapshot.EntityView view : tile.entities()) {
+                found.add(world.entity(view.id()).orElseThrow().genome());
+            }
+        }
+        return found;
     }
 
     @Test
