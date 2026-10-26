@@ -211,6 +211,13 @@ def _number(value):
     return "-" if value is None else f"{value:.2f}"
 
 
+LEGEND = "raw p is for a measure named before the run, such as a gate's; Holm p is for scanning the whole report"
+
+
+def _median_text(value):
+    return value if isinstance(value, str) else f"{value:.2f}"
+
+
 def format_text(reports, per_seed):
     out = []
     for species, one in reports.items():
@@ -252,6 +259,16 @@ def format_text(reports, per_seed):
                 run = one["runs"][f"{variant}:{seed}"]
                 cells.append(f"{run['meanPopulation']:>9.1f} / {run['peak']:<4}")
             out.append(f"{seed:<6}" + "".join(cells))
+        if one["comparisons"]:
+            out.append("")
+            out.append(f"{species}: each variant against {variants[0]}, medians, A12, raw p, Holm p")
+            for c in one["comparisons"]:
+                out.append(
+                    f"{c['measure']:<16} {c['variant']} {_median_text(c['median'])}"
+                    f" vs {_median_text(c['referenceMedian'])}"
+                    f"  A12 {c['a12']:.2f}  p {c['p']:.3f}  Holm p {c['pHolm']:.3f}"
+                )
+            out.append(LEGEND)
         if per_seed:
             out.append("")
             out.append(f"{species}: gene means per seed, on the day measured")

@@ -239,6 +239,20 @@ class TextTest(unittest.TestCase):
         self.assertIn("mutating later than control: 1 of 1, ties 0, earlier 0", text)
         self.assertNotIn("pass", text.lower())
 
+    def test_the_comparison_names_which_p_to_read(self):
+        results = {("control", 1): run(300), ("mutating", 1): run(400)}
+        text = compare.format_text(
+            {"rabbit": compare.report(results, ["control", "mutating"], [1], "rabbit")}, per_seed=False
+        )
+        self.assertIn("rabbit: each variant against control, medians, A12, raw p, Holm p", text)
+        self.assertRegex(text, r"survival +mutating 400\.00 vs 300\.00  A12 1\.00  p 1\.000  Holm p 1\.000")
+        self.assertIn(compare.LEGEND, text)
+        self.assertNotIn("pass", text.lower())
+
+    def test_one_variant_prints_no_comparison(self):
+        text = compare.format_text({"rabbit": compare.report({("d", 1): run(None)}, ["d"], [1], "rabbit")}, False)
+        self.assertNotIn(compare.LEGEND, text)
+
     def test_counts_survivors_per_variant_and_shows_an_absent_run(self):
         results = {
             ("defaults", 1): run(None),
