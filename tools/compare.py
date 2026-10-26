@@ -98,6 +98,63 @@ def holm(ps):
     return adjusted
 
 
+BASE_MEASURES = ("survival", "meanPopulation", "peak")
+
+
+def measures(summary):
+    """Every number a run is compared on, a gene as gene.<name> so it cannot clash with the others."""
+    values = {
+        "survival": _lasted(summary["diedOn"]),
+        "meanPopulation": summary["meanPopulation"],
+        "peak": summary["peak"],
+    }
+    for gene, value in summary["genes"].items():
+        values[f"gene.{gene}"] = value
+    return values
+
+
+def _median(values):
+    middle = statistics.median(values)
+    return "alive" if middle == float("inf") else middle
+
+
+def compare_variants(results, variants, seeds):
+    """A seed with no value for a measure, such as a gene never measured, drops out of that measure only."""
+    values = {key: measures(summary) for key, summary in results.items()}
+    reference = variants[0]
+    comparisons = []
+    for variant in variants[1:]:
+        genes = sorted(
+            {name for v in (variant, reference) for seed in seeds for name in values[(v, seed)] if name.startswith("gene.")}
+        )
+        for name in [*BASE_MEASURES, *genes]:
+            mine = [values[(variant, seed)][name] for seed in seeds if name in values[(variant, seed)]]
+            theirs = [values[(reference, seed)][name] for seed in seeds if name in values[(reference, seed)]]
+            if not mine or not theirs:
+                continue
+            comparisons.append(
+                {
+                    "variant": variant,
+                    "reference": reference,
+                    "measure": name,
+                    "median": _median(mine),
+                    "referenceMedian": _median(theirs),
+                    "n": len(mine),
+                    "referenceN": len(theirs),
+                    "a12": a12(mine, theirs),
+                    "p": mann_whitney_p(mine, theirs),
+                }
+            )
+    return comparisons
+
+
+def adjust_across(reports):
+    """Holm over every comparison of every species, so pHolm covers the whole report."""
+    every = [comparison for one in reports.values() for comparison in one["comparisons"]]
+    for comparison, adjusted in zip(every, holm([comparison["p"] for comparison in every])):
+        comparison["pHolm"] = adjusted
+
+
 def report(results, variants, seeds, species, floor=5):
     """Each variant after the first is counted against the first, seed by seed."""
     reference = variants[0]
@@ -136,15 +193,18 @@ def report(results, variants, seeds, species, floor=5):
                 "above": sum(value - start > ROUNDING for value, start in pairs),
                 "of": len(pairs),
             }
-    return {
+    result = {
         "species": species,
         "floor": floor,
         "seeds": seeds,
         "variants": variants,
         "outlasts": outlasts,
+        "comparisons": compare_variants(results, variants, seeds),
         "genes": genes,
         "runs": {f"{variant}:{seed}": results[(variant, seed)] for variant in variants for seed in seeds},
     }
+    adjust_across({species: result})
+    return result
 
 
 def _number(value):
@@ -296,6 +356,7 @@ def main(argv):
     for one in species:
         results = {key: summarise(found, one, args.floor) for key, found in lines.items()}
         reports[one] = report(results, variants, seeds, one, args.floor)
+    adjust_across(reports)
     print(json.dumps(reports, indent=2) if args.json else format_text(reports, args.per_seed))
 
 

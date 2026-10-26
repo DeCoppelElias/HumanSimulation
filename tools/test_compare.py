@@ -148,6 +148,68 @@ class OutlastsTest(unittest.TestCase):
         )
 
 
+class ComparisonTest(unittest.TestCase):
+    RESULTS = {
+        ("control", 1): run(300),
+        ("mutating", 1): run(400, speed=0.6),
+        ("control", 2): run(None),
+        ("mutating", 2): run(None, speed=0.7),
+        ("control", 3): run(500),
+        ("mutating", 3): dict(run(40), measuredOn=None, genes={}),
+    }
+
+    def comparisons(self, results=None, variants=("control", "mutating")):
+        return compare.report(results or self.RESULTS, list(variants), [1, 2, 3], "rabbit")["comparisons"]
+
+    def test_every_measure_survival_first_then_population_then_genes(self):
+        self.assertEqual(
+            [c["measure"] for c in self.comparisons()], ["survival", "meanPopulation", "peak", "gene.speed"]
+        )
+
+    def test_survival_ranks_an_alive_world_last_and_gives_both_medians(self):
+        survival = self.comparisons()[0]
+        self.assertEqual((survival["variant"], survival["reference"]), ("mutating", "control"))
+        self.assertAlmostEqual(survival["a12"], 3.5 / 9)
+        self.assertEqual((survival["median"], survival["referenceMedian"]), (400, 500))
+
+    def test_an_alive_median_reads_as_alive(self):
+        results = {("a", 1): run(None), ("b", 1): run(None)}
+        survival = compare.report(results, ["a", "b"], [1], "rabbit")["comparisons"][0]
+        self.assertEqual((survival["median"], survival["referenceMedian"]), ("alive", "alive"))
+
+    def test_a_seed_without_gene_means_drops_out_of_that_gene_only(self):
+        by_measure = {c["measure"]: c for c in self.comparisons()}
+        self.assertEqual((by_measure["gene.speed"]["n"], by_measure["gene.speed"]["referenceN"]), (2, 3))
+        self.assertEqual(by_measure["survival"]["n"], 3)
+        self.assertEqual(by_measure["gene.speed"]["a12"], 1.0)
+
+    def test_each_variant_is_compared_with_the_first_only(self):
+        results = dict(self.RESULTS)
+        for seed in (1, 2, 3):
+            results[("third", seed)] = run(100)
+        found = self.comparisons(results, ("control", "mutating", "third"))
+        self.assertEqual(
+            {(c["variant"], c["reference"]) for c in found}, {("mutating", "control"), ("third", "control")}
+        )
+
+    def test_holm_is_never_below_raw(self):
+        for c in self.comparisons():
+            self.assertGreaterEqual(c["pHolm"], c["p"])
+
+    def test_holm_runs_across_every_species(self):
+        reports = {
+            "fox": {"comparisons": [{"p": 0.01}]},
+            "rabbit": {"comparisons": [{"p": 0.04}]},
+        }
+        compare.adjust_across(reports)
+        self.assertAlmostEqual(reports["fox"]["comparisons"][0]["pHolm"], 0.02)
+        self.assertAlmostEqual(reports["rabbit"]["comparisons"][0]["pHolm"], 0.04)
+
+    def test_one_variant_has_nothing_to_compare(self):
+        results = {("defaults", 1): run(None)}
+        self.assertEqual(compare.report(results, ["defaults"], [1], "rabbit")["comparisons"], [])
+
+
 class GeneReportTest(unittest.TestCase):
     def test_counts_seeds_above_their_own_start(self):
         results = {
