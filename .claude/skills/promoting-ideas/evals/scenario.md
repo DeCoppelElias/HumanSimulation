@@ -47,3 +47,12 @@ context and a recommendation, and listed the five that would follow.
 Passed. No edits. It read `docs/roadmap/README.md` and the entry files, found
 the promise in `08-predator.md`, listed the decisions that would change, and
 asked which deaths leave a corpse with a recommendation.
+
+## With the skill, 2026-10-26, after numbers began following the build order
+
+Passed. No edits. It found that the predator entry, now 10, promised to settle
+remains, deferred the corpse's value, lifespan, census and drawing to the
+entry's own grill, and asked first how a kill feeds the killer, since placement
+depends on it. It numbered the new entry for its place, 10 before Predator, and
+listed the four unfinished entries that would shift. A repository-wide grep
+showed it a few lines of this file, which it did not open.
