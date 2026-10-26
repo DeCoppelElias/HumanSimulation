@@ -326,6 +326,11 @@ class TextTest(unittest.TestCase):
         self.assertIn(compare.LEGEND, text)
         self.assertNotIn("pass", text.lower())
 
+    def test_population_per_seed_only_with_per_seed(self):
+        report = {"rabbit": compare.report({("d", 1): run(None)}, ["d"], [1], "rabbit")}
+        self.assertNotIn("rabbit: population, mean over days alive / peak", compare.format_text(report, False))
+        self.assertIn("rabbit: population, mean over days alive / peak", compare.format_text(report, True))
+
     def test_one_variant_prints_no_comparison(self):
         text = compare.format_text({"rabbit": compare.report({("d", 1): run(None)}, ["d"], [1], "rabbit")}, False)
         self.assertNotIn(compare.LEGEND, text)

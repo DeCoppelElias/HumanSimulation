@@ -274,7 +274,7 @@ def _median_text(value):
 
 
 def _lives(species, one):
-    """Survival, gene means and population, which only a species with genes has."""
+    """Survival and gene means, which only a species with genes has."""
     variants, seeds = one["variants"], one["seeds"]
     out = [f"{species}: survival, the day the last one died"]
     out.append("seed  " + "".join(f"{variant:>12}" for variant in variants))
@@ -304,15 +304,6 @@ def _lives(species, one):
                 f" above {g['above']} of {g['of']}"
             )
         out.append("".join(cells))
-    out.append("")
-    out.append(f"{species}: population, mean over days alive / peak")
-    out.append("seed  " + "".join(f"{variant:>16}" for variant in variants))
-    for seed in seeds:
-        cells = []
-        for variant in variants:
-            run = one["runs"][f"{variant}:{seed}"]
-            cells.append(f"{run['meanPopulation']:>9.1f} / {run['peak']:<4}")
-        out.append(f"{seed:<6}" + "".join(cells))
     out.append("")
     return out
 
@@ -344,8 +335,17 @@ def _comparisons(species, one):
     return out
 
 
-def _genes_per_seed(species, one):
-    out = [f"{species}: gene means per seed, on the day measured"]
+def _per_seed(species, one):
+    out = [f"{species}: population, mean over days alive / peak"]
+    out.append("seed  " + "".join(f"{variant:>16}" for variant in one["variants"]))
+    for seed in one["seeds"]:
+        cells = []
+        for variant in one["variants"]:
+            run = one["runs"][f"{variant}:{seed}"]
+            cells.append(f"{run['meanPopulation']:>9.1f} / {run['peak']:<4}")
+        out.append(f"{seed:<6}" + "".join(cells))
+    out.append("")
+    out.append(f"{species}: gene means per seed, on the day measured")
     for variant in one["variants"]:
         for seed in one["seeds"]:
             run = one["runs"][f"{variant}:{seed}"]
@@ -369,7 +369,7 @@ def format_text(reports, per_seed):
         if one["comparisons"]:
             out.extend(_comparisons(species, one))
         if per_seed and one["hasGenes"]:
-            out.extend(_genes_per_seed(species, one))
+            out.extend(_per_seed(species, one))
     return "\n".join(out)
 
 
