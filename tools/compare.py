@@ -40,8 +40,14 @@ def rows_of(lines):
 
 
 def species_in(runs):
-    """Every species with gene means on day 1 of any run, so a species with no genes, like grass, is left out."""
-    return sorted({species for lines in runs for species in rows_of(lines)[0]["geneMeans"]})
+    """Every species with gene means on day 1 of any run, or a death on any day, so grass appears through its deaths."""
+    found = set()
+    for lines in runs:
+        rows = rows_of(lines)
+        found.update(rows[0]["geneMeans"])
+        for row in rows:
+            found.update(row.get("deaths", {}))
+    return sorted(found)
 
 
 def summarise(lines, species, floor):
@@ -54,6 +60,10 @@ def summarise(lines, species, floor):
         died_on = next((row["day"] for row, count in zip(rows, counts) if count == 0), None)
     alive = [count for count in counts if count > 0]
     measured = [row for row, count in zip(rows, counts) if count >= floor]
+    totals = collections.Counter()
+    for row in rows:
+        totals.update(row.get("deaths", {}).get(species, {}))
+    died = sum(totals.values())
     return {
         "diedOn": died_on,
         "meanPopulation": statistics.mean(alive) if alive else 0,
@@ -61,7 +71,18 @@ def summarise(lines, species, floor):
         "start": next((row["geneMeans"][species] for row in rows if species in row["geneMeans"]), {}),
         "measuredOn": measured[-1]["day"] if measured else None,
         "genes": measured[-1]["geneMeans"].get(species, {}) if measured else {},
+        "deaths": {cause: count / died for cause, count in sorted(totals.items())} if died else {},
     }
+
+
+def fill_causes(results):
+    """A cause one run never saw is a share of 0 in every run that had deaths. One cause alone says nothing, so it goes."""
+    causes = sorted({cause for summary in results.values() for cause in summary["deaths"]})
+    for summary in results.values():
+        if len(causes) < 2:
+            summary["deaths"] = {}
+        elif summary["deaths"]:
+            summary["deaths"] = {cause: summary["deaths"].get(cause, 0.0) for cause in causes}
 
 
 def _lasted(died_on):
@@ -101,18 +122,21 @@ def holm(ps):
 BASE_MEASURES = ("survival", "meanPopulation", "peak")
 
 
-def measures(summary):
-    """Every number a run is compared on, a gene as gene.<name> so it cannot clash with the others.
+def measures(summary, has_genes):
+    """Every number a run is compared on, a gene as gene.<name> and a cause as deaths.<name> so none can clash.
 
-    Gene means are rounded to 9 decimals, as ROUNDING allows, so two that differ by a few ulps tie rather than rank.
+    A species without genes is compared on its deaths alone. Means and shares are rounded to 9 decimals, as ROUNDING
+    allows, so two that differ by a few ulps tie rather than rank.
     """
-    values = {
-        "survival": _lasted(summary["diedOn"]),
-        "meanPopulation": summary["meanPopulation"],
-        "peak": summary["peak"],
-    }
-    for gene, value in summary["genes"].items():
-        values[f"gene.{gene}"] = round(value, 9)
+    values = {}
+    if has_genes:
+        values["survival"] = _lasted(summary["diedOn"])
+        values["meanPopulation"] = summary["meanPopulation"]
+        values["peak"] = summary["peak"]
+        for gene, value in summary["genes"].items():
+            values[f"gene.{gene}"] = round(value, 9)
+    for cause, share in summary["deaths"].items():
+        values[f"deaths.{cause}"] = round(share, 9)
     return values
 
 
@@ -122,16 +146,16 @@ def _median(values):
     return "alive" if middle == float("inf") else middle
 
 
-def compare_variants(results, variants, seeds):
+def compare_variants(results, variants, seeds, has_genes):
     """A seed with no value for a measure, such as a gene never measured, drops out of that measure only."""
-    values = {key: measures(summary) for key, summary in results.items()}
+    values = {key: measures(summary, has_genes) for key, summary in results.items()}
     reference = variants[0]
     comparisons = []
     for variant in variants[1:]:
-        genes = sorted(
-            {name for v in (variant, reference) for seed in seeds for name in values[(v, seed)] if name.startswith("gene.")}
-        )
-        for name in [*BASE_MEASURES, *genes]:
+        named = {name for v in (variant, reference) for seed in seeds for name in values[(v, seed)]}
+        genes = sorted(name for name in named if name.startswith("gene."))
+        deaths = sorted(name for name in named if name.startswith("deaths."))
+        for name in [*(BASE_MEASURES if has_genes else ()), *genes, *deaths]:
             mine = [values[(variant, seed)][name] for seed in seeds if name in values[(variant, seed)]]
             theirs = [values[(reference, seed)][name] for seed in seeds if name in values[(reference, seed)]]
             if not mine or not theirs:
@@ -197,14 +221,30 @@ def report(results, variants, seeds, species, floor=5):
                 "above": sum(value - start > ROUNDING for value, start in pairs),
                 "of": len(pairs),
             }
+    deaths = {}
+    for cause in sorted({cause for summary in results.values() for cause in summary["deaths"]}):
+        deaths[cause] = {}
+        for variant in variants:
+            shares = [
+                results[(variant, seed)]["deaths"][cause] for seed in seeds if results[(variant, seed)]["deaths"]
+            ]
+            deaths[cause][variant] = {
+                "min": min(shares, default=None),
+                "median": statistics.median(shares) if shares else None,
+                "max": max(shares, default=None),
+                "of": len(shares),
+            }
+    has_genes = any(summary["start"] for summary in results.values())
     result = {
         "species": species,
         "floor": floor,
         "seeds": seeds,
         "variants": variants,
+        "hasGenes": has_genes,
         "outlasts": outlasts,
-        "comparisons": compare_variants(results, variants, seeds),
+        "comparisons": compare_variants(results, variants, seeds, has_genes),
         "genes": genes,
+        "deaths": deaths,
         "runs": {f"{variant}:{seed}": results[(variant, seed)] for variant in variants for seed in seeds},
     }
     adjust_across({species: result})
@@ -216,6 +256,7 @@ def report_all(lines, variants, seeds, species, floor):
     reports = {}
     for one in species or species_in(lines.values()):
         results = {key: summarise(found, one, floor) for key, found in lines.items()}
+        fill_causes(results)
         reports[one] = report(results, variants, seeds, one, floor)
     adjust_across(reports)
     return reports
@@ -232,70 +273,103 @@ def _median_text(value):
     return value if isinstance(value, str) else f"{value:.2f}"
 
 
+def _lives(species, one):
+    """Survival, gene means and population, which only a species with genes has."""
+    variants, seeds = one["variants"], one["seeds"]
+    out = [f"{species}: survival, the day the last one died"]
+    out.append("seed  " + "".join(f"{variant:>12}" for variant in variants))
+    for seed in seeds:
+        cells = []
+        for variant in variants:
+            died_on = one["runs"][f"{variant}:{seed}"]["diedOn"]
+            shown = "alive" if died_on is None else "absent" if died_on == 0 else died_on
+            cells.append(f"{shown:>12}")
+        out.append(f"{seed:<6}" + "".join(cells))
+    for variant in variants:
+        alive = sum(one["runs"][f"{variant}:{seed}"]["diedOn"] is None for seed in seeds)
+        out.append(f"{variant} alive at the end: {alive} of {len(seeds)}")
+    for pair in one["outlasts"]:
+        out.append(
+            f"{pair['variant']} later than {pair['reference']}: {pair['later']} of {len(seeds)},"
+            f" ties {pair['ties']}, earlier {pair['earlier']}"
+        )
+    out.append("")
+    out.append(f"{species}: gene means against day 1, min / median / max, seeds above their start")
+    for gene, row in sorted(one["genes"].items()):
+        cells = [f"{gene:<12} start {_number(row['start'])}"]
+        for variant in variants:
+            g = row[variant]
+            cells.append(
+                f"  {variant} {_number(g['min'])} / {_number(g['median'])} / {_number(g['max'])}"
+                f" above {g['above']} of {g['of']}"
+            )
+        out.append("".join(cells))
+    out.append("")
+    out.append(f"{species}: population, mean over days alive / peak")
+    out.append("seed  " + "".join(f"{variant:>16}" for variant in variants))
+    for seed in seeds:
+        cells = []
+        for variant in variants:
+            run = one["runs"][f"{variant}:{seed}"]
+            cells.append(f"{run['meanPopulation']:>9.1f} / {run['peak']:<4}")
+        out.append(f"{seed:<6}" + "".join(cells))
+    out.append("")
+    return out
+
+
+def _deaths(species, one):
+    out = [f"{species}: deaths by cause, share min / median / max"]
+    for cause, row in one["deaths"].items():
+        cells = [f"{cause:<12}"]
+        for variant in one["variants"]:
+            d = row[variant]
+            cells.append(f"  {variant} {_number(d['min'])} / {_number(d['median'])} / {_number(d['max'])}")
+        out.append("".join(cells))
+    out.append("")
+    return out
+
+
+def _comparisons(species, one):
+    variants = one["variants"]
+    out = [f"{species}: each variant against {variants[0]}, medians, A12, raw p, Holm p"]
+    width = max(len(variant) for variant in variants[1:])
+    for c in one["comparisons"]:
+        out.append(
+            f"{c['measure']:<16} {c['variant']:<{width}} {_median_text(c['median'])}"
+            f" vs {_median_text(c['referenceMedian'])}"
+            f"  A12 {c['a12']:.2f}  p {c['p']:.3f}  Holm p {c['pHolm']:.3f}"
+        )
+    out.append(LEGEND)
+    out.append("")
+    return out
+
+
+def _genes_per_seed(species, one):
+    out = [f"{species}: gene means per seed, on the day measured"]
+    for variant in one["variants"]:
+        for seed in one["seeds"]:
+            run = one["runs"][f"{variant}:{seed}"]
+            if run["measuredOn"] is None:
+                out.append(f"{variant} {seed} never had {one['floor']} or more")
+                continue
+            genes = " ".join(f"{gene}={value:.2f}" for gene, value in sorted(run["genes"].items()))
+            out.append(f"{variant} {seed} day {run['measuredOn']}: {genes}")
+    out.append("")
+    return out
+
+
 def format_text(reports, per_seed):
+    """A species without genes, like grass, shows only its deaths."""
     out = []
     for species, one in reports.items():
-        variants, seeds, floor = one["variants"], one["seeds"], one["floor"]
-        out.append(f"{species}: survival, the day the last one died")
-        out.append("seed  " + "".join(f"{variant:>12}" for variant in variants))
-        for seed in seeds:
-            cells = []
-            for variant in variants:
-                died_on = one["runs"][f"{variant}:{seed}"]["diedOn"]
-                shown = "alive" if died_on is None else "absent" if died_on == 0 else died_on
-                cells.append(f"{shown:>12}")
-            out.append(f"{seed:<6}" + "".join(cells))
-        for variant in variants:
-            alive = sum(one["runs"][f"{variant}:{seed}"]["diedOn"] is None for seed in seeds)
-            out.append(f"{variant} alive at the end: {alive} of {len(seeds)}")
-        for pair in one["outlasts"]:
-            out.append(
-                f"{pair['variant']} later than {pair['reference']}: {pair['later']} of {len(seeds)},"
-                f" ties {pair['ties']}, earlier {pair['earlier']}"
-            )
-        out.append("")
-        out.append(f"{species}: gene means against day 1, min / median / max, seeds above their start")
-        for gene, row in sorted(one["genes"].items()):
-            cells = [f"{gene:<12} start {_number(row['start'])}"]
-            for variant in variants:
-                g = row[variant]
-                cells.append(
-                    f"  {variant} {_number(g['min'])} / {_number(g['median'])} / {_number(g['max'])}"
-                    f" above {g['above']} of {g['of']}"
-                )
-            out.append("".join(cells))
-        out.append("")
-        out.append(f"{species}: population, mean over days alive / peak")
-        out.append("seed  " + "".join(f"{variant:>16}" for variant in variants))
-        for seed in seeds:
-            cells = []
-            for variant in variants:
-                run = one["runs"][f"{variant}:{seed}"]
-                cells.append(f"{run['meanPopulation']:>9.1f} / {run['peak']:<4}")
-            out.append(f"{seed:<6}" + "".join(cells))
+        if one["hasGenes"]:
+            out.extend(_lives(species, one))
+        if one["deaths"]:
+            out.extend(_deaths(species, one))
         if one["comparisons"]:
-            out.append("")
-            out.append(f"{species}: each variant against {variants[0]}, medians, A12, raw p, Holm p")
-            width = max(len(variant) for variant in variants[1:])
-            for c in one["comparisons"]:
-                out.append(
-                    f"{c['measure']:<16} {c['variant']:<{width}} {_median_text(c['median'])}"
-                    f" vs {_median_text(c['referenceMedian'])}"
-                    f"  A12 {c['a12']:.2f}  p {c['p']:.3f}  Holm p {c['pHolm']:.3f}"
-                )
-            out.append(LEGEND)
-        if per_seed:
-            out.append("")
-            out.append(f"{species}: gene means per seed, on the day measured")
-            for variant in variants:
-                for seed in seeds:
-                    run = one["runs"][f"{variant}:{seed}"]
-                    if run["measuredOn"] is None:
-                        out.append(f"{variant} {seed} never had {floor} or more")
-                        continue
-                    genes = " ".join(f"{gene}={value:.2f}" for gene, value in sorted(run["genes"].items()))
-                    out.append(f"{variant} {seed} day {run['measuredOn']}: {genes}")
-        out.append("")
+            out.extend(_comparisons(species, one))
+        if per_seed and one["hasGenes"]:
+            out.extend(_genes_per_seed(species, one))
     return "\n".join(out)
 
 

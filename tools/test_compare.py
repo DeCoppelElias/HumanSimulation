@@ -126,7 +126,61 @@ def run(died_on, speed=0.5, start=0.5):
         "start": {"speed": start},
         "measuredOn": 100,
         "genes": {"speed": speed},
+        "deaths": {},
     }
+
+
+def dying(day, deaths, grass=5):
+    return json.dumps(
+        {
+            "seed": 1,
+            "day": day,
+            "population": {"grass": grass, "rabbit": 3},
+            "geneMeans": {"rabbit": {"speed": 0.5}},
+            "deaths": deaths,
+        }
+    )
+
+
+class DeathsTest(unittest.TestCase):
+    def test_a_species_with_deaths_and_no_genes_is_reported(self):
+        runs = [[dying(1, {}), dying(2, {"grass": {"aged": 1}})]]
+        self.assertEqual(compare.species_in(runs), ["grass", "rabbit"])
+
+    def test_shares_are_taken_over_the_whole_run(self):
+        lines = [dying(1, {"grass": {"eaten": 3}}), dying(2, {"grass": {"aged": 1}})]
+        self.assertEqual(compare.summarise(lines, "grass", 5)["deaths"], {"aged": 0.25, "eaten": 0.75})
+
+    def test_a_run_without_deaths_has_no_shares(self):
+        self.assertEqual(compare.summarise([dying(1, {})], "grass", 5)["deaths"], {})
+
+    def test_a_cause_another_run_saw_is_zero_in_a_run_with_deaths(self):
+        lines = {
+            ("d", 1): [dying(1, {"grass": {"eaten": 2, "aged": 2}})],
+            ("d", 2): [dying(1, {"grass": {"eaten": 4}})],
+            ("d", 3): [dying(1, {})],
+        }
+        grass = compare.report_all(lines, ["d"], [1, 2, 3], ["grass"], 5)["grass"]
+        self.assertEqual(grass["deaths"]["aged"]["d"], {"min": 0.0, "median": 0.25, "max": 0.5, "of": 2})
+
+    def test_a_single_cause_gets_no_line(self):
+        lines = {("d", 1): [dying(1, {"rabbit": {"starved": 2}})]}
+        rabbit = compare.report_all(lines, ["d"], [1], ["rabbit"], 5)["rabbit"]
+        self.assertEqual(rabbit["deaths"], {})
+        self.assertNotIn("deaths by cause", compare.format_text({"rabbit": rabbit}, False))
+
+    def test_a_species_without_genes_shows_only_its_deaths(self):
+        lines = {
+            ("a", 1): [dying(1, {"grass": {"eaten": 3, "aged": 1}})],
+            ("b", 1): [dying(1, {"grass": {"eaten": 1, "aged": 1}})],
+        }
+        reports = compare.report_all(lines, ["a", "b"], [1], ["grass"], 5)
+        text = compare.format_text(reports, False)
+        self.assertIn("grass: deaths by cause, share min / median / max", text)
+        self.assertRegex(text, r"aged +a 0\.25 / 0\.25 / 0\.25 +b 0\.50 / 0\.50 / 0\.50")
+        self.assertNotIn("grass: survival", text)
+        self.assertNotIn("grass: population", text)
+        self.assertEqual([c["measure"] for c in reports["grass"]["comparisons"]], ["deaths.aged", "deaths.eaten"])
 
 
 class OutlastsTest(unittest.TestCase):
