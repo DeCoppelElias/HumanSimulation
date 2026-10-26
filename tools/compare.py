@@ -104,7 +104,7 @@ BASE_MEASURES = ("survival", "meanPopulation", "peak")
 def measures(summary):
     """Every number a run is compared on, a gene as gene.<name> so it cannot clash with the others.
 
-    Gene means are rounded to ROUNDING, so two that differ by a few ulps tie rather than rank.
+    Gene means are rounded to 9 decimals, as ROUNDING allows, so two that differ by a few ulps tie rather than rank.
     """
     values = {
         "survival": _lasted(summary["diedOn"]),
