@@ -30,8 +30,8 @@ Whether a kill also feeds the killer directly, which
 Whether the corpse's value comes from what the creature was carrying in its
 reserve, from its species settings, or both.
 
-How long a corpse lasts, and whether that is a world setting or a property of
-the corpse.
+How long a corpse lasts. [Lifespan](lifespan.md) would make it a property of
+the corpse rather than a world setting.
 
 Whether killing is worth doing at all once the kill can be stolen, which is the
 point and is also how a predator starves.

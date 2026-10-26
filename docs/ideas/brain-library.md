@@ -16,6 +16,11 @@ brain's parameters are genes, so a good brain found in one run is otherwise
 lost when the run ends. Keeping it lets a later run start from evolved
 behaviour, and lets one population be dropped into another world.
 
+Experiments need the same two halves. An [ancestor competition](ancestor-competition.md)
+or a [founder benchmark](founder-benchmark.md) exports the genomes alive in a
+run on given days and spawns a later world from them, so `run` needs a flag for
+each.
+
 It pairs with the warm start in 0018. A network brain fitted once to imitate
 the fixed-rules brain is the first entry such a library would hold.
 

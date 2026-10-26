@@ -29,5 +29,10 @@ its own, so each measures against the same supply without interfering.
 
 Whether the census and the chart mark it as a control, or it is one more line.
 
+Whether it is still needed beside an
+[ancestor competition](ancestor-competition.md) and a
+[mutation shadow](mutation-shadow.md), which ask what selection adds without a
+second species that rabbits do not count as rabbits.
+
 What its `breedPull` is fixed at, since breeding is a choice its brain scores
 and the control has to breed at a rate that means something.

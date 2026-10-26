@@ -29,4 +29,5 @@ Whether it lives in Java beside `run` or as a Python script, which is quicker
 to change and needs a second runtime.
 
 Which statistics count as a difference worth acting on, which entry 7's gate
-has to settle first.
+has to settle first. [Comparison statistics](comparison-statistics.md) proposes
+an effect size and a test.
