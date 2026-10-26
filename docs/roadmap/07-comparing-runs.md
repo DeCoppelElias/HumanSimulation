@@ -1,6 +1,6 @@
 # 7. Comparing runs
 
-Status: not started.
+Status: done.
 
 The tools an experiment needs to say whether one variant of a world did better
 than another, and the finding that moved the selection gate to entry 9.

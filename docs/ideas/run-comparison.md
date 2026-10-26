@@ -1,6 +1,6 @@
 # Run comparison
 
-Status: planned, roadmap entry 7.
+Status: built, [0021](../decisions/0021-agents-drive-worlds-over-http-and-run.md).
 
 ## What it does
 
