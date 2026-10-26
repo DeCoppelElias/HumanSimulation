@@ -155,6 +155,36 @@ class RunCommandTest {
     }
 
     @Test
+    void aGeneStartsTheSpawnFromIt() {
+        Result result =
+                run("--seed", "1", "--days", "1", "--set", "world.mutation=0", "--gene", "rabbit.grassPull=0.2");
+        assertThat(result.exitCode()).isZero();
+        assertThat(result.out()).contains("\"grassPull\":0.2,");
+    }
+
+    @Test
+    void aGeneForASpeciesRunDoesNotSpawnIsAUsageError() {
+        Result result = run("--seed", "1", "--days", "1", "--spawn", "grass=1", "--gene", "rabbit.grassPull=0.2");
+        assertThat(result.exitCode()).isEqualTo(CommandLine.ExitCode.USAGE);
+        assertThat(result.err()).contains("--gene names rabbit");
+    }
+
+    @Test
+    void anUnknownGeneIsAUsageError() {
+        Result result = run("--seed", "1", "--days", "1", "--gene", "rabbit.wings=1");
+        assertThat(result.exitCode()).isEqualTo(CommandLine.ExitCode.USAGE);
+        assertThat(result.err()).contains("[wings] are not in the layout");
+        assertThat(result.out()).isEmpty();
+    }
+
+    @Test
+    void aMalformedGeneIsAUsageError() {
+        Result result = run("--seed", "1", "--days", "1", "--gene", "grassPull=0.2");
+        assertThat(result.exitCode()).isEqualTo(CommandLine.ExitCode.USAGE);
+        assertThat(result.err()).contains("--gene takes SPECIES.GENE=VALUE");
+    }
+
+    @Test
     void aSetAtTakesEffectAfterItsDay() {
         Result result = run(
                 "--seed",

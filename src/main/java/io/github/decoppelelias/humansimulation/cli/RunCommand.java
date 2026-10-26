@@ -60,6 +60,12 @@ public final class RunCommand implements Callable<Integer> {
                     + " then --set-at in the order given, and the last value for a key wins.")
     private List<String> setAt = List.of();
 
+    @Option(
+            names = "--gene",
+            paramLabel = "SPECIES.GENE=VALUE",
+            description = "Start that species' spawn from its baseline with this gene in place. Repeatable.")
+    private List<String> gene = List.of();
+
     @Override
     public Integer call() {
         if (days < 1) {
@@ -67,7 +73,7 @@ public final class RunCommand implements Callable<Integer> {
         }
         long worldSeed = seed.orElseGet(System::nanoTime);
         List<Command.SetSetting> dayZero = new ArrayList<>();
-        set.forEach(entry -> dayZero.add(setting("--set", entry)));
+        set.forEach(entry -> dayZero.add(setting("--set", "OWNER.KEY", entry)));
         SortedMap<Integer, List<Command.SetSetting>> later = new TreeMap<>();
         for (String entry : setAt) {
             int colon = entry.indexOf(':');
@@ -75,7 +81,7 @@ public final class RunCommand implements Callable<Integer> {
             if (day < 0) {
                 throw usage("--set-at takes DAY:OWNER.KEY=VALUE with DAY a whole number from 0, got " + entry);
             }
-            Command.SetSetting edit = setting("--set-at", entry.substring(colon + 1));
+            Command.SetSetting edit = setting("--set-at", "OWNER.KEY", entry.substring(colon + 1));
             if (day == 0) {
                 dayZero.add(edit);
             } else {
@@ -112,6 +118,8 @@ public final class RunCommand implements Callable<Integer> {
     }
 
     private World start(long worldSeed, List<Command.SetSetting> dayZero) {
+        Map<String, Integer> population = new TreeMap<>(spawn.isEmpty() ? STARTING_POPULATION : startingPopulation());
+        Map<String, Map<String, Double>> genes = startingGenes(population);
         try {
             World world = new World(
                     width,
@@ -120,12 +128,24 @@ public final class RunCommand implements Callable<Integer> {
                     List.of(Grass.species(), Rabbit.species()),
                     List.of(new FoodDrop("grass")));
             dayZero.forEach(world::submit);
-            new TreeMap<>(spawn.isEmpty() ? STARTING_POPULATION : startingPopulation())
-                    .forEach((name, count) -> world.submit(new Command.Spawn(name, count)));
+            population.forEach(
+                    (name, count) -> world.submit(new Command.Spawn(name, count, genes.getOrDefault(name, Map.of()))));
             return world;
         } catch (IllegalArgumentException e) {
             throw usage(e.getMessage());
         }
+    }
+
+    private Map<String, Map<String, Double>> startingGenes(Map<String, Integer> population) {
+        Map<String, Map<String, Double>> genes = new TreeMap<>();
+        for (String entry : gene) {
+            Command.SetSetting parsed = setting("--gene", "SPECIES.GENE", entry);
+            if (!population.containsKey(parsed.owner())) {
+                throw usage("--gene names " + parsed.owner() + ", which run does not spawn");
+            }
+            genes.computeIfAbsent(parsed.owner(), _ -> new TreeMap<>()).put(parsed.key(), parsed.value());
+        }
+        return genes;
     }
 
     private Map<String, Integer> startingPopulation() {
@@ -148,12 +168,12 @@ public final class RunCommand implements Callable<Integer> {
         return population;
     }
 
-    /** OWNER.KEY=VALUE, where true and false read as 1 and 0. */
-    private Command.SetSetting setting(String flag, String entry) {
+    /** NAME.KEY=VALUE, where true and false read as 1 and 0. A gene comes back in the same shape as a setting. */
+    private Command.SetSetting setting(String flag, String shape, String entry) {
         int dot = entry.indexOf('.');
         int equals = entry.indexOf('=');
         if (dot < 1 || equals < dot + 2 || equals == entry.length() - 1) {
-            throw usage(flag + " takes OWNER.KEY=VALUE, got " + entry);
+            throw usage(flag + " takes " + shape + "=VALUE, got " + entry);
         }
         String raw = entry.substring(equals + 1);
         double value =
