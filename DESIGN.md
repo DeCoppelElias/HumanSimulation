@@ -327,7 +327,8 @@ the census as JSON Lines, with population and the mean of each gene per
 species. It overrides any setting from the command line, on day 0 or on a
 later day, so a run can get harsher as it goes, and any gene of its starting
 population, so a run can start from a worse genome than the species' own. A comparison script runs
-variants of a world over many seeds and reports how each fared, and the roadmap
+variants of a world over many seeds and reports how each fared against the
+first, with an effect size and a significance test on every measure, and the roadmap
 entry that runs it says what the report should show. Together they are the only
 thing that catches a build which compiles, passes every test, and quietly stops
 selecting for anything.

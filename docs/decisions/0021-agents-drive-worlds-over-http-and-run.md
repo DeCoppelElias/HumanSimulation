@@ -69,6 +69,19 @@ when it survives longer. That bakes one experiment's notion of success into a
 tool every experiment shares, and it decides for the reader what the numbers
 mean, which hides a result that passes for the wrong reason.
 
+The comparison first reported only counts, such as how many seeds one variant
+outlasted another. Over ten seeds a count cannot tell a real effect from luck: a
+variant that truly wins 70% of the time reaches 8 of 10 only about 38% of the
+time, and a tie counts as a loss. Cohen's d needs roughly normal values and has
+none for a world still alive at the end. A bootstrap interval on the difference
+of medians reads in real units and has the same trouble with a world still
+alive. Survival analysis fits the day a species died out and nothing else.
+Comparing every pair of variants grows the tests with the square of the
+variants, and a correction across tests nobody asked for hides a real effect
+against the control. Printing only corrected p-values hides the number a
+measure chosen before the run should be judged by, and printing only raw ones
+leaves a reader who scans the report to correct by hand.
+
 ## Decision
 
 The jar has three entry points. `serve` is the default and opens the browser.
@@ -136,7 +149,23 @@ its population, and each gene's mean against its mean on day 1, taken on the
 last day with enough members to mean something. It never judges: what a result
 should show is written as acceptance lines on the roadmap entry that runs it,
 and the agent checks the report against them. A named experiment is a preset
-in `tools/experiments/`, and flags override it.
+in `tools/experiments/`, and flags override it. A preset runs seeds 1 to 30
+unless it says otherwise, and `--seeds` overrides that for a quicker or a
+larger run.
+
+Each variant after the first is compared with the first, on every measure: the
+day the species died out, its mean and peak population, and each gene's mean
+on the day measured. A world still alive at the end ranks after every world
+that died, and two alive worlds tie. A seed too sparse for gene means is left
+out of that gene's comparison only. Each comparison gives both variants'
+medians, the Vargha-Delaney Â12, which is the chance that a run of the variant
+beats a run of the first, and a two-sided Mann-Whitney U p-value. It gives
+that p twice: raw, as `p`, and Holm-adjusted across every comparison in the
+report, as `pHolm`. The raw p is the one to read for a measure named before
+the run, such as a gate's, and the Holm p the one to read when scanning the
+report for whatever stands out. The text report says so under its table, and
+an acceptance line that sets a p names which one it means. The earlier, later
+and tied counts stay beside them.
 
 ## Consequences
 

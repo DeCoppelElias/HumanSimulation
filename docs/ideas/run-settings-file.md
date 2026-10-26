@@ -20,7 +20,7 @@ The `run` command only. Nothing in the domain.
 
 Elias's trigger for building it: once a preset's flags grow much past the
 grass ramp and the handful of `--gene` overrides that entry 7's
-`selection-gate` preset carries, a file of settings, or of starting genes,
+`mutation-ramp` preset carries, a file of settings, or of starting genes,
 beats a longer list of flags.
 
 ## Open questions

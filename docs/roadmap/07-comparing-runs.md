@@ -26,15 +26,16 @@ through, and never judges. Its logic is tested against canned census lines, and
 those tests run in CI. Presets live in `tools/experiments/`, and flags override
 them.
 
-The report also gives, for each variant against the first, an effect size and a
-significance test on each measure, per `docs/ideas/comparison-statistics.md`.
-0021 is rewritten to describe them before they are built.
+The report also compares each variant with the first on every measure, per
+0021 and `docs/ideas/comparison-statistics.md`: both medians, the Â12 effect
+size, and a Mann-Whitney p given raw and Holm-adjusted, with a line under the
+table saying which to read when. Presets run seeds 1 to 30.
 
 A spawn can override genes of the baseline for the members it creates, per
 0007, and `run --gene species.gene=value` applies that to its starting spawn.
 The HTTP API takes the overrides as an optional `genes` field on a spawn.
 
-The first preset, `selection-gate`, runs rabbits that mutate against clones
+The first preset, now `mutation-ramp`, runs rabbits that mutate against clones
 that cannot, both from a genome that barely aims for food, as grass per drop
 falls from 7 to 1. It was meant to be the gate for selection, and ten tuning
 runs showed it cannot be. Grass waits until it is eaten, so a population eats
@@ -42,18 +43,16 @@ every drop however well it forages, and survival in separate worlds cannot see
 foraging skill. Competition inside a mutating population also raised speed and
 view at a cost the whole population paid, which clones never pay. Entry 8 lets
 uneaten grass wither, and entry 9 measures selection by letting evolved rabbits
-compete against their ancestors. The tuning log is kept in the work plan.
-
-Details to settle in this entry's grill: how many seeds a preset runs, which
-measures get the statistics, whether several variants need a correction for
-multiple comparisons, and whether `selection-gate` stays as a preset.
+compete against their ancestors. The tuning log is kept in the work plan. The
+preset stays as a worked example of `--gene`, `--set-at` and two variants, and
+its description says it does not measure selection.
 
 Acceptance:
 
-- `selection-gate` and `watchable` run and report with the statistics, and the
+- `mutation-ramp` and `watchable` run and report with the statistics, and the
   statistics are tested against canned values;
-- with the defaults and no ramp, rabbits are alive on day 1000 in at least 8 of
-  10 seeds, so the world the page starts from stays watchable.
+- with the defaults and no ramp, rabbits are alive on day 1000 in at least 24
+  of 30 seeds, so the world the page starts from stays watchable.
 
 On the page: the World group shows the `mutation` checkbox.
 

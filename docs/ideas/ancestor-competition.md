@@ -28,7 +28,7 @@ speed and view raised at a cost the whole population pays. The arm with each
 group alone catches that: a group that wins head to head but holds a smaller
 population alone is better at fighting, not at living.
 
-Entry 7's `selection-gate` preset compares worlds where everything mutates
+Entry 7's `mutation-ramp` preset compares worlds where everything mutates
 against worlds where nothing does, so turning mutation off removes variation
 and the cost of bad mutations at once. Here mutation is off in both groups, and only where their
 genomes came from differs.

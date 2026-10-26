@@ -5,11 +5,11 @@ Status: planned, roadmap entry 7.
 ## What it does
 
 Adds an effect size and a significance test to `tools/compare.py`'s report,
-beside the counts it gives today. For each pair of variants and each measure,
-such as the day a species died out or its mean population, the report gives
-the Vargha-Delaney Â12, the chance that one run of the first variant beats one
-run of the second, and a two-sided Mann-Whitney U p-value. Presets move to 30
-or more seeds.
+beside the counts it gives today. For each variant against the first and each
+measure, such as the day a species died out or its mean population, the report
+gives both medians, the Vargha-Delaney Â12, the chance that one run of the
+variant beats one run of the first, and a two-sided Mann-Whitney U p-value,
+raw and Holm-adjusted across the report. Presets move to 30 seeds.
 
 ## Why it is interesting
 
@@ -31,9 +31,5 @@ roadmap entry that sets them.
 
 ## Open questions
 
-How many seeds a preset needs, given how long a 1000-day run takes.
-
-Whether to correct for several comparisons when a preset has more than two
-variants.
-
-Whether a gate's threshold is written as an Â12, a p-value or both.
+Whether a gate's threshold is written as an Â12, a p-value or both, settled in
+entry 9's grill.

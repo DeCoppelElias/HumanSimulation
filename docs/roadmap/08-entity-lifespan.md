@@ -25,8 +25,8 @@ Acceptance:
 
 - grass left uneaten for its lifespan is gone, and grass eaten before then
   feeds as it does today;
-- with the defaults and no ramp, rabbits are alive on day 1000 in at least 8 of
-  10 seeds of the `watchable` preset.
+- with the defaults and no ramp, rabbits are alive on day 1000 in at least 24
+  of 30 seeds of the `watchable` preset.
 
 On the page: grass that disappears with no rabbit near it.
 
