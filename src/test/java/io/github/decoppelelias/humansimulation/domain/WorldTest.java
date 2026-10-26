@@ -484,7 +484,7 @@ class WorldTest {
         World world = new World(3, 3, 1, List.of(Rabbit.species(), Grass.species()), List.of(new FoodDrop("grass")));
         assertThat(world.declarations())
                 .extracting(SettingDeclaration::owner)
-                .startsWith("world", "world", "world", "grass", "rabbit");
+                .startsWith("world", "world", "world", "grass", "grass", "rabbit");
     }
 
     @Test
@@ -688,6 +688,35 @@ class WorldTest {
         assertThat(world.advance().census().deaths()).isEqualTo(Map.of("food", Map.of("eaten", 1)));
         assertThat(world.advance().census().deaths()).isEqualTo(Map.of("eater", Map.of("starved", 1)));
         assertThat(world.advance().census().deaths()).isEmpty();
+    }
+
+    /** A grass spawned on day 0 is there for twelve feeds and withers in the twelfth Tick. */
+    @Test
+    void grassLeftUneatenForItsLifespanWithers() {
+        World world = new World(3, 3, 1, List.of(Grass.species()));
+        world.submit(new Command.SpawnAt("grass", new GridPosition(1, 1)));
+        for (int day = 1; day < 12; day++) {
+            assertThat(world.advance().census().population()).containsEntry("grass", 1);
+        }
+        CensusRow twelfth = world.advance().census();
+        assertThat(twelfth.population()).containsEntry("grass", 0);
+        assertThat(twelfth.deaths()).isEqualTo(Map.of("grass", Map.of("aged", 1)));
+    }
+
+    /** The eater starts with 0, eats 15 on the grass's last day and pays 1, so feeding comes before the Tick. */
+    @Test
+    void grassEatenOnItsLastDayFeedsAndDoesNotWither() {
+        World world = new World(3, 3, 1, List.of(TestSpecies.eater(1, 0), Grass.species()));
+        world.submit(new Command.SpawnAt("grass", new GridPosition(1, 1)));
+        for (int day = 1; day < 12; day++) {
+            world.advance();
+        }
+        world.submit(new Command.SpawnAt("eater", new GridPosition(1, 1)));
+        CensusRow twelfth = world.advance().census();
+        assertThat(twelfth.deaths()).isEqualTo(Map.of("grass", Map.of("eaten", 1)));
+        assertThat(world.entity(1).flatMap(eater -> eater.part(Metabolism.class)))
+                .map(Metabolism::reserve)
+                .contains(14.0);
     }
 
     @Test

@@ -11,12 +11,21 @@ class GrassTest {
         Species grass = Grass.species();
         SettingValues values = new SettingValues(grass.settings());
         assertThat(values.number("nourishment")).isEqualTo(15);
-        assertThat(grass.parts()).singleElement().satisfies(part -> {
-            Edible edible = (Edible) part.apply(new Spawn(grass.baseline(), grass, values, 0, Optional.empty()));
-            assertThat(edible.amount()).isEqualTo(15);
-            values.set("nourishment", 20);
-            assertThat(edible.amount()).isEqualTo(20);
-        });
+        Edible edible = (Edible)
+                grass.parts().getFirst().apply(new Spawn(grass.baseline(), grass, values, 0, Optional.empty()));
+        assertThat(edible.amount()).isEqualTo(15);
+        values.set("nourishment", 20);
+        assertThat(edible.amount()).isEqualTo(20);
+    }
+
+    @Test
+    void withersAfterTwelveDaysByDefault() {
+        Species grass = Grass.species();
+        SettingValues values = new SettingValues(grass.settings());
+        assertThat(values.whole("lifespan")).isEqualTo(12);
+        assertThat(grass.parts()).hasSize(2);
+        assertThat(grass.parts().get(1).apply(new Spawn(grass.baseline(), grass, values, 0, Optional.empty())))
+                .isInstanceOf(Lifespan.class);
     }
 
     @Test

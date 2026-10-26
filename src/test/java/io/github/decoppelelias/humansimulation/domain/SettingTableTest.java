@@ -21,7 +21,7 @@ class SettingTableTest {
         assertThat(table.of("rabbit").whole("stride")).isEqualTo(3);
         assertThat(table.declarations())
                 .extracting(SettingDeclaration::owner)
-                .startsWith("world", "world", "world", "grass", "rabbit");
+                .startsWith("world", "world", "world", "grass", "grass", "rabbit");
         assertThat(table.declarations().get(1))
                 .isEqualTo(new SettingDeclaration(
                         "world", "grassPerDrop", "scalar", "How many grass land in each drop.", 1, 100, 1, 7));
@@ -104,7 +104,8 @@ class SettingTableTest {
         SettingTable table = table();
         table.set("grass", "nourishment", 20);
         assertThat(table.current()).containsOnlyKeys("grass", "rabbit", "world");
-        assertThat(table.current().get("grass")).containsExactly(Map.entry("nourishment", 20.0));
+        assertThat(table.current().get("grass"))
+                .containsOnly(Map.entry("nourishment", 20.0), Map.entry("lifespan", 12.0));
         assertThat(table.declarations())
                 .extracting(SettingDeclaration::owner, SettingDeclaration::key)
                 .contains(tuple("grass", "nourishment"), tuple("rabbit", "stride"));

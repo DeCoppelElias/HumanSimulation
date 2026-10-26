@@ -468,7 +468,7 @@ class ApiTest {
         assertThat(declarations.get(0).get("description").asString()).isNotBlank();
         assertThat(declarations.findValuesAsString("shape")).containsOnly("scalar", "toggle");
         assertThat(declarations.findValuesAsString("owner"))
-                .startsWith("world", "world", "world", "grass", "rabbit")
+                .startsWith("world", "world", "world", "grass", "grass", "rabbit")
                 .containsOnly("world", "grass", "rabbit");
         assertThat(declarations.findValuesAsString("key")).contains("nourishment", "breedingLoss", "parentMargin");
         JsonNode stride = null;

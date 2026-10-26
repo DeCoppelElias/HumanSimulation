@@ -10,8 +10,9 @@ public final class Grass {
     private Grass() {}
 
     public static Species species() {
-        Settings settings = new Settings(
-                List.of(new Setting.Scalar(NOURISHMENT, "Reserve an eater gains from one grass.", 1, 100, 1, 15)));
+        Settings settings = new Settings(List.of(
+                new Setting.Scalar(NOURISHMENT, "Reserve an eater gains from one grass.", 1, 100, 1, 15),
+                new Setting.Scalar(Lifespan.LIFESPAN, "Days a grass lies uneaten before it withers.", 1, 100, 1, 12)));
         return new Species(
                 "grass",
                 "grass",
@@ -19,6 +20,6 @@ public final class Grass {
                 new Genome(List.of(), Map.of()),
                 settings,
                 Optional.empty(),
-                List.of(spawn -> new Edible(() -> spawn.settings().number(NOURISHMENT))));
+                List.of(spawn -> new Edible(() -> spawn.settings().number(NOURISHMENT)), Lifespan::of));
     }
 }
