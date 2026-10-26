@@ -28,6 +28,13 @@ record Genome(List<GeneSpec> layout, Map<String, Double> scalars) {
         }
     }
 
+    /** The same genome with some scalars replaced, checked against the layout like any genome. */
+    Genome with(Map<String, Double> overrides) {
+        Map<String, Double> next = new TreeMap<>(scalars);
+        next.putAll(overrides);
+        return new Genome(layout, next);
+    }
+
     boolean declares(String key) {
         return scalars.containsKey(key);
     }

@@ -53,6 +53,13 @@ scenario on a fresh agent and check the result against the pass criteria there.
 
 The pre-commit hook and CI run `docs-check.py`.
 
+    python tools/compare.py tools/experiments/watchable.json    compare variants over seeds
+    python tools/test_compare.py                                 its tests
+
+`compare.py` needs a jar from `./mvnw package`. When checking a report against
+an acceptance line, read the raw `p` for the measure the line names, and `pHolm`
+only when scanning the whole report. CI runs `test_compare.py`.
+
 ## Branches
 
 - A roadmap entry is built on its own branch off `master`, named

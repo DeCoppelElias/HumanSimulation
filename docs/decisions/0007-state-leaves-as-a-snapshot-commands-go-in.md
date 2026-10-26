@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-03. Revised 2026-10-15.
+Accepted, 2026-09-03. Revised 2026-10-26.
 
 ## Context
 
@@ -58,6 +58,13 @@ A spawn command could carry the `Species` value itself. That is type-safe inside
 Java, and it makes every adapter look the species up before building the
 command, the same lookup written in `run`, the web adapter and the tests. A name
 keeps the command a plain value that reads the same in the log as on the wire.
+
+An experiment sometimes needs a first generation that starts somewhere other
+than the species' baseline, such as the `mutation-ramp` preset from roadmap
+entry 7, which starts rabbits from a genome that barely aims for food. `run`
+could build a species with another baseline instead. That leaves the command log silent about what the
+run started with, so the same seed and log replay differently unless the same
+flag is passed again. Overrides on the spawn put the starting genome in the log.
 
 A snapshot returned by applying pending commands while paused could carry the
 number of the day those commands belong to, the next one. The counter on a
@@ -142,6 +149,15 @@ uniformly from the whole grid with the world's generator, independently, so two
 can land on one tile. Spawning at a position places one. Spawns can be sent on
 any day, not only the first.
 
+A spawn of a count may carry gene overrides, from gene name to value. Each
+member starts from its species' baseline with those values in place, and
+mutation applies after, as it does to the baseline. The species itself does not
+change. A spawn at a position carries none until something needs it.
+
+```java
+record Spawn(String species, int count, Map<String, Double> genes) implements Command {}
+```
+
 A reset with a seed leaves the world as constructing it with that seed and
 sending its edited settings would: empty, day 0, ids counted from the start
 again, and a command log whose first entry is the reset, followed by a
@@ -154,7 +170,8 @@ log at day 0, the day the world it builds starts on.
 
 A command is validated before it changes anything. One that names an id which
 no longer resolves, a species the world does not know, a position off the grid,
-or a count below one, throws and leaves the world as
+a count below one, or a gene override its species does not declare or puts
+outside its bounds, throws and leaves the world as
 it was. The exception is part of the domain's contract, and an adapter turns it
 into an error for whoever sent the command.
 

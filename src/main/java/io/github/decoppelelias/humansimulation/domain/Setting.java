@@ -69,4 +69,20 @@ sealed interface Setting {
                     .doubleValue();
         }
     }
+
+    record Toggle(String key, String description, boolean defaultOn) implements Setting {
+        public Toggle {
+            if (key.isBlank()) {
+                throw new IllegalArgumentException("a setting needs a key");
+            }
+            if (description.isBlank()) {
+                throw new IllegalArgumentException("setting " + key + " needs a description");
+            }
+        }
+
+        /** Stored as 0 or 1, so a toggle is checked, logged and restored like any number. */
+        Scalar asScalar() {
+            return new Scalar(key, description, 0, 1, 1, defaultOn ? 1 : 0);
+        }
+    }
 }

@@ -45,11 +45,13 @@ final class SettingValues {
         current.put(key, declared.scalar(key).defaultValue());
     }
 
+    boolean on(String key) {
+        return current.get(declared.toggle(key).key()) == 1;
+    }
+
     void restoreAll() {
         for (Setting setting : declared.declared()) {
-            switch (setting) {
-                case Setting.Scalar scalar -> current.put(scalar.key(), scalar.defaultValue());
-            }
+            current.put(setting.key(), declared.scalar(setting.key()).defaultValue());
         }
     }
 

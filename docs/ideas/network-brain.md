@@ -35,4 +35,5 @@ with pooling, a recurrent pass over tiles, or attention.
 Whether the network's input is the scoring brain's features or something rawer,
 which would need a fitting step to imitate the rules.
 
-What "the fixed rules have run out" means, so it is clear when to start.
+What "the fixed rules have run out" means, so it is clear when to start. The
+[founder benchmark](founder-benchmark.md)'s learning curve is one answer.

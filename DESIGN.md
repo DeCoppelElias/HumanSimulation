@@ -127,7 +127,9 @@ a network brain's weights. Adding an evolvable trait means adding one entry to a
 layout. Every gene needs a tradeoff, since one that only helps pins to its bound
 and stops varying. The first
 generation starts from the species' baseline genome with mutation applied, so a
-new species begins with working behaviour rather than random values.
+new species begins with working behaviour rather than random values. A world
+setting turns mutation off, and then children and spawns are exact copies, so a
+world can be run as a control whose creatures never change.
 
 The first brain is a fixed set of rules whose parameters are genes. A rabbit
 scores every tile it could land on, by how close it would be to grass and to
@@ -271,7 +273,8 @@ only its own state and nothing from the day outlives it. Only the world
 processes are a list, since that is where new systems get added. The method
 returns the day's report, which holds its snapshot and census row. A world is
 built with its processes, and each declares the world settings it reads, as a
-species declares its own.
+species declares its own. The world declares the settings that belong to no
+process, such as whether mutation is on.
 
 ### Boundaries
 
@@ -321,8 +324,13 @@ controls. An agent drives worlds over the same API with no browser open.
 
 A `run` command advances a seeded world for a given number of days and prints
 the census as JSON Lines, with population and the mean of each gene per
-species. It is the only thing
-that catches a build which compiles, passes every test, and quietly stops
+species. It overrides any setting from the command line, on day 0 or on a
+later day, so a run can get harsher as it goes, and any gene of its starting
+population, so a run can start from a worse genome than the species' own. A comparison script runs
+variants of a world over many seeds and reports how each fared against the
+first, with an effect size and a significance test on every measure, and the roadmap
+entry that runs it says what the report should show. Together they are the only
+thing that catches a build which compiles, passes every test, and quietly stops
 selecting for anything.
 
 ### Starting a world
@@ -331,7 +339,8 @@ A world is built from its width and height, a seed, the set of species it knows
 and its world processes, and starts empty. Its starting population is spawn commands, which
 whoever creates the world sends on day 0 and again after a reset, so the seed
 and the command log describe a run from its first creature. A spawn names its
-species, and each member is drawn from its species' baseline genome. Spawning
+species, and each member is drawn from its species' baseline genome, with any
+genes the spawn overrides put in its place. Spawning
 works on any day, which is how creatures are added to a running world.
 Everything else follows from advancing days. The same construction serves the
 web interface and the `run` command, which is what makes a watched run and a

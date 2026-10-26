@@ -1,4 +1,4 @@
-# 10. Looking good
+# 12. Looking good
 
 Status: not started.
 
@@ -23,5 +23,5 @@ creatures on an ordinary laptop.
 
 On the page: everything above.
 
-Depends on entry 8, so every species that exists by then gets its art. See
+Depends on entry 10, so every species that exists by then gets its art. See
 [0020](../decisions/0020-the-interface-is-a-web-page.md).

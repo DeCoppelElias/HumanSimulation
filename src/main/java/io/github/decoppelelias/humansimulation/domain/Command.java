@@ -1,14 +1,30 @@
 package io.github.decoppelelias.humansimulation.domain;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
+import java.util.TreeMap;
 
 public sealed interface Command {
-    /** Spawns a count of a species, each on a tile drawn from the whole grid. */
-    record Spawn(String species, int count) implements Command {
+    /**
+     * Spawns a count of a species, each on a tile drawn from the whole grid, starting from its baseline with the
+     * given genes in place.
+     */
+    record Spawn(String species, int count, Map<String, Double> genes) implements Command {
         public Spawn {
             if (count < 1) {
                 throw new IllegalArgumentException("spawn at least one " + species + ", got " + count);
             }
+            genes.forEach((gene, value) -> {
+                if (value == null) {
+                    throw new IllegalArgumentException("gene " + gene + " needs a value");
+                }
+            });
+            genes = Collections.unmodifiableSortedMap(new TreeMap<>(genes));
+        }
+
+        public Spawn(String species, int count) {
+            this(species, count, Map.of());
         }
     }
 

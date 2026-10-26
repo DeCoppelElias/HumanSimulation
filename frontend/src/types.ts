@@ -12,6 +12,7 @@ export type Settings = Partial<Record<string, Partial<Record<string, number>>>>;
 export type SettingDeclaration = {
     owner: string;
     key: string;
+    shape: "scalar" | "toggle";
     description: string;
     min: number;
     max: number;

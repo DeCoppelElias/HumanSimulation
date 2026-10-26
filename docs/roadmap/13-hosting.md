@@ -1,4 +1,4 @@
-# 11. Hosting
+# 13. Hosting
 
 Status: not started.
 
@@ -21,7 +21,7 @@ the rule from entry 2 that a local server never deletes a person's world.
 On the screen: the link opens the page with a fresh world, and two browsers
 opening it each get their own.
 
-Depends on entry 6, and comes after entry 10 so the first link strangers open
+Depends on entry 6, and comes after entry 12 so the first link strangers open
 shows the finished look. See
 [0020](../decisions/0020-the-interface-is-a-web-page.md),
 [0021](../decisions/0021-agents-drive-worlds-over-http-and-run.md).

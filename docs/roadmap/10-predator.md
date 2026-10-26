@@ -1,4 +1,4 @@
-# 8. Predator
+# 10. Predator
 
 Status: not started.
 
@@ -28,7 +28,7 @@ written.
 On the page: a wolf with its own sprite, rabbits running from a wolf they can
 see, and a kill that removes a rabbit at once.
 
-Depends on entry 7. See
+Depends on entry 9. See
 [0004](../decisions/0004-creatures-return-intents.md),
 [0005](../decisions/0005-a-day-is-one-method.md),
 [0013](../decisions/0013-perception-is-one-type.md),

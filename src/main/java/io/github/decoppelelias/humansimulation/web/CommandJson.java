@@ -17,14 +17,19 @@ final class CommandJson {
             Optional<Long> seed,
             Optional<String> owner,
             Optional<String> key,
-            Optional<Double> value) {}
+            Optional<Double> value,
+            Optional<Map<String, Double>> genes) {}
 
     private CommandJson() {}
 
     static Command toCommand(Body body, LongSupplier freshSeed) {
         String type = required(body.type(), "a type");
         return switch (type) {
-            case "spawn" -> new Command.Spawn(required(body.species(), "species"), required(body.count(), "count"));
+            case "spawn" ->
+                new Command.Spawn(
+                        required(body.species(), "species"),
+                        required(body.count(), "count"),
+                        body.genes().orElse(Map.of()));
             case "spawnAt" -> new Command.SpawnAt(required(body.species(), "species"), required(body.at(), "at"));
             case "reset" -> new Command.Reset(body.seed().map(Api::checkSeed).orElseGet(freshSeed::getAsLong));
             case "setSetting" ->
@@ -44,6 +49,9 @@ final class CommandJson {
                 json.put("type", "spawn");
                 json.put("species", spawn.species());
                 json.put("count", spawn.count());
+                if (!spawn.genes().isEmpty()) {
+                    json.put("genes", spawn.genes());
+                }
             }
             case Command.SpawnAt spawnAt -> {
                 json.put("type", "spawnAt");

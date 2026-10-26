@@ -6,9 +6,11 @@ import io.github.decoppelelias.humansimulation.domain.Grass;
 import io.github.decoppelelias.humansimulation.domain.Rabbit;
 import io.github.decoppelelias.humansimulation.domain.World;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.Callable;
 import picocli.CommandLine;
@@ -45,22 +47,80 @@ public final class RunCommand implements Callable<Integer> {
             description = "Starting population, once per species. Replaces the default of rabbit=10.")
     private List<String> spawn = List.of();
 
+    @Option(
+            names = "--set",
+            paramLabel = "OWNER.KEY=VALUE",
+            description = "Override a setting from day 0, before the starting population spawns. Repeatable.")
+    private List<String> set = List.of();
+
+    @Option(
+            names = "--set-at",
+            paramLabel = "DAY:OWNER.KEY=VALUE",
+            description = "Override a setting once DAY days are complete. Repeatable. On one day, --set comes first,"
+                    + " then --set-at in the order given, and the last value for a key wins.")
+    private List<String> setAt = List.of();
+
+    @Option(
+            names = "--gene",
+            paramLabel = "SPECIES.GENE=VALUE",
+            description = "Start that species' spawn from its baseline with this gene in place. Repeatable, and the"
+                    + " last value for a gene wins.")
+    private List<String> gene = List.of();
+
     @Override
     public Integer call() {
         if (days < 1) {
             throw usage("--days must be at least 1, got " + days);
         }
         long worldSeed = seed.orElseGet(System::nanoTime);
-        World world = start(worldSeed);
+        List<Command.SetSetting> dayZero = new ArrayList<>();
+        set.forEach(entry -> dayZero.add(setting("--set", "OWNER.KEY", entry)));
+        SortedMap<Integer, List<Command.SetSetting>> later = new TreeMap<>();
+        for (String entry : setAt) {
+            int colon = entry.indexOf(':');
+            int day = colon < 1 ? -1 : dayOf(entry.substring(0, colon));
+            if (day < 0) {
+                throw usage("--set-at takes DAY:OWNER.KEY=VALUE with DAY a whole number from 0, got " + entry);
+            }
+            Command.SetSetting edit = setting("--set-at", "OWNER.KEY", entry.substring(colon + 1));
+            if (day == 0) {
+                dayZero.add(edit);
+            } else {
+                later.computeIfAbsent(day, _ -> new ArrayList<>()).add(edit);
+            }
+        }
+        // A world built the same way checks the later overrides, so a bad one fails before the first line prints.
+        World scratch = start(worldSeed, dayZero);
+        later.values().forEach(edits -> edits.forEach(edit -> submit(scratch, edit)));
+        World world = start(worldSeed, dayZero);
         PrintWriter out = spec.commandLine().getOut();
-        for (int i = 0; i < days; i++) {
+        for (int completed = 0; completed < days; completed++) {
+            later.getOrDefault(completed, List.of()).forEach(world::submit);
             out.print(CensusLine.format(worldSeed, world.advance().census()) + "\n");
         }
         out.flush();
         return CommandLine.ExitCode.OK;
     }
 
-    private World start(long worldSeed) {
+    private static int dayOf(String text) {
+        try {
+            return Integer.parseInt(text);
+        } catch (NumberFormatException e) {
+            return -1;
+        }
+    }
+
+    private void submit(World world, Command command) {
+        try {
+            world.submit(command);
+        } catch (IllegalArgumentException e) {
+            throw usage(e.getMessage());
+        }
+    }
+
+    private World start(long worldSeed, List<Command.SetSetting> dayZero) {
+        Map<String, Integer> population = new TreeMap<>(spawn.isEmpty() ? STARTING_POPULATION : startingPopulation());
+        Map<String, Map<String, Double>> genes = startingGenes(population);
         try {
             World world = new World(
                     width,
@@ -68,12 +128,25 @@ public final class RunCommand implements Callable<Integer> {
                     worldSeed,
                     List.of(Grass.species(), Rabbit.species()),
                     List.of(new FoodDrop("grass")));
-            new TreeMap<>(spawn.isEmpty() ? STARTING_POPULATION : startingPopulation())
-                    .forEach((name, count) -> world.submit(new Command.Spawn(name, count)));
+            dayZero.forEach(world::submit);
+            population.forEach(
+                    (name, count) -> world.submit(new Command.Spawn(name, count, genes.getOrDefault(name, Map.of()))));
             return world;
         } catch (IllegalArgumentException e) {
             throw usage(e.getMessage());
         }
+    }
+
+    private Map<String, Map<String, Double>> startingGenes(Map<String, Integer> population) {
+        Map<String, Map<String, Double>> genes = new TreeMap<>();
+        for (String entry : gene) {
+            Command.SetSetting parsed = setting("--gene", "SPECIES.GENE", entry);
+            if (!population.containsKey(parsed.owner())) {
+                throw usage("--gene names " + parsed.owner() + ", which run does not spawn");
+            }
+            genes.computeIfAbsent(parsed.owner(), _ -> new TreeMap<>()).put(parsed.key(), parsed.value());
+        }
+        return genes;
     }
 
     private Map<String, Integer> startingPopulation() {
@@ -94,6 +167,29 @@ public final class RunCommand implements Callable<Integer> {
             }
         }
         return population;
+    }
+
+    /** NAME.KEY=VALUE, where true and false read as 1 and 0. A gene comes back in the same shape as a setting. */
+    private Command.SetSetting setting(String flag, String shape, String entry) {
+        int dot = entry.indexOf('.');
+        int equals = entry.indexOf('=');
+        if (dot < 1 || equals < dot + 2 || equals == entry.length() - 1) {
+            throw usage(flag + " takes " + shape + "=VALUE, got " + entry);
+        }
+        String raw = entry.substring(equals + 1);
+        double value =
+                switch (raw) {
+                    case "true" -> 1;
+                    case "false" -> 0;
+                    default -> {
+                        try {
+                            yield Double.parseDouble(raw);
+                        } catch (NumberFormatException e) {
+                            throw usage(flag + " needs a number, true or false, got " + raw);
+                        }
+                    }
+                };
+        return new Command.SetSetting(entry.substring(0, dot), entry.substring(dot + 1, equals), value);
     }
 
     private ParameterException usage(String message) {

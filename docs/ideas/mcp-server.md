@@ -6,7 +6,7 @@ Status: idea.
 
 Exposes a world to an AI agent as a Model Context Protocol server over stdio,
 with a handful of typed tools such as `new_world`, `submit`, `advance`,
-`snapshot` and `run_batch`. The agent's client starts and stops the process,
+`snapshot` and `compare`. The agent's client starts and stops the process,
 so the world stays alive between calls without the agent managing a server.
 
 ## Why it is interesting
@@ -29,7 +29,7 @@ test.
 ## Open questions
 
 Whether interactive driving is something an agent needs often enough to justify
-a third adapter, or whether batch runs cover most of it.
+a third adapter, or whether `run` and the comparison script cover most of it.
 
 How large a result can be before it floods the agent's context. A 500-day trace
 is better as a file the tool writes than as a tool result.

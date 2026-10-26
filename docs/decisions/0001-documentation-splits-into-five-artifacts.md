@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-03. Revised 2026-10-12.
+Accepted, 2026-09-03. Revised 2026-10-26.
 
 ## Context
 
@@ -33,6 +33,17 @@ numbered in build order. It grew to nearly five hundred lines, and an entry's nu
 was both its name and its place, so inserting one meant renumbering every
 "entry N" reference and dropping one left a hole or a renumbering.
 
+Making every entry's number a permanent id, never reused, was the next shape.
+Inserting an entry then touched one file and one line, but the numbers stopped
+saying anything about order: an entry added before entry 8 took the next free
+number and read as coming after it. Entries are inserted ahead of later ones
+when a gate fails or a step turns out to need another first, and a reader then
+has to hold the list to know what comes when.
+
+Renumbering every entry on each insertion would also rewrite the numbers of
+finished ones, which commit messages, branch names and work plans already name
+and cannot be edited.
+
 ## Decision
 
 Five artifacts with five jobs.
@@ -59,9 +70,11 @@ if it is a new topic, goes onto the roadmap, and keeps its file.
 
 `docs/roadmap/`, committed, holds the build order: what is planned, in what
 sequence, and whether each entry is done yet. Each entry is its own file, named
-by a two-digit number and a slug like a decision, and the number is a permanent
-id that is never reused. Its README holds the order as a list of links, so
-adding, dropping or moving an entry touches one file and one line. Status is a
+by a two-digit number and a slug like a decision. Numbers follow the build
+order. A finished entry keeps its number for good. Inserting, moving or
+dropping an entry renumbers the unfinished entries after it, renaming their
+files and every "entry N" reference to them. Its README holds the order as a
+list of links, in ascending number. Status is a
 field on each entry rather than a description of what the code contains, which
 would duplicate the code and go stale the same way.
 
@@ -87,6 +100,12 @@ The committed documents have to stay consistent with each other, and the split
 creates the drift it is designed to survive. A changed decision means editing
 its entry and `DESIGN.md`, and missing the second is the common failure. Landing
 a roadmap entry adds one more thing to remember: flipping its status.
+
+An entry's number says when it is built, and once it is finished, when it was.
+The price is paid on each insertion: the unfinished entries after it change
+number, and every document citing them has to follow. Entry 4 was dropped while
+numbers were permanent ids, and its hole stays, since entries 5 and 6 are
+finished.
 
 Rewriting in place means the log does not show what changed. `git log` on an
 entry does.

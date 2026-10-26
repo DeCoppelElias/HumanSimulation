@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-10-01. Revised 2026-10-12.
+Accepted, 2026-10-01. Revised 2026-10-20.
 
 ## Context
 
@@ -37,7 +37,7 @@ hundred tiles.
 Java was estimated against the agent goal and passes. A day at the target size
 is well under a millisecond, a 500-day run a fraction of a second, and seeds
 run in parallel one world per thread. JVM startup is the only cost an agent
-notices, and batch runs pay it once.
+notices, about half a second against the seconds a long run takes.
 
 Hosting decides whether a Java core can still be a link. A Java server on a
 host gives every visitor their own world over the network, which costs a small
@@ -137,7 +137,7 @@ runs. There is no endpoint that stops the process. The server listens on
 `127.0.0.1` unless told otherwise.
 
 `java -jar` runs the server locally and opens the browser. Hosting it is roadmap
-entry 11, which adds sessions, ownership, clean-up of abandoned worlds and a
+entry 13, which adds sessions, ownership, clean-up of abandoned worlds and a
 deploy to Fly.io.
 
 ## Consequences

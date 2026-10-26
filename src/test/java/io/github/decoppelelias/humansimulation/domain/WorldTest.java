@@ -6,10 +6,12 @@ import static org.assertj.core.api.Assertions.within;
 import static org.assertj.core.groups.Tuple.tuple;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalDouble;
+import java.util.TreeMap;
 import java.util.random.RandomGeneratorFactory;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
@@ -305,6 +307,127 @@ class WorldTest {
     }
 
     @Test
+    void mutationIsOnByDefault() {
+        World world = new World(5, 5, 1, RABBITS);
+        assertThat(world.snapshot().settings().get("world")).containsEntry("mutation", 1.0);
+    }
+
+    @Test
+    void withMutationOffASpawnIsTheBaseline() {
+        World world = new World(10, 10, 1, RABBITS);
+        world.submit(new Command.SetSetting("world", "mutation", 0));
+        world.submit(new Command.Spawn("rabbit", 30));
+        for (int x = 0; x < 10; x++) {
+            world.submit(new Command.SpawnAt("rabbit", new GridPosition(x, 0)));
+        }
+        WorldSnapshot snapshot = world.applyPending();
+        Genome baseline = Rabbit.species().baseline();
+        int seen = 0;
+        for (WorldSnapshot.TileView tile : snapshot.tiles()) {
+            for (WorldSnapshot.EntityView view : tile.entities()) {
+                assertThat(world.entity(view.id()).orElseThrow().genome()).isEqualTo(baseline);
+                seen++;
+            }
+        }
+        assertThat(seen).isEqualTo(40);
+    }
+
+    @Test
+    void aSpawnsGeneOverridesReplaceThoseGenesOfTheBaseline() {
+        World world = new World(10, 10, 1, RABBITS);
+        world.submit(new Command.SetSetting("world", "mutation", 0));
+        world.submit(new Command.Spawn("rabbit", 5, Map.of("grassPull", 0.2, "whim", 2.0)));
+        Map<String, Double> expected = new TreeMap<>(Rabbit.species().baseline().scalars());
+        expected.put("grassPull", 0.2);
+        expected.put("whim", 2.0);
+        List<Genome> spawned = genomes(world, world.applyPending());
+        assertThat(spawned)
+                .hasSize(5)
+                .allSatisfy(genome -> assertThat(genome.scalars()).isEqualTo(expected));
+    }
+
+    @Test
+    void mutationAppliesAfterTheOverrides() {
+        World world = new World(10, 10, 1, RABBITS);
+        world.submit(new Command.Spawn("rabbit", 20, Map.of("grassPull", 0.2)));
+        List<Genome> spawned = genomes(world, world.applyPending());
+        assertThat(spawned)
+                .extracting(genome -> genome.scalar("grassPull"))
+                .allSatisfy(value -> assertThat(value).isBetween(0.0, 0.4))
+                .anySatisfy(value -> assertThat(value).isNotEqualTo(0.2));
+    }
+
+    @Test
+    void anOverrideOfAnUndeclaredGeneOrOutOfBoundsChangesNothing() {
+        World world = new World(10, 10, 1, RABBITS);
+        assertThatThrownBy(() -> world.submit(new Command.Spawn("rabbit", 3, Map.of("wings", 1.0))))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("wings");
+        assertThatThrownBy(() -> world.submit(new Command.Spawn("rabbit", 3, Map.of("grassPull", 9.0))))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("grassPull");
+        assertThat(occupied(world.applyPending())).isEmpty();
+        assertThat(world.log()).isEmpty();
+    }
+
+    @Test
+    void anOverrideWithNoValueIsRefusedByName() {
+        Map<String, Double> genes = new HashMap<>();
+        genes.put("grassPull", null);
+        assertThatThrownBy(() -> new Command.Spawn("rabbit", 1, genes))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("grassPull");
+    }
+
+    @Test
+    void theLogCarriesTheOverrides() {
+        World world = new World(10, 10, 1, RABBITS);
+        world.submit(new Command.Spawn("rabbit", 2, Map.of("grassPull", 0.2)));
+        world.applyPending();
+        assertThat(world.log())
+                .extracting(LoggedCommand::command)
+                .containsExactly(new Command.Spawn("rabbit", 2, Map.of("grassPull", 0.2)));
+    }
+
+    private static List<Genome> genomes(World world, WorldSnapshot snapshot) {
+        List<Genome> found = new ArrayList<>();
+        for (WorldSnapshot.TileView tile : snapshot.tiles()) {
+            for (WorldSnapshot.EntityView view : tile.entities()) {
+                found.add(world.entity(view.id()).orElseThrow().genome());
+            }
+        }
+        return found;
+    }
+
+    @Test
+    void withMutationOffAChildCopiesItsParent() {
+        World world = new World(5, 5, 1, List.of(TestSpecies.breeder(new ArrayList<>())));
+        for (int x = 0; x < 5; x++) {
+            for (int y = 0; y < 5; y++) {
+                world.submit(new Command.SpawnAt("breeder", new GridPosition(x, y)));
+            }
+        }
+        world.applyPending();
+        world.submit(new Command.SetSetting("world", "mutation", 0));
+        WorldSnapshot snapshot = world.applyPending();
+        for (int i = 0; i < 16; i++) {
+            snapshot = world.advance().snapshot();
+        }
+        Genome baseline = TestSpecies.breeder(new ArrayList<>()).baseline();
+        int parentsOffBaseline = 0;
+        for (WorldSnapshot.TileView tile : snapshot.tiles()) {
+            assertThat(tile.entities()).hasSize(2);
+            Genome parent =
+                    world.entity(tile.entities().get(0).id()).orElseThrow().genome();
+            Genome child =
+                    world.entity(tile.entities().get(1).id()).orElseThrow().genome();
+            assertThat(child).isEqualTo(parent);
+            parentsOffBaseline += parent.equals(baseline) ? 0 : 1;
+        }
+        assertThat(parentsOffBaseline).isGreaterThan(5);
+    }
+
+    @Test
     void rabbitsBreedOnTheirOwn() {
         World world = new World(20, 20, 3, List.of(Grass.species(), Rabbit.species()), List.of(new FoodDrop("grass")));
         world.submit(new Command.Spawn("rabbit", 10));
@@ -361,7 +484,7 @@ class WorldTest {
         World world = new World(3, 3, 1, List.of(Rabbit.species(), Grass.species()), List.of(new FoodDrop("grass")));
         assertThat(world.declarations())
                 .extracting(SettingDeclaration::owner)
-                .startsWith("world", "world", "grass", "rabbit");
+                .startsWith("world", "world", "world", "grass", "rabbit");
     }
 
     @Test

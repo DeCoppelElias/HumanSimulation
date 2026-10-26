@@ -12,6 +12,26 @@ class SettingTest {
     }
 
     @Test
+    void aToggleIsStoredAsZeroOrOne() {
+        Setting.Scalar on = new Setting.Toggle("mutation", "Mutate.", true).asScalar();
+        assertThat(on.defaultValue()).isEqualTo(1);
+        assertThat(new Setting.Toggle("mutation", "Mutate.", false).asScalar().defaultValue())
+                .isZero();
+        on.check(0);
+        assertThatThrownBy(() -> on.check(0.5))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("off its step");
+    }
+
+    @Test
+    void aToggleNeedsAKeyAndADescription() {
+        assertThatThrownBy(() -> new Setting.Toggle(" ", "Mutate.", true)).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new Setting.Toggle("mutation", " ", true))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("mutation");
+    }
+
+    @Test
     void aDefaultOffItsBoundsOrStepIsRejected() {
         assertThatThrownBy(() -> new Setting.Scalar("x", "An x.", 1, 30, 1, 0))
                 .isInstanceOf(IllegalArgumentException.class)

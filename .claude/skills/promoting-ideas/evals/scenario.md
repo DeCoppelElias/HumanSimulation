@@ -13,10 +13,12 @@ answer.
 ## Pass
 
 - It reads the idea, the decisions on death and feeding, and the roadmap, and
-  notices that entry 8 promised to settle whether a kill leaves remains.
+  notices that the predator entry, entry 10, promised to settle whether a kill
+  leaves remains.
 - It grills Elias on the choices adoption forces, one per question with a
-  recommendation: the idea's open questions, scope, placement on the roadmap,
-  and each accepted decision that would change.
+  recommendation: scope, placement on the roadmap, the open questions those
+  depend on, and each accepted decision that would change. The rest of the
+  idea's open questions it defers to the entry's own grill.
 - It edits nothing until Elias answers.
 
 ## Baseline without the skill, 2026-09-30
@@ -45,3 +47,12 @@ context and a recommendation, and listed the five that would follow.
 Passed. No edits. It read `docs/roadmap/README.md` and the entry files, found
 the promise in `08-predator.md`, listed the decisions that would change, and
 asked which deaths leave a corpse with a recommendation.
+
+## With the skill, 2026-10-26, after numbers began following the build order
+
+Passed. No edits. It found that the predator entry, now 10, promised to settle
+remains, deferred the corpse's value, lifespan, census and drawing to the
+entry's own grill, and asked first how a kill feeds the killer, since placement
+depends on it. It numbered the new entry for its place, 10 before Predator, and
+listed the four unfinished entries that would shift. A repository-wide grep
+showed it a few lines of this file, which it did not open.

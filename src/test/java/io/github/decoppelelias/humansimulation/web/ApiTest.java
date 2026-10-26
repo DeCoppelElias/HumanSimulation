@@ -462,10 +462,13 @@ class ApiTest {
         String id = newWorld();
         JsonNode declarations = client.get("/worlds/" + id + "/settings").json();
         assertThat(declarations.get(0).get("owner").asString()).isEqualTo("world");
-        assertThat(declarations.get(0).get("key").asString()).isEqualTo("grassPerDrop");
+        assertThat(declarations.get(0).get("key").asString()).isEqualTo("mutation");
+        assertThat(declarations.get(0).get("shape").asString()).isEqualTo("toggle");
+        assertThat(declarations.get(1).get("key").asString()).isEqualTo("grassPerDrop");
         assertThat(declarations.get(0).get("description").asString()).isNotBlank();
+        assertThat(declarations.findValuesAsString("shape")).containsOnly("scalar", "toggle");
         assertThat(declarations.findValuesAsString("owner"))
-                .startsWith("world", "world", "grass", "rabbit")
+                .startsWith("world", "world", "world", "grass", "rabbit")
                 .containsOnly("world", "grass", "rabbit");
         assertThat(declarations.findValuesAsString("key")).contains("nourishment", "breedingLoss", "parentMargin");
         JsonNode stride = null;
@@ -521,6 +524,18 @@ class ApiTest {
 
     private HttpTestClient.Response spawn(String id, int count) {
         return command(id, "{\"type\":\"spawn\",\"species\":\"rabbit\",\"count\":" + count + "}");
+    }
+
+    @Test
+    void aSpawnTakesGeneOverridesAndRefusesAnUnknownGene() {
+        String id = newWorld();
+        assertThat(command(id, "{\"type\":\"spawn\",\"species\":\"rabbit\",\"count\":2,\"genes\":{\"grassPull\":0.2}}")
+                        .status())
+                .isEqualTo(200);
+        HttpTestClient.Response refused =
+                command(id, "{\"type\":\"spawn\",\"species\":\"rabbit\",\"count\":2,\"genes\":{\"wings\":1}}");
+        assertThat(refused.status()).isEqualTo(400);
+        assertThat(refused.body()).contains("wings");
     }
 
     private String newWorld() {

@@ -40,7 +40,9 @@ reads, grouped as World, Grass and Rabbit, each with its description: how much
 grass falls and how often, what a rabbit pays a day, how far it walks, and what
 breeding costs. An edit takes effect at the next day and only in that world. An
 edited setting is marked in bold, its ↺ button puts the default back, and
-"Restore all" resets every one. A reset keeps the edits.
+"Restore all" resets every one. A reset keeps the edits. The World group starts
+with a `mutation` checkbox. Untick it and children and new spawns become exact
+copies, so the world stops evolving.
 
 The sprites are from [Kenney](https://kenney.nl), CC0: the rabbit from Animal
 Pack Remastered and the grass from Foliage Pack.
@@ -60,6 +62,37 @@ gene over the members alive that day.
 and `--height` to 20. `--spawn SPECIES=COUNT`, once per species, sets the
 starting population, which is ten rabbits and no grass without it. Grass falls
 on its own every seven days either way. The same seed prints the same lines.
+
+`--set OWNER.KEY=VALUE` changes any setting from day 0, and
+`--set-at DAY:OWNER.KEY=VALUE` changes it once DAY days are complete, so a run
+can get harsher as it goes. `--gene SPECIES.GENE=VALUE` starts that species'
+spawn from another value of one gene. Each is repeatable, and a bad name or
+value fails with the same message the panel would give.
+
+    java -jar target/HumanSimulation.jar run --seed 1 --days 500 --set world.mutation=0 --set-at 200:world.grassPerDrop=3 --gene rabbit.grassPull=0.2
+
+## Comparing
+
+`tools/compare.py` runs variants of a world over many seeds, one `run` per seed
+and variant in parallel, and reports how each fared. It needs the jar from
+`./mvnw package` and Python 3, and nothing else.
+
+    python tools/compare.py tools/experiments/mutation-ramp.json
+    python tools/compare.py --seeds 1-30 --days 500 --variant base= --variant cheap="--set rabbit.speedCharge=0.05"
+
+A preset in `tools/experiments/` names the seeds, days, shared flags and the
+variants, and flags on the command line override it. `watchable` is the world
+the page starts from. `mutation-ramp` runs mutating rabbits against clones as
+food runs short.
+
+Per species, the report gives the day each world died out, its population, and
+how far each gene's mean moved from day 1. It then compares each variant with
+the first on every measure: both medians, Â12 (the chance that a run of the
+variant beats a run of the first, 0.5 meaning no difference), and a
+Mann-Whitney p printed twice. Read the raw p for a measure you chose before
+running, and the Holm p, which allows for every test in the report, when
+scanning for anything that stands out. `--per-seed` adds each seed's genes and
+`--json` prints everything. The script never says which variant won.
 
 ## Serving
 
@@ -89,6 +122,7 @@ commands change them:
     curl -X POST localhost:63214/worlds/ID/commands -d '{"type":"restoreDefaults","owner":"rabbit"}'
 
 `restoreDefaults` with no owner restores everything, and with an owner and a
-`key` one setting. Process settings belong to the owner `world`. With `--no-browser` the server quits after 10 minutes without a
+`key` one setting. A spawn takes an optional `genes` object, such as
+`{"grassPull":0.2}`, which overrides those genes for the members it creates. Process settings belong to the owner `world`. With `--no-browser` the server quits after 10 minutes without a
 request or an open stream, and without it never quits. It listens on `127.0.0.1` unless `--host`
 says otherwise.

@@ -23,11 +23,23 @@ record Settings(List<Setting> declared) {
     }
 
     Setting.Scalar scalar(String key) {
+        return switch (find(key)) {
+            case Setting.Scalar scalar -> scalar;
+            case Setting.Toggle toggle -> toggle.asScalar();
+        };
+    }
+
+    Setting.Toggle toggle(String key) {
+        if (find(key) instanceof Setting.Toggle toggle) {
+            return toggle;
+        }
+        throw new IllegalArgumentException("setting " + key + " is not a toggle");
+    }
+
+    private Setting find(String key) {
         for (Setting setting : declared) {
             if (setting.key().equals(key)) {
-                return switch (setting) {
-                    case Setting.Scalar scalar -> scalar;
-                };
+                return setting;
             }
         }
         throw new IllegalArgumentException("no setting " + key);

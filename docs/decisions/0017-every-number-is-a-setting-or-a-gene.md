@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-27. Revised 2026-10-15.
+Accepted, 2026-09-27. Revised 2026-10-26.
 
 ## Context
 
@@ -44,6 +44,11 @@ The page could restore defaults by sending each default back as an edit. It
 would then restore what it believes the defaults are, which a tab opened before
 a rebuild gets wrong, and the log would show edits where someone restored.
 
+A control run needs mutation off. A world scalar scaling every gene's mutation
+size, with 0 as the control, reused the one shape that existed and doubled as a
+tuning knob. Nobody expected to want a value other than 0 or 1, and mutation
+sizes are tuned in the layout, so it became a toggle.
+
 Declarations could travel in every snapshot, which repeats their descriptions
 every day, or behind an endpoint with a stream event when values change, which
 is a second way for state to leave the world.
@@ -72,8 +77,11 @@ handle the `Spawn` gives it, so an edit reaches every creature already alive, as
 the 2022 panel does, and only in its own world. A process reads its values the
 same way.
 
-Values are grouped by owner: `world` for every process's settings, or a species
-name. A world refuses a species named `world`, and two processes declaring one
+Values are grouped by owner: `world` for the world's own settings and every
+process's, or a species name. The world declares one of its own, `mutation`, a
+toggle that is on by default. Off, a child is an exact copy of its parent and a
+spawn an exact copy of its species' baseline, so a world can be run as a control
+whose creatures never change. A world refuses a species named `world`, and two processes declaring one
 key, when it is built.
 
 Two commands change the table, per
@@ -127,10 +135,19 @@ is the point of being able to edit it.
 A generated panel is plainer than a hand-made one, and it is the only kind that
 cannot fall behind the model.
 
+A toggle is stored as 0 or 1, so `SetSetting` carries it like any other value
+and the table keeps one type. The panel draws it as a checkbox.
+
+Unticking `mutation` on the page stops a watched world from evolving. That
+follows from being able to edit anything, and its description says so.
+
 Because commands drain at the day boundary, a live read is stable within a day.
 
 Worlds on one server share species objects and never share an edit. Changing a
-default is a code change, and no command can do it.
+default is a code change, and no command can do it. The same holds for a
+species' baseline genome: a spawn can override genes for the members it
+creates, per [0007](0007-state-leaves-as-a-snapshot-commands-go-in.md), and
+the species keeps its own.
 
 A logged `RestoreDefaults` replays to the defaults of the build replaying it, so
 a log replayed on a build with other defaults diverges there. Replay is promised

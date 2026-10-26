@@ -24,7 +24,8 @@ class CommandJsonTest {
                 Optional.empty(),
                 owner,
                 key,
-                value);
+                value,
+                Optional.empty());
     }
 
     @Test
@@ -37,8 +38,27 @@ class CommandJsonTest {
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty(),
+                Optional.empty(),
                 Optional.empty());
         assertThat(CommandJson.toCommand(spawn, () -> 0L)).isEqualTo(new Command.Spawn("rabbit", 3));
+    }
+
+    @Test
+    void aSpawnCarriesItsGeneOverridesBothWays() {
+        CommandJson.Body spawn = new CommandJson.Body(
+                Optional.of("spawn"),
+                Optional.of("rabbit"),
+                Optional.of(3),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.empty(),
+                Optional.of(Map.of("grassPull", 0.2)));
+        Command read = CommandJson.toCommand(spawn, () -> 0L);
+        assertThat(read).isEqualTo(new Command.Spawn("rabbit", 3, Map.of("grassPull", 0.2)));
+        assertThat(CommandJson.toJson(read)).containsEntry("genes", Map.of("grassPull", 0.2));
+        assertThat(CommandJson.toJson(new Command.Spawn("rabbit", 3))).doesNotContainKey("genes");
     }
 
     @Test
@@ -87,6 +107,7 @@ class CommandJsonTest {
                 Optional.of("rabbit"),
                 Optional.empty(),
                 Optional.of(new GridPosition(3, 4)),
+                Optional.empty(),
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty(),
