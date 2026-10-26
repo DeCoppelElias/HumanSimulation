@@ -24,7 +24,7 @@ from pathlib import Path
 
 # A mean of identical genes can come out a few ulps off them.
 ROUNDING = 1e-9
-DEFAULT_JAR =Path(__file__).resolve().parent.parent / "target" / "HumanSimulation.jar"
+DEFAULT_JAR = Path(__file__).resolve().parent.parent / "target" / "HumanSimulation.jar"
 
 
 def parse_seeds(text):
@@ -102,18 +102,22 @@ BASE_MEASURES = ("survival", "meanPopulation", "peak")
 
 
 def measures(summary):
-    """Every number a run is compared on, a gene as gene.<name> so it cannot clash with the others."""
+    """Every number a run is compared on, a gene as gene.<name> so it cannot clash with the others.
+
+    Gene means are rounded to ROUNDING, so two that differ by a few ulps tie rather than rank.
+    """
     values = {
         "survival": _lasted(summary["diedOn"]),
         "meanPopulation": summary["meanPopulation"],
         "peak": summary["peak"],
     }
     for gene, value in summary["genes"].items():
-        values[f"gene.{gene}"] = value
+        values[f"gene.{gene}"] = round(value, 9)
     return values
 
 
 def _median(values):
+    """Alive when at least half the worlds were still alive at the end."""
     middle = statistics.median(values)
     return "alive" if middle == float("inf") else middle
 
@@ -207,6 +211,16 @@ def report(results, variants, seeds, species, floor=5):
     return result
 
 
+def report_all(lines, variants, seeds, species, floor):
+    """One report per species, every species in the census when none are named, with Holm over all of them."""
+    reports = {}
+    for one in species or species_in(lines.values()):
+        results = {key: summarise(found, one, floor) for key, found in lines.items()}
+        reports[one] = report(results, variants, seeds, one, floor)
+    adjust_across(reports)
+    return reports
+
+
 def _number(value):
     return "-" if value is None else f"{value:.2f}"
 
@@ -262,9 +276,10 @@ def format_text(reports, per_seed):
         if one["comparisons"]:
             out.append("")
             out.append(f"{species}: each variant against {variants[0]}, medians, A12, raw p, Holm p")
+            width = max(len(variant) for variant in variants[1:])
             for c in one["comparisons"]:
                 out.append(
-                    f"{c['measure']:<16} {c['variant']} {_median_text(c['median'])}"
+                    f"{c['measure']:<16} {c['variant']:<{width}} {_median_text(c['median'])}"
                     f" vs {_median_text(c['referenceMedian'])}"
                     f"  A12 {c['a12']:.2f}  p {c['p']:.3f}  Holm p {c['pHolm']:.3f}"
                 )
@@ -368,12 +383,7 @@ def main(argv):
         pool.shutdown(cancel_futures=True)
         sys.exit(str(failure))
     pool.shutdown()
-    species = chosen["species"] or species_in(lines.values())
-    reports = {}
-    for one in species:
-        results = {key: summarise(found, one, args.floor) for key, found in lines.items()}
-        reports[one] = report(results, variants, seeds, one, args.floor)
-    adjust_across(reports)
+    reports = report_all(lines, variants, seeds, chosen["species"], args.floor)
     print(json.dumps(reports, indent=2) if args.json else format_text(reports, args.per_seed))
 
 

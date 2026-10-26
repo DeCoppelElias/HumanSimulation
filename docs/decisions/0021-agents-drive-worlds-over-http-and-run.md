@@ -149,9 +149,8 @@ its population, and each gene's mean against its mean on day 1, taken on the
 last day with enough members to mean something. It never judges: what a result
 should show is written as acceptance lines on the roadmap entry that runs it,
 and the agent checks the report against them. A named experiment is a preset
-in `tools/experiments/`, and flags override it. A preset runs seeds 1 to 30
-unless it says otherwise, and `--seeds` overrides that for a quicker or a
-larger run.
+in `tools/experiments/`, and flags override it. Presets run seeds 1 to 30,
+and `--seeds` overrides that for a quicker or a larger run.
 
 Each variant after the first is compared with the first, on every measure: the
 day the species died out, its mean and peak population, and each gene's mean

@@ -205,6 +205,29 @@ class ComparisonTest(unittest.TestCase):
         self.assertAlmostEqual(reports["fox"]["comparisons"][0]["pHolm"], 0.02)
         self.assertAlmostEqual(reports["rabbit"]["comparisons"][0]["pHolm"], 0.04)
 
+    def test_gene_means_that_differ_only_by_rounding_tie(self):
+        results = {
+            ("control", 1): run(None, speed=0.2),
+            ("mutating", 1): run(None, speed=0.20000000000000004),
+        }
+        speed = compare.report(results, ["control", "mutating"], [1], "rabbit")["comparisons"][-1]
+        self.assertEqual((speed["measure"], speed["a12"], speed["p"]), ("gene.speed", 0.5, 1.0))
+
+    def test_holm_in_a_full_report_counts_every_species(self):
+        def dies_on(day):
+            return [two_species(d, 4 if d < day else 0, 3 if d < day else 0) for d in range(1, 9)]
+
+        lines = {}
+        for seed, (early, late) in enumerate([(2, 5), (3, 6), (4, 7)], start=1):
+            lines[("control", seed)] = dies_on(early)
+            lines[("mutating", seed)] = dies_on(late)
+        reports = compare.report_all(lines, ["control", "mutating"], [1, 2, 3], None, 1)
+        total = sum(len(one["comparisons"]) for one in reports.values())
+        self.assertEqual(total, 8)
+        for one in reports.values():
+            survival = one["comparisons"][0]
+            self.assertAlmostEqual(survival["pHolm"], total * survival["p"])
+
     def test_one_variant_has_nothing_to_compare(self):
         results = {("defaults", 1): run(None)}
         self.assertEqual(compare.report(results, ["defaults"], [1], "rabbit")["comparisons"], [])
