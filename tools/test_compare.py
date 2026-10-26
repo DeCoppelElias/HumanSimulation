@@ -29,6 +29,45 @@ class SeedsTest(unittest.TestCase):
             compare.parse_seeds("5-3")
 
 
+INF = float("inf")
+
+
+class StatisticsTest(unittest.TestCase):
+    def test_a12_is_the_chance_that_mine_beats_theirs(self):
+        self.assertEqual(compare.a12([1, 2, 3], [4, 5, 6]), 0.0)
+        self.assertEqual(compare.a12([4, 5, 6], [1, 2, 3]), 1.0)
+
+    def test_a12_counts_a_tie_as_half(self):
+        self.assertEqual(compare.a12([1, 2, 2, 3], [2, 3, 4, 4]), 0.15625)
+
+    def test_p_without_ties_matches_the_normal_approximation(self):
+        # scipy.stats.mannwhitneyu([1, 2, 3], [4, 5, 6], method="asymptotic") gives 0.0809.
+        self.assertAlmostEqual(compare.mann_whitney_p([1, 2, 3], [4, 5, 6]), 0.08086, places=4)
+
+    def test_p_corrects_for_ties(self):
+        # U = 2.5, variance 16/12 * (9 - 36/56), z = 5 / 3.338.
+        self.assertAlmostEqual(compare.mann_whitney_p([1, 2, 2, 3], [2, 3, 4, 4]), 0.13417, places=4)
+
+    def test_identical_values_give_no_difference(self):
+        self.assertEqual(compare.a12([5, 5, 5], [5, 5]), 0.5)
+        self.assertEqual(compare.mann_whitney_p([5, 5, 5], [5, 5]), 1.0)
+
+    def test_a_world_alive_at_the_end_ranks_after_every_death_and_ties_another(self):
+        mine, theirs = [INF, INF, 900, 800], [INF, 700, 600, 500]
+        self.assertEqual(compare.a12(mine, theirs), 0.8125)
+        self.assertAlmostEqual(compare.mann_whitney_p(mine, theirs), 0.18315, places=4)
+
+
+class HolmTest(unittest.TestCase):
+    def test_multiplies_by_the_tests_left_and_never_falls_below_an_earlier_one(self):
+        adjusted = compare.holm([0.01, 0.04, 0.03, 0.2])
+        for got, want in zip(adjusted, [0.04, 0.09, 0.09, 0.2]):
+            self.assertAlmostEqual(got, want)
+
+    def test_never_exceeds_one(self):
+        self.assertEqual(compare.holm([0.5, 0.6]), [1.0, 1.0])
+
+
 def two_species(day, rabbits, foxes):
     genes = {}
     if rabbits:

@@ -10,8 +10,10 @@ It needs the jar, from ./mvnw package -Pskip-frontend.
 """
 
 import argparse
+import collections
 import concurrent.futures
 import json
+import math
 import os
 import re
 import shlex
@@ -64,6 +66,36 @@ def summarise(lines, species, floor):
 
 def _lasted(died_on):
     return float("inf") if died_on is None else died_on
+
+
+def a12(mine, theirs):
+    """The chance that a value from mine beats one from theirs, a tie counting half."""
+    wins = sum((x > y) + 0.5 * (x == y) for x in mine for y in theirs)
+    return wins / (len(mine) * len(theirs))
+
+
+def mann_whitney_p(mine, theirs):
+    """Two-sided, from the normal approximation with tie and continuity corrections."""
+    n1, n2 = len(mine), len(theirs)
+    n = n1 + n2
+    ties = sum(count**3 - count for count in collections.Counter(mine + theirs).values())
+    variance = n1 * n2 / 12 * ((n + 1) - ties / (n * (n - 1)))
+    if variance == 0:
+        return 1.0
+    u = a12(mine, theirs) * n1 * n2
+    z = max(abs(u - n1 * n2 / 2) - 0.5, 0) / math.sqrt(variance)
+    return min(1.0, math.erfc(z / math.sqrt(2)))
+
+
+def holm(ps):
+    """Holm-adjusted p-values, in the order given."""
+    order = sorted(range(len(ps)), key=lambda i: ps[i])
+    adjusted = [0.0] * len(ps)
+    running = 0.0
+    for rank, i in enumerate(order):
+        running = max(running, (len(ps) - rank) * ps[i])
+        adjusted[i] = min(1.0, running)
+    return adjusted
 
 
 def report(results, variants, seeds, species, floor=5):
