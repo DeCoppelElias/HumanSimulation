@@ -3,8 +3,9 @@
 
 A world you watch evolve. Grass falls on a grid every seven days and withers if
 nothing eats it within twelve. Rabbits walk toward the grass they can see, eat
-it, and starve when they go too long without. A rabbit with enough reserve can breed, and its child inherits its
-genes with small mutations, so the population drifts toward whatever works.
+it, and starve when they go too long without. A rabbit with enough reserve can
+breed, and its child inherits its genes with small mutations, so the population
+drifts toward whatever works.
 `DESIGN.md` says where it is going and `docs/roadmap/` how far it has got.
 
 The 2022 version, a Swing app of humans looking for food, is on the
@@ -37,8 +38,9 @@ address holds the world's id, so a reload or a second tab shows the same world.
 
 Under the chart, the settings panel has a slider for every number the world
 reads, grouped as World, Grass and Rabbit, each with its description: how much
-grass falls, how often and how long it lasts, what a rabbit pays a day, how far it walks, and what
-breeding costs. An edit takes effect at the next day and only in that world. An
+grass falls, how often and how long it lasts, what a rabbit pays a day, how far
+it walks, and what breeding costs. An edit takes effect at the next day and
+only in that world. An
 edited setting is marked in bold, its ↺ button puts the default back, and
 "Restore all" resets every one. A reset keeps the edits. The World group starts
 with a `mutation` checkbox. Untick it and children and new spawns become exact
@@ -92,13 +94,12 @@ Per species, the report gives the day each world died out, how far each gene's
 mean moved from day 1, and each cause's share of the species' deaths, such as
 how much grass withered rather than being eaten. A species without genes, like
 grass, shows only its deaths, and one that only ever dies of one cause shows no
-deaths. It then compares each variant with
-the first on every measure: both medians, Â12 (the chance that a run of the
-variant beats a run of the first, 0.5 meaning no difference), and a
-Mann-Whitney p printed twice. Read the raw p for a measure you chose before
-running, and the Holm p, which allows for every test in the report, when
-scanning for anything that stands out. `--per-seed` adds each seed's population and
-genes, and `--json` prints everything. The script never says which variant won.
+deaths. It then compares each variant with the first on every measure: both
+medians, Â12 (the chance that a run of the variant beats a run of the first,
+0.5 meaning no difference), and a Mann-Whitney p printed twice. Read the raw p
+for a measure you chose before running, and the Holm p, which allows for every
+test in the report, when scanning for anything that stands out. `--per-seed`
+adds each seed's population and genes, and `--json` prints everything. The script never says which variant won.
 
 ## Serving
 

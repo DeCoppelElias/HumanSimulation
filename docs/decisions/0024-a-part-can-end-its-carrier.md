@@ -72,9 +72,14 @@ grass dropped at the end of one day can be eaten on each of the next `lifespan`
 days and withers in the Tick of the last. Rabbits do not declare it.
 
 The feed rule ends what it eats as `eaten`. Every removal names its cause, and
-the census counts them, per [0007](0007-state-leaves-as-a-snapshot-commands-go-in.md).
+the census counts them, per
+[0007](0007-state-leaves-as-a-snapshot-commands-go-in.md).
 
 `Lifespan`'s own view reports its age and the days left. No brain reads it yet.
+
+The brain has its own slot rather than sitting among the parts, per
+[0003](0003-entities-carry-components.md), so Tick does not tick it. A brain
+holds no state that changes by the day.
 
 ## Consequences
 
@@ -87,8 +92,8 @@ than a compile error, as setting keys already do.
 Parts tick in the order the species lists them, so a carrier that starves and
 ages on the same day is counted under whichever part comes first.
 
-A part's tick cannot see the world, so anything that needs a neighbour or a tile,
-such as fire spreading, stays a world process.
+A part's tick cannot see the world, so anything that needs a neighbour or a
+tile, such as fire spreading, stays a world process.
 
 Grass that withers opens the energy budget: food a population fails to find is
 lost, so a better forager feeds more of its kind. How much withers depends on

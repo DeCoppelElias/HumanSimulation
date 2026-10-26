@@ -187,6 +187,18 @@ class ApiTest {
                 .isEqualTo(501);
     }
 
+    /** Grass drops every seven days, so in 30 days some is eaten or withers. */
+    @Test
+    void censusRowsCarryTheDaysDeaths() {
+        String id = newWorld();
+        spawn(id, 5);
+        client.post("/worlds/" + id + "/step", "{\"days\":30}");
+        JsonNode census = client.get("/worlds/" + id + "/census").json();
+        assertThat(census.get(0).get("deaths").isObject()).isTrue();
+        assertThat(census.valueStream().anyMatch(row -> row.get("deaths").has("grass")))
+                .isTrue();
+    }
+
     @Test
     void stepRejectsDaysOutsideItsRange() {
         String id = newWorld();

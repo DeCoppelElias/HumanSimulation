@@ -268,7 +268,7 @@ A day runs these steps in order:
    nothing.
 4. Tick. Every entity's components update themselves, in id order. Reserves
    are charged on the eating interval, one charge covering eating and the speed
-   and view range the creature carries, and lifespans count down. Anything a
+   and view range the creature carries, and lifespans count their days. Anything a
    component ends dies. A reserve counts days: by default a creature pays one a
    day for eating.
 5. World processes, in list order: spawning new food, regrowth, fire.
