@@ -138,5 +138,33 @@ class TextTest(unittest.TestCase):
         self.assertNotIn("fail", text.lower())
 
 
+class SustainedTest(unittest.TestCase):
+    def test_days_after_dying_out_count_as_none(self):
+        lines = [
+            '{"day":1,"population":{"rabbit":10}}',
+            '{"day":2,"population":{"rabbit":10}}',
+            '{"day":3,"population":{"rabbit":0}}',
+            '{"day":4,"population":{"rabbit":0}}',
+        ]
+        self.assertEqual(ac.sustained(lines, "rabbit"), 5)
+
+
+class PlanTest(unittest.TestCase):
+    def test_seeds_on_the_command_line_override_the_preset(self):
+        args = ac.parse_args(["preset.json", "--seeds", "3-4"])
+        self.assertEqual(ac.seeds_of(PRESET, args), [3, 4])
+
+    def test_the_preset_gives_seeds_otherwise(self):
+        self.assertEqual(len(ac.seeds_of(PRESET, ac.parse_args(["preset.json"]))), 30)
+
+    def test_a_test_runs_on_its_own_seed(self):
+        self.assertEqual(ac.test_seed(PRESET, 7), 1007)
+
+    def test_the_original_file_holds_size_copies_by_species_and_genes(self):
+        lines = ac.original_lines(PRESET, ORIGINAL)
+        self.assertEqual(len(lines), 10)
+        self.assertEqual(lines[0], '{"species": "rabbit", "genes": {"grassPull": 0.2, "whim": 2.0}}')
+
+
 if __name__ == "__main__":
     unittest.main()

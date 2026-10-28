@@ -1,0 +1,14 @@
+{
+  "about": "Entry 9's gate: rabbits evolved from a genome that barely aims for food, against that genome, in one world and apart. Expectations are in docs/roadmap/09-rabbit-learns.md.",
+  "seeds": "1-30",
+  "species": "rabbit",
+  "world": ["--width", "40", "--height", "40", "--set", "world.grassPerDrop=28"],
+  "evolve": {
+    "days": 1000,
+    "founders": 20,
+    "exportDays": [500],
+    "flags": ["--gene", "rabbit.grassPull=0.2", "--gene", "rabbit.hungerDrive=0.5", "--gene", "rabbit.whim=2"]
+  },
+  "sample": 10,
+  "test": {"days": 500, "seedOffset": 1000}
+}

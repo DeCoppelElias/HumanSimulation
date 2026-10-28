@@ -9,8 +9,20 @@ roadmap entry that runs it.
 It needs the jar, from ./mvnw package -Pskip-frontend.
 """
 
+import argparse
+import concurrent.futures
+import json
+import os
 import random
+import shutil
 import statistics
+import sys
+import time
+from pathlib import Path
+
+import compare
+
+WORK = Path(__file__).resolve().parent.parent / "target" / "ancestor-competition"
 
 
 def evolve_flags(preset, export):
@@ -70,6 +82,11 @@ def evolved_share(survivors, sample, original):
             raise ValueError(f"rabbit {one['id']} matches neither group, so mutation was on in the test")
     total = counts["evolved"] + counts["original"]
     return {**counts, "share": counts["evolved"] / total if total else None}
+
+
+def sustained(lines, species):
+    """Mean population over every day of the run, so a group that dies out early counts its empty days."""
+    return statistics.mean(row["population"].get(species, 0) for row in compare.rows_of(lines))
 
 
 def gene_means(genomes):
@@ -146,7 +163,7 @@ def format_text(one, seconds, per_seed):
         f"  evolved gone                   {shared['evolvedGone']} of {tested}",
         f"  both gone                      {shared['bothGone']} of {tested}",
         "",
-        "each group in a world of its own: rabbits it sustains, mean over days alive",
+        "each group in a world of its own: rabbits it sustains, mean over every day",
         f"  median                         evolved {_number(alone['evolvedMedian'])},"
         f" original genome {_number(alone['originalMedian'])}",
         f"  evolved sustains more in       {alone['more']} of {tested}",
@@ -169,3 +186,145 @@ def format_text(one, seconds, per_seed):
                 f"  alone {_number(result['alone']['evolved'])} / {_number(result['alone']['original'])}"
             )
     return "\n".join(out)
+
+
+def parse_args(argv):
+    parser = argparse.ArgumentParser(
+        description="Evolve populations, then set them against the genome they started from."
+    )
+    parser.add_argument("preset", help="a JSON preset, such as tools/experiments/rabbit-learns-gate.json")
+    parser.add_argument("--seeds", help="an inclusive range such as 1-30")
+    parser.add_argument("--sample-seed", default="1", help="seeds the draw of each sample, with the world seed")
+    parser.add_argument("--jobs", type=int, default=os.cpu_count())
+    parser.add_argument("--jar", default=str(compare.DEFAULT_JAR))
+    parser.add_argument("--json", action="store_true")
+    parser.add_argument("--per-seed", action="store_true")
+    return parser.parse_args(argv)
+
+
+def seeds_of(preset, args):
+    return compare.parse_seeds(args.seeds or preset["seeds"])
+
+
+def test_seed(preset, seed):
+    return seed + preset["test"]["seedOffset"]
+
+
+def original_lines(preset, genes):
+    return [json.dumps({"species": preset["species"], "genes": genes})] * preset["sample"]
+
+
+def read_genomes(path):
+    if not path.exists():
+        return []
+    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+
+
+def _write_lines(path, lines):
+    path.write_text("".join(line + "\n" for line in lines), encoding="utf-8")
+
+
+def _run_all(pool, jar, jobs):
+    """jobs maps a key to (label, seed, days, flags). A failed run stops the gate, naming it."""
+    futures = {pool.submit(compare.run_world, jar, *job): key for key, job in jobs.items()}
+    found = {}
+    for future in concurrent.futures.as_completed(futures):
+        found[futures[future]] = future.result()
+    return found
+
+
+def _evolve(pool, args, preset, seeds):
+    evolve = preset["evolve"]
+    return _run_all(
+        pool,
+        args.jar,
+        {
+            seed: ("evolve", seed, evolve["days"], evolve_flags(preset, WORK / f"seed-{seed}" / "evolve.jsonl"))
+            for seed in seeds
+        },
+    )
+
+
+def _prepare(args, preset, seeds, evolved_census, export_days):
+    """Reads each seed's export, draws its sample and writes the files its three test runs spawn from."""
+    evolve, test = preset["evolve"], preset["test"]
+    results, original, jobs = {}, None, {}
+    for seed in seeds:
+        folder = WORK / f"seed-{seed}"
+        _write_lines(folder / "evolve-census.jsonl", evolved_census[seed])
+        exported = read_genomes(folder / "evolve.jsonl")
+        founders = original_genome(on_day(exported, 1))
+        if original is not None and founders != original:
+            raise ValueError(f"seed {seed} started from another genome than the seeds before it")
+        original = founders
+        survivors = on_day(exported, evolve["days"])
+        if not survivors:
+            results[seed] = {"status": "died out"}
+            continue
+        sample = draw_sample(survivors, preset["sample"], f"{args.sample_seed}:{seed}")
+        if sample is None:
+            results[seed] = {"status": "too few"}
+            continue
+        _write_lines(folder / "evolved.jsonl", [json.dumps(one) for one in sample])
+        _write_lines(folder / "original.jsonl", original_lines(preset, original))
+        sources = {
+            "shared": [folder / "evolved.jsonl", folder / "original.jsonl"],
+            "evolved": [folder / "evolved.jsonl"],
+            "original": [folder / "original.jsonl"],
+        }
+        for group, files in sources.items():
+            flags = test_flags(preset, files, folder / f"test-{group}.jsonl")
+            jobs[(seed, group)] = (group, test_seed(preset, seed), test["days"], flags)
+        results[seed] = {
+            "status": "tested",
+            "sample": sample,
+            "genes": {day: gene_means(on_day(exported, day)) for day in export_days},
+        }
+    return results, original, jobs
+
+
+def _score(preset, results, original, test_census):
+    test, species = preset["test"], preset["species"]
+    for seed, result in results.items():
+        if result["status"] != "tested":
+            continue
+        folder = WORK / f"seed-{seed}"
+        survivors = on_day(read_genomes(folder / "test-shared.jsonl"), test["days"])
+        result["shared"] = evolved_share(survivors, result.pop("sample"), original)
+        result["alone"] = {group: sustained(test_census[(seed, group)], species) for group in ("evolved", "original")}
+
+
+def main(argv):
+    args = parse_args(argv)
+    preset = json.loads(Path(args.preset).read_text(encoding="utf-8"))
+    seeds = seeds_of(preset, args)
+    if not Path(args.jar).exists():
+        sys.exit(f"no jar at {args.jar}; build it with ./mvnw package -Pskip-frontend")
+    started = time.monotonic()
+    shutil.rmtree(WORK, ignore_errors=True)
+    for seed in seeds:
+        (WORK / f"seed-{seed}").mkdir(parents=True)
+    evolve = preset["evolve"]
+    export_days = sorted({*evolve["exportDays"], evolve["days"]})
+    pool = concurrent.futures.ThreadPoolExecutor(max_workers=args.jobs)
+    try:
+        evolved_census = _evolve(pool, args, preset, seeds)
+        results, original, jobs = _prepare(args, preset, seeds, evolved_census, export_days)
+        _score(preset, results, original, _run_all(pool, args.jar, jobs))
+    except (compare.RunFailed, ValueError) as failure:
+        pool.shutdown(cancel_futures=True)
+        sys.exit(str(failure))
+    pool.shutdown()
+    one = report(results, original, export_days)
+    for result in one["perSeed"].values():
+        if "genes" in result:
+            result["genes"] = {str(day): means for day, means in result["genes"].items()}
+    seconds = time.monotonic() - started
+    if args.json:
+        print(json.dumps({**one, "seconds": round(seconds, 1)}, indent=2))
+    else:
+        print(format_text(one, seconds, args.per_seed))
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
