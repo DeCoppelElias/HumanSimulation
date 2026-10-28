@@ -30,6 +30,8 @@ that settled it.
   beside the rabbits to show what selection adds.
 - [Corpses and scavenging](corpses-and-scavenging.md) death leaves something
   edible behind.
+- [Decision topics](decision-topics.md) fewer decision files grouped by topic,
+  each section held to a bar for being there.
 - [Diet](diet.md) which edibles a creature accepts, needed once a predator
   exists.
 - [Domain subpackages](domain-subpackages.md) splitting the flat domain
@@ -64,6 +66,8 @@ that settled it.
   fixed rules.
 - [Patchy food](patchy-food.md) food arriving near food, so herding has
   something to gain.
+- [Process budget](process-budget.md) retrospectives that remove rules as
+  well as add them, and a number that shows the process share.
 - [Property-based tests](property-based-tests.md) jqwik for the domain's
   invariants, with shrunk counterexamples.
 - [Remove command](remove-command.md) taking an entity out of a running world
@@ -72,6 +76,12 @@ that settled it.
   whether a variant did better.
 - [Run settings and genes file](run-settings-file.md) many `run` overrides,
   of settings or starting genes, kept in one file.
+- [Shared workflow kit](shared-workflow-kit.md) the generic skills and checks
+  in a repository of their own, installed rather than copied.
+- [Skill review](skill-review.md) checking each project skill still earns its
+  place, against upstream skills and the current docs.
+- [Stable references](stable-references.md) roadmap entries named by slug,
+  docs that link decisions rather than restate them, and no quoted counts.
 - [Stomach capacity](stomach-capacity.md) a limit on what a creature can hold,
   which makes how much to eat a decision.
 - [World persistence](world-persistence.md) a server's worlds surviving a
