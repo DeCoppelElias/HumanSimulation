@@ -291,7 +291,7 @@ the core. A run with no browser behaves exactly like a watched one.
 State leaves as a snapshot of the whole world each day: the seed, the day
 number, the species the world knows, the grid, and for each tile its fields and
 what stands on it with the values worth drawing, including which of it is a
-creature, and the current value of every setting. Commands are the only way in,
+creature, and its genes, and the current value of every setting. Commands are the only way in,
 covering spawning, resetting, editing a setting or restoring its default, and
 anything else the interface initiates. They queue and drain at the start of a day. The interface never
 reaches into the model. A command is checked before it changes anything, and a
@@ -333,10 +333,15 @@ A `run` command advances a seeded world for a given number of days and prints
 the census as JSON Lines, with population, the mean of each gene and the
 day's deaths by cause per species. It overrides any setting from the command line, on day 0 or on a
 later day, so a run can get harsher as it goes, and any gene of its starting
-population, so a run can start from a worse genome than the species' own. A comparison script runs
+population, so a run can start from a worse genome than the species' own. It
+writes the genomes alive on chosen days to a file, one creature per line, and
+starts a world from such a file, so a population moves from one run into
+another. A comparison script runs
 variants of a world over many seeds and reports how each fared against the
 first, with an effect size and a significance test on every measure, and the roadmap
-entry that runs it says what the report should show. Together they are the only
+entry that runs it says what the report should show. An ancestor competition
+script evolves populations, then sets the evolved genomes against the one they
+started from, together and apart. Together they are the only
 thing that catches a build which compiles, passes every test, and quietly stops
 selecting for anything.
 

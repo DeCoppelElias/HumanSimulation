@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-10-12. Revised 2026-10-15.
+Accepted, 2026-10-12. Revised 2026-10-28.
 
 ## Context
 
@@ -57,6 +57,13 @@ small change in the gene flips all at once. Always breeding when offered needs n
 gene and stops breeding being a decision, which undoes why
 [0004](0004-creatures-return-intents.md) made it an intent.
 
+`grassPull` and `hungerDrive` first had a floor of 0, since a pull away from
+food is never good. Entry 9's gate starts rabbits from a genome that barely aims
+for food, with `grassPull` at 0.2 and `hungerDrive` at 0.5. A gene that close to
+its floor climbs by mutation alone, because a step down is cut at the bound and
+a step up never is, so a rise could not be told from learning. A floor also
+leaves the worst strategy, walking away from food, out of reach of selection.
+
 ## Decision
 
 Each day a rabbit scores every tile it could land on and picks one.
@@ -91,8 +98,8 @@ idling first, then the grid's directions in order, each at distances one up to
 | Gene | Bounds | Baseline | Mutation size |
 |---|---|---|---|
 | `viewRange` | 1 to 10 | 3 | 1.0 |
-| `grassPull` | 0 to 5 | 1 | 0.2 |
-| `hungerDrive` | 0 to 10 | 2 | 0.4 |
+| `grassPull` | -5 to 5 | 1 | 0.2 |
+| `hungerDrive` | -10 to 10 | 2 | 0.4 |
 | `rabbitPull` | -2 to 2 | -0.2 | 0.1 |
 | `whim` | 0.05 to 5 | 0.5 | 0.1 |
 | `breedPull` | 0 to 5 | 1 | 0.2 |
@@ -112,6 +119,12 @@ candidates, which is how it wanders.
 
 Every gene is a continuous nudge with a gradual effect, which is what 0018
 wants from a gene under selection.
+
+The pulls are signed, as `rabbitPull` always was. A negative grass weight
+rewards tiles far from grass, so a rabbit that drifts there walks away from food
+and starves, with no case in the score for it. A starting value near the middle
+of a gene's bounds moves up or down by mutation equally often, so a gate can
+read a rise as selection.
 
 `whim` is likely to drift to its floor, since greedy is best when food is in view
 and `whim` changes nothing when it is not. That is a finding rather than a

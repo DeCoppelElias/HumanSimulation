@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-03. Revised 2026-10-26.
+Accepted, 2026-09-03. Revised 2026-10-28.
 
 ## Context
 
@@ -66,6 +66,13 @@ could build a species with another baseline instead. That leaves the command log
 run started with, so the same seed and log replay differently unless the same
 flag is passed again. Overrides on the spawn put the starting genome in the log.
 
+Roadmap entry 9 exports the genomes alive on a day, so genomes have to leave the
+domain. A query on the world that returns them only when asked costs nothing on
+the days nobody exports, and it adds a third outbound port beside the snapshot
+and the census. Roadmap entry 11 shows a selected creature's genes on the page,
+which reads snapshots, so the genes would reach the snapshot anyway and the
+query would be a second way to read them.
+
 A snapshot returned by applying pending commands while paused could carry the
 number of the day those commands belong to, the next one. The counter on a
 paused page would then jump forward on a click and stay put on a step.
@@ -118,8 +125,8 @@ constructs either. There is no container.
 
 Each day the world produces an immutable snapshot of everything: the seed, the
 day number, the grid dimensions, and for each tile its scalar fields and the
-entities standing on it with their species, sprite key and the values worth
-displaying, and the current value of every setting, grouped by owner per
+entities standing on it with their species, sprite key, the values worth
+displaying and their genes, and the current value of every setting, grouped by owner per
 [0017](0017-every-number-is-a-setting-or-a-gene.md). The viewer is a person rather than a creature, so the audience rules
 in [0013](0013-perception-is-one-type.md) do not limit what the snapshot shows.
 
@@ -127,10 +134,14 @@ in [0013](0013-perception-is-one-type.md) do not limit what the snapshot shows.
 public record WorldSnapshot(long seed, int day, int width, int height, List<String> species,
         List<TileView> tiles, Map<String, Map<String, Double>> settings) {
     public record TileView(GridPosition at, Map<String, Double> fields, List<EntityView> entities) {}
-    public record EntityView(
-            int id, String species, String spriteKey, Map<String, Double> info) {}
+    public record EntityView(int id, String species, String spriteKey, boolean creature,
+            Map<String, Double> info, Map<String, Double> genes) {}
 }
 ```
+
+`genes` holds every gene of the entity's genome by name, and is empty for an
+entity without genes, such as grass. It is kept apart from `info`, which holds
+values for drawing, because an export reads it back as a spawn's genes.
 
 Commands are the only way in. Spawning entities, resetting the world, editing a
 setting or restoring its default, and setting an entity alight are all

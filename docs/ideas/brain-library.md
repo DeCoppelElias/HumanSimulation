@@ -35,6 +35,12 @@ cheap while they are plain records. Loading needs a command, per
 [0007](../decisions/0007-state-leaves-as-a-snapshot-commands-go-in.md). A
 saved genome whose layout version no longer matches its species needs a rule.
 
+The export format entry 9 builds, per
+[0021](../decisions/0021-agents-drive-worlds-over-http-and-run.md), is one
+creature per line with its species and genes by name. A line needs only its
+species, so a hand-written genome loads, and unknown fields are ignored, so a
+layout version can be added later as a field.
+
 ## Open questions
 
 Whether a layout change invalidates saved genomes or migrates them.

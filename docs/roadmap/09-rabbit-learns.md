@@ -3,42 +3,73 @@
 Status: not started.
 
 A gate rather than a feature: selection has to be shown working before a second
-species muddies it. Rabbits that evolved compete against the genomes they
+species muddies it. Rabbits that evolved compete against the genome they
 started from, and the world judges which lives better, so no gene is expected
 to move any particular way.
 
 `run` exports the genomes alive on given days and spawns a world from a file of
 exported genomes, the part of `docs/ideas/brain-library.md` an experiment
-needs. Saving a library, versioning layouts and loading genomes on the page
-wait. 0021 is rewritten to describe the new flags before they are built.
+needs, per [0021](../decisions/0021-agents-drive-worlds-over-http-and-run.md).
+The snapshot carries each entity's genes, per
+[0007](../decisions/0007-state-leaves-as-a-snapshot-commands-go-in.md), which
+the export reads. Saving a library, versioning layouts and loading genomes on
+the page wait.
 
-A tool in `tools/` runs an ancestor competition, per
-`docs/ideas/ancestor-competition.md`. Mutating worlds evolve and export their
-survivors. Then, with mutation off, evolved and ancestral genomes share a
-world, and each group also runs alone on the same seeds. The report gives the
-evolved group's share of the shared world and each group's population alone,
-with the statistics from entry 7.
+`grassPull` and `hungerDrive` become signed, -5 to 5 and -10 to 10, per
+[0023](../decisions/0023-rabbits-score-the-tiles-they-can-reach.md), so a
+poor starting genome sits mid-range and mutation alone moves it up or down
+equally often.
 
-Details to settle in this entry's grill: the world evolution runs in, including
-the starting genome and any ramp; the world the test runs in; how many genomes
-each group starts with; the pass marks for the shared world and for each group
-alone; how many seeds; the tuning budget; and what happens if the budget runs
-out without the gate passing.
+`tools/ancestor_competition.py` runs the gate from the preset
+`tools/experiments/rabbit-learns-gate.json`, per
+`docs/ideas/ancestor-competition.md`:
 
-Acceptance, on the gate's report, with the numbers the grill sets:
+- Evolution: a 40×40 grid with 28 grass per drop, the default density, no
+  ramp. 20 identical rabbits start from the poor genome, `grassPull` 0.2,
+  `hungerDrive` 0.5 and `whim` 2 with every other gene at its baseline, and
+  evolve for 1000 days with mutation on, exporting on days 500 and 1000.
+- Sample: 10 of a seed's day 1000 survivors, drawn with a seed the tool
+  records. A seed that died out or has fewer than 10 survivors is not tested.
+- Test: mutation off, in the same world on the evolution seed plus 1000, for
+  500 days. One world holds the 10 evolved beside 10 of the original genome,
+  and each group also runs in a world of its own. Each test run exports its
+  survivors on its last day, and an exact genome says which group a rabbit
+  descends from.
+- Report: the seeds tested and why the others were not, the time the gate took,
+  the evolved share of living rabbits in the shared world, the population each
+  group sustains in a world of its own, and the evolved genes on days 500 and
+  1000 against the original genome. It never judges, and `--per-seed` and
+  `--json` work as in `compare.py`.
 
-- the evolved group takes over the shared world from the ancestors in most
-  seeds;
-- alone, the evolved group holds a population at least as large as the
-  ancestors' alone.
+Acceptance, on the gate's report over seeds 1 to 30:
+
+- at least 24 seeds are tested;
+- the evolved share of living rabbits on day 500 of the shared world is above
+  one half in at least 70% of the tested seeds;
+- the evolved group in a world of its own does not sustain fewer rabbits than
+  the original genome in 70% or more of the tested seeds;
+- `run` spawns every line of an exported file, and a world spawned from an
+  export with mutation off holds exactly the exported genomes.
+
+Tuning changes only the preset: a gentler start, the world's size with its food
+at the same density, the group sizes, the two lengths, and the poor genome while
+each poor gene stays mid-range. The marks, the design, the bounds and the
+mutation sizes stay. The budget is 15 runs, each logged with the symptom it
+addressed and the time the gate took. Once the gate passes, it runs once on
+seeds 31 to 60 and the result is logged for Elias. If the budget runs out
+without a pass, Elias gets the log, the last report with `--per-seed` and a
+proposal, and nothing merges until he decides.
 
 Where the brain's genes drift is reported per seed with no pass mark. Elias
 reads it before the entry is done, so a gate passed only on cheaper bodies, or
 on behaviour he does not want, is caught by a person rather than a threshold.
-The network brain waits, per `DESIGN.md`.
+The mutation shadow stays out, since the signed bounds leave no floor for a
+gene to climb off. The network brain waits, per `DESIGN.md`.
 
-On the page: rabbits heading for food more directly after a few hundred days
-than at the start, if the grill keeps the poor starting genome.
+On the page: a world built over the API like the gate's evolution stage, opened
+at `?world=ID`, where rabbits stumble about in the first weeks and head for
+grass more directly after a few hundred days. A 20×20 world with 7 grass per
+drop and 10 rabbits is the fallback if 40×40 tiles are too small to follow.
 
 Depends on entry 8. See
 [0007](../decisions/0007-state-leaves-as-a-snapshot-commands-go-in.md),

@@ -38,17 +38,16 @@ genomes came from differs.
 Exporting the genomes alive on a given day and spawning from a file of them,
 which is the [brain library](brain-library.md). With mutation off a child is an
 exact copy, so a genome exported at the end of the test says which group a
-rabbit descends from, and no lineage tag is needed. A preset and a report mode
-in `tools/compare.py` for group shares, with
-[comparison statistics](comparison-statistics.md).
+rabbit descends from, and no lineage tag is needed. A script of its own,
+`tools/ancestor_competition.py`, that borrows `tools/compare.py`'s runner and
+[comparison statistics](comparison-statistics.md), per
+[0021](../decisions/0021-agents-drive-worlds-over-http-and-run.md).
 
 ## Open questions
 
-Which world the test runs in: the one the genomes evolved in, its harshest
-conditions, or a fixed set, and whether a ramp belongs in it.
-
-How many genomes each group starts with, and whether the result depends on the
-starting ratio.
+Roadmap entry 9 settles one world, group size and ratio for its gate: the
+world the genomes evolved in, ten of each group, one to one. Whether the result
+depends on the starting ratio is still open.
 
 Once a second species evolves, freezing one while the other evolves needs
 mutation per species rather than per world, and comparing them needs day-1000

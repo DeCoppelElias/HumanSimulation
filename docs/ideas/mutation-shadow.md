@@ -17,14 +17,18 @@ change helped and selection added nothing measurable.
 
 ## Why it is interesting
 
-A start near a gene's bound makes a random walk look like learning. Entry 7's
-`mutation-ramp` preset starts `grassPull` at 0.2 with a floor of 0, so
-mutation alone pushes it up on average. Comparing against a neutral shadow is how artificial life separates
-adaptation from drift: Bedau's neutral shadow models and the random-selection
-runs in Yaeger's Polyworld both keep everything except selection.
+A start near a gene's bound makes a random walk look like learning, since a
+step toward the bound is cut there and a step away never is. Comparing against
+a neutral shadow is how artificial life separates adaptation from drift:
+Bedau's neutral shadow models and the random-selection runs in Yaeger's
+Polyworld both keep everything except selection.
 
-It matters less once evolution starts from a good genome, such as a species'
-baseline or a warm-started network brain.
+It matters less once evolution starts mid-range. Entry 9 made `grassPull` and
+`hungerDrive` signed, per
+[0023](../decisions/0023-rabbits-score-the-tiles-they-can-reach.md), so its
+poor starting genome has no floor to climb off and its gate needs no shadow. A
+start near a bound, such as `whim` near its floor or a gene pinned by a later
+species, would need one again.
 
 ## What it would touch
 

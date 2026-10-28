@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-10-01. Revised 2026-10-26.
+Accepted, 2026-10-01. Revised 2026-10-28.
 
 ## Context
 
@@ -82,6 +82,21 @@ against the control. Printing only corrected p-values hides the number a
 measure chosen before the run should be judged by, and printing only raw ones
 leaves a reader who scans the report to correct by hand.
 
+An experiment that moves a population from one run into another needs the
+genomes themselves, since a census mean describes a rabbit that never existed.
+Writing them to stdout beside the census would make every reader sort two kinds
+of line. One file per export day, named in the flag, is more files to keep
+track of than one file with the day on every line. `run` could also choose
+which genomes to spawn from a file, by day and count, drawing with the world's
+generator. Which genomes an experiment wants changes faster than Java does, for
+the same reason the comparison lives in a script, so `run` spawns every line
+and the script chooses.
+
+The ancestor competition could be a mode of the comparison script, or the
+comparison script could learn to run any number of stages with files between
+them. A mode changes the comparison from variants over seeds into stages, and a
+general stage runner is a workflow engine for one experiment.
+
 ## Decision
 
 The jar has three entry points. `serve` is the default and opens the browser.
@@ -141,6 +156,26 @@ than its species' baseline. It rides on the `Spawn` command, per
 describes the run. The HTTP API takes the same overrides as an optional `genes`
 field on a spawn, and the page sends none.
 
+`--export FILE` with `--export-day DAY`, repeatable, writes every creature with
+genes that is alive once DAY days are complete to FILE, read from the day's
+snapshot, per [0007](0007-state-leaves-as-a-snapshot-commands-go-in.md). A day
+past `--days` is a usage error before the first day runs. The file is JSON
+Lines, one creature per line:
+
+    {"seed":7,"day":1000,"species":"rabbit","id":42,"genes":{"breedPull":1.2,"grassPull":1.4,...}}
+
+`--spawn-from FILE`, repeatable, spawns one creature per line, each a `Spawn`
+of one with that line's genes, in the order of the flags and then of the lines,
+so the log describes the run as it does for `--gene`. Any `--spawn` or
+`--spawn-from` replaces the default ten rabbits, and the two combine. Reading
+needs only `species`. Genes a line leaves out come from the baseline, and
+`seed`, `day`, `id` and any field it does not know are ignored, so a
+hand-written line works and a later field breaks no older reader. A gene out of
+bounds or unknown to the species fails before the first day, naming the gene.
+The file carries no layout version yet.
+
+`run --help` groups its options under World, Population, Settings and Output.
+
 A comparison script in `tools/` runs variants of a world over a range of seeds,
 one `run` per seed and variant in parallel. A variant is a name and a list of
 `run` flags, passed through untouched, and the seeds, days, grid and starting
@@ -166,6 +201,18 @@ report for whatever stands out. The text report says so under its table, and
 an acceptance line that sets a p names which one it means. The earlier, later
 and tied counts stay beside them.
 
+A second script, `tools/ancestor_competition.py`, runs an ancestor competition
+and borrows the comparison script's runner and statistics. It evolves a world
+per seed with mutation on and exports its survivors, draws a sample of them
+with a seed it records, and then, with mutation off, runs the sample beside the
+genome evolution started from, and each group alone, on a test seed of its own.
+Mutation off makes every rabbit an exact copy of a founder, so the survivors'
+exported genomes say which group each descends from. It reports the evolved
+share of the shared world, the population each group sustains alone, and the
+evolved genes against their start, and like the comparison it never judges. Its
+settings are a preset in `tools/experiments/`, and its files stay under
+`target/`, one folder per seed, so a result can be opened afterwards.
+
 ## Consequences
 
 Interactive driving costs the agent a server to start and stop. The ready line,
@@ -187,3 +234,9 @@ The comparison script knows no species, gene or setting by name. It reads them
 from the census, so a new species appears in its report unchanged, and a preset
 naming a setting that no longer exists fails in `run` with the setting's name.
 Each comparison pays JVM startup once per run, a fraction of each run's time.
+
+An export is a population, not a saved world. It leaves out positions,
+reserves, ages, grass and settings, so a world spawned from it starts fresh.
+Resuming a world where it stopped is replay from its seed and command log,
+which `docs/ideas/world-persistence.md` keeps. The export format is the start of
+what `docs/ideas/brain-library.md` saves.
