@@ -8,6 +8,7 @@ const rabbit = (id: number) => ({
     spriteKey: "rabbit",
     creature: true,
     info: {},
+    genes: {},
 });
 const grass = (id: number) => ({
     id,
@@ -15,6 +16,7 @@ const grass = (id: number) => ({
     spriteKey: "grass",
     creature: false,
     info: {},
+    genes: {},
 });
 
 const snapshot: WorldSnapshot = {

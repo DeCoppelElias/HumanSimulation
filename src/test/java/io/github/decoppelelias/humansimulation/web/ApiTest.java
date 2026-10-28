@@ -550,6 +550,14 @@ class ApiTest {
         assertThat(refused.body()).contains("wings");
     }
 
+    @Test
+    void aSnapshotCarriesGenes() {
+        String id = newWorld();
+        HttpTestClient.Response response = spawn(id, 1);
+        assertThat(response.json().findValues("genes")).hasSize(1);
+        assertThat(response.json().findValue("genes").has("grassPull")).isTrue();
+    }
+
     private String newWorld() {
         return client.post("/worlds", "{\"seed\":42}").json().get("id").asString();
     }

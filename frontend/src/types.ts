@@ -5,6 +5,7 @@ export type EntityView = {
     spriteKey: string;
     creature: boolean;
     info: Record<string, number>;
+    genes: Record<string, number>;
 };
 export type TileView = { at: GridPosition; fields: Record<string, number>; entities: EntityView[] };
 /** Current setting values by owner, then by key. */

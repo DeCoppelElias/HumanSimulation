@@ -31,9 +31,16 @@ public record WorldSnapshot(
         }
     }
 
-    public record EntityView(int id, String species, String spriteKey, boolean creature, Map<String, Double> info) {
+    public record EntityView(
+            int id,
+            String species,
+            String spriteKey,
+            boolean creature,
+            Map<String, Double> info,
+            Map<String, Double> genes) {
         public EntityView {
             info = Collections.unmodifiableSortedMap(new TreeMap<>(info));
+            genes = Collections.unmodifiableSortedMap(new TreeMap<>(genes));
         }
     }
 }

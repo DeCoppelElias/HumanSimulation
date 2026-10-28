@@ -110,7 +110,8 @@ public final class World {
                         entity.species().name(),
                         entity.species().spriteKey(),
                         entity.brain().isPresent(),
-                        Map.of()));
+                        Map.of(),
+                        entity.genome().scalars()));
             }
             tiles.add(new WorldSnapshot.TileView(at, Map.of(), standing));
         }

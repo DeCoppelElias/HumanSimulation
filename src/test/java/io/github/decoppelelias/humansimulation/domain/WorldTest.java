@@ -678,6 +678,31 @@ class WorldTest {
         }
     }
 
+    @Test
+    void theSnapshotCarriesEachEntitysOwnGenes() {
+        World world = new World(5, 5, 1, List.of(Grass.species(), Rabbit.species()));
+        world.submit(new Command.SetSetting("world", "mutation", 0));
+        world.submit(new Command.Spawn("rabbit", 1, Map.of("grassPull", 0.2)));
+        world.submit(new Command.Spawn("grass", 1));
+        List<WorldSnapshot.EntityView> views = new ArrayList<>();
+        world.applyPending().tiles().forEach(tile -> views.addAll(tile.entities()));
+        WorldSnapshot.EntityView rabbit = views.stream()
+                .filter(view -> view.species().equals("rabbit"))
+                .findFirst()
+                .orElseThrow();
+        WorldSnapshot.EntityView grass = views.stream()
+                .filter(view -> view.species().equals("grass"))
+                .findFirst()
+                .orElseThrow();
+        assertThat(rabbit.genes())
+                .isEqualTo(Rabbit.species()
+                        .baseline()
+                        .with(Map.of("grassPull", 0.2))
+                        .scalars())
+                .containsEntry("grassPull", 0.2);
+        assertThat(grass.genes()).isEmpty();
+    }
+
     /** The eater at 0,0 pays its 1 on day 1 and starves on day 2; the one at 1,1 eats and lives on. */
     @Test
     void theCensusCountsTheDaysDeathsByCause() {
