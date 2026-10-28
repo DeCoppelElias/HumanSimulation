@@ -1,6 +1,7 @@
 # Lifespan
 
-Status: planned, roadmap entry 8.
+Status: idea. The grass half is built,
+[0024](../decisions/0024-a-part-can-end-its-carrier.md).
 
 ## What it does
 
@@ -11,7 +12,7 @@ own. Grass declares it, so grass left uneaten withers. Rabbits could declare it
 too, with a default long enough that it rarely ends one, so their age becomes
 visible.
 
-Entry 8 builds the grass half, per
+Entry 8 built the grass half, per
 [0024](../decisions/0024-a-part-can-end-its-carrier.md): a fixed number of days,
 grass only. The rabbit half stays open here.
 

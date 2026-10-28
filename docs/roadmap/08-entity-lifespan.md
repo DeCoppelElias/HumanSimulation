@@ -1,6 +1,6 @@
 # 8. Entity lifespan
 
-Status: not started.
+Status: done.
 
 What ends an entity besides starving, per
 [0024](../decisions/0024-a-part-can-end-its-carrier.md). Every component gains
