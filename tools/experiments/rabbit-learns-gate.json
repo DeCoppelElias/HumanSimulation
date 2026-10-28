@@ -4,10 +4,15 @@
   "species": "rabbit",
   "world": ["--width", "40", "--height", "40", "--set", "world.grassPerDrop=28"],
   "evolve": {
-    "days": 1000,
+    "days": 2000,
     "founders": 20,
-    "exportDays": [500],
-    "flags": ["--gene", "rabbit.grassPull=0.2", "--gene", "rabbit.hungerDrive=0.5", "--gene", "rabbit.whim=2"]
+    "exportDays": [1000],
+    "flags": [
+      "--gene", "rabbit.grassPull=0.2", "--gene", "rabbit.hungerDrive=0.5", "--gene", "rabbit.whim=2",
+      "--set", "world.grassDropInterval=1",
+      "--set-at", "400:world.grassDropInterval=2", "--set-at", "800:world.grassDropInterval=3",
+      "--set-at", "1200:world.grassDropInterval=5", "--set-at", "1600:world.grassDropInterval=7"
+    ]
   },
   "sample": 10,
   "test": {"days": 500, "seedOffset": 1000}
