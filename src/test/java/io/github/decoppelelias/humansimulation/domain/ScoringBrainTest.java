@@ -115,6 +115,12 @@ class ScoringBrainTest {
     }
 
     @Test
+    void aNegativeGrassPullWalksAwayFromGrass() {
+        assertThat(picks(brain(-1, 0, 0, 0.05), perception(15, grass(1, 0)), 200))
+                .containsOnlyKeys(new Intent.Move(WEST, 3));
+    }
+
+    @Test
     void aNegativeRabbitPullPrefersTheLandingFartherFromRabbits() {
         assertThat(picks(brain(1, 0, -2, 0.005), perception(15, rabbit(0, -1)), 200))
                 .containsOnlyKeys(new Intent.Move(SOUTH, 3));

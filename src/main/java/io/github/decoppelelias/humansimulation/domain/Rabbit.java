@@ -10,8 +10,8 @@ public final class Rabbit {
     public static Species species() {
         List<GeneSpec> layout = List.of(
                 new GeneSpec.Scalar("viewRange", 1, 10, 1.0),
-                new GeneSpec.Scalar("grassPull", 0, 5, 0.2),
-                new GeneSpec.Scalar("hungerDrive", 0, 10, 0.4),
+                new GeneSpec.Scalar("grassPull", -5, 5, 0.2),
+                new GeneSpec.Scalar("hungerDrive", -10, 10, 0.4),
                 new GeneSpec.Scalar("rabbitPull", -2, 2, 0.1),
                 new GeneSpec.Scalar("whim", 0.05, 5, 0.1),
                 new GeneSpec.Scalar("breedPull", 0, 5, 0.2),
