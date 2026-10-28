@@ -121,7 +121,9 @@ class ScoringBrainTest {
 
     @Test
     void aSeenFoodThatIsNotAPlantDoesNotPull() {
-        assertThat(picks(brain(1, 0, 0, 0.05), perception(15, bone(2, 0)), 200)).hasSizeGreaterThan(1);
+        assertThat(picks(brain(1, 0, 0, 0.05), perception(15, bone(2, 0)), 200)
+                        .getOrDefault(new Intent.Move(EAST, 2), 0))
+                .isLessThan(50);
     }
 
     @Test

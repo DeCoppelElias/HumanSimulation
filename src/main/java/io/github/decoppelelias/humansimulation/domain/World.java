@@ -183,22 +183,24 @@ public final class World {
     /** Walks the day's order, per 0016: a creature takes every food on its tile that its eater names. */
     void feed(List<Decision> order) {
         for (Decision decision : order) {
-            Entity eater = entities.get(decision.entityId());
-            if (eater == null) {
+            Entity creature = entities.get(decision.entityId());
+            if (creature == null) {
                 continue;
             }
-            eater.part(Metabolism.class)
-                    .ifPresent(metabolism -> eater.part(Eater.class).ifPresent(diet -> {
-                        for (int id : grid.occupants(eater.position())) {
-                            Entity other = entities.get(id);
-                            if (id != eater.id() && other != null) {
-                                diet.foodIn(other.parts()).ifPresent(food -> {
-                                    metabolism.credit(food.amount());
-                                    remove(id, EATEN);
-                                });
-                            }
-                        }
-                    }));
+            Optional<Metabolism> metabolism = creature.part(Metabolism.class);
+            Optional<Eater> eater = creature.part(Eater.class);
+            if (metabolism.isEmpty() || eater.isEmpty()) {
+                continue;
+            }
+            for (int id : grid.occupants(creature.position())) {
+                Entity other = entities.get(id);
+                if (id != creature.id() && other != null) {
+                    eater.get().foodIn(other.parts()).ifPresent(food -> {
+                        metabolism.get().credit(food.amount());
+                        remove(id, EATEN);
+                    });
+                }
+            }
         }
     }
 
