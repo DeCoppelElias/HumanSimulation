@@ -274,17 +274,120 @@ class RunCommandTest {
 
     @Test
     void exportAndExportDayGoTogether() {
-        assertThat(run("--seed", "1", "--days", "3", "--export-day", "1").err())
-                .contains("--export and --export-day go together");
-        assertThat(run(
-                                "--seed",
-                                "1",
-                                "--days",
-                                "3",
-                                "--export",
-                                folder.resolve("x").toString())
-                        .err())
-                .contains("--export and --export-day go together");
+        for (Result result : List.of(
+                run("--seed", "1", "--days", "3", "--export-day", "1"),
+                run(
+                        "--seed",
+                        "1",
+                        "--days",
+                        "3",
+                        "--export",
+                        folder.resolve("x").toString()))) {
+            assertThat(result.exitCode()).isEqualTo(CommandLine.ExitCode.USAGE);
+            assertThat(result.err()).contains("--export and --export-day go together");
+            assertThat(result.out()).isEmpty();
+        }
+    }
+
+    @Test
+    void anOptionGivenTwiceIsAUsageErrorRatherThanDroppingTheOthers() {
+        for (String[] args : List.of(
+                new String[] {"--seed", "7", "--days", "1", "--seed", "8"},
+                new String[] {"--days", "1", "--width", "1", "--days", "2"},
+                new String[] {"--days", "1", "--export", "a", "--export-day", "1", "--export", "b"})) {
+            Result result = run(args);
+            assertThat(result.exitCode()).as(String.join(" ", args)).isEqualTo(CommandLine.ExitCode.USAGE);
+            assertThat(result.err()).as(String.join(" ", args)).contains("more than once");
+            assertThat(result.out()).as(String.join(" ", args)).isEmpty();
+        }
+    }
+
+    @Test
+    void anEmptyFileSpawnsNothingRatherThanTheDefault() throws Exception {
+        Path file = folder.resolve("empty.jsonl");
+        Files.writeString(file, "\n\n");
+        assertThat(run("--seed", "1", "--days", "1", "--spawn-from", file.toString())
+                        .out())
+                .contains("\"population\":{\"grass\":0,\"rabbit\":0}");
+    }
+
+    @Test
+    void anExportIsSortedByIdWithPlainLineEnds() throws Exception {
+        Path file = folder.resolve("sorted.jsonl");
+        run("--seed", "3", "--days", "1", "--export", file.toString(), "--export-day", "1");
+        String text = Files.readString(file);
+        assertThat(text).doesNotContain("\r").endsWith("}}\n");
+        List<Integer> ids = text.lines()
+                .map(line -> Integer.parseInt(line.substring(line.indexOf("\"id\":") + 5, line.indexOf(",\"genes\""))))
+                .toList();
+        assertThat(ids).hasSize(10).isSorted();
+    }
+
+    @Test
+    void filesSpawnInFlagOrderThenLineOrderAndKeepEveryDigit() throws Exception {
+        Path a = folder.resolve("a.jsonl");
+        Path b = folder.resolve("b.jsonl");
+        Files.writeString(a, "{\"species\":\"rabbit\",\"genes\":{\"grassPull\":0.1234567890123}}\n");
+        Files.writeString(
+                b,
+                "{\"species\":\"rabbit\",\"genes\":{\"grassPull\":-1.5}}\n"
+                        + "{\"species\":\"rabbit\",\"genes\":{\"grassPull\":2.5}}\n");
+        Path out = folder.resolve("out.jsonl");
+        run(
+                "--seed",
+                "1",
+                "--days",
+                "1",
+                "--set",
+                "world.mutation=0",
+                "--spawn-from",
+                b.toString(),
+                "--spawn-from",
+                a.toString(),
+                "--export",
+                out.toString(),
+                "--export-day",
+                "1");
+        assertThat(Files.readAllLines(out))
+                .satisfiesExactly(
+                        line -> assertThat(line).contains("\"grassPull\":-1.5,"),
+                        line -> assertThat(line).contains("\"grassPull\":2.5,"),
+                        line -> assertThat(line).contains("\"grassPull\":0.1234567890123,"));
+    }
+
+    @Test
+    void anUnknownSpeciesInAFileNamesTheLine() throws Exception {
+        Path file = folder.resolve("wolf.jsonl");
+        Files.writeString(file, "{\"species\":\"rabbit\"}\n{\"species\":\"wolf\"}\n");
+        Result result = run("--seed", "1", "--days", "1", "--spawn-from", file.toString());
+        assertThat(result.exitCode()).isEqualTo(CommandLine.ExitCode.USAGE);
+        assertThat(result.err()).contains("wolf.jsonl line 2", "wolf");
+    }
+
+    @Test
+    void anExportToAFolderThatDoesNotExistFailsBeforeDayOne() {
+        Result result = run(
+                "--seed",
+                "1",
+                "--days",
+                "3",
+                "--export",
+                folder.resolve("missing").resolve("out.jsonl").toString(),
+                "--export-day",
+                "1");
+        assertThat(result.exitCode()).isEqualTo(CommandLine.ExitCode.USAGE);
+        assertThat(result.err()).contains("cannot write");
+        assertThat(result.out()).isEmpty();
+    }
+
+    @Test
+    void aGeneAppliesToSpawnAndSaysSoWhenThereIsNone() throws Exception {
+        Path file = folder.resolve("one.jsonl");
+        Files.writeString(file, "{\"species\":\"rabbit\"}\n");
+        Result result =
+                run("--seed", "1", "--days", "1", "--spawn-from", file.toString(), "--gene", "rabbit.grassPull=0.2");
+        assertThat(result.exitCode()).isEqualTo(CommandLine.ExitCode.USAGE);
+        assertThat(result.err()).contains("--gene names rabbit, which no --spawn starts");
     }
 
     private static List<String> genesOf(List<String> lines) {

@@ -8,7 +8,6 @@ import io.github.decoppelelias.humansimulation.domain.Rabbit;
 import io.github.decoppelelias.humansimulation.domain.World;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -21,6 +20,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 import picocli.CommandLine;
 import picocli.CommandLine.ArgGroup;
 import picocli.CommandLine.Model.CommandSpec;
@@ -51,6 +51,9 @@ public final class RunCommand implements Callable<Integer> {
     @ArgGroup(validate = false, heading = "Output%n", order = 4)
     private OutputOptions output = new OutputOptions();
 
+    /** Inside a group picocli takes a repeated one of these as a new group and drops the options before it. */
+    private static final List<String> ONCE = List.of("--days", "--seed", "--width", "--height", "--export");
+
     static final class WorldOptions {
         // Not required here, since picocli does not enforce it inside a group that skips validation.
         @Option(names = "--days", description = "How many days to advance. Required.")
@@ -59,14 +62,11 @@ public final class RunCommand implements Callable<Integer> {
         @Option(names = "--seed", description = "The world's seed. Drawn from the clock when left out.")
         private Optional<Long> seed = Optional.empty();
 
-        @Option(names = "--width", defaultValue = "20", description = "Grid width in tiles. Default: ${DEFAULT-VALUE}.")
-        private int width;
+        @Option(names = "--width", description = "Grid width in tiles. Default: 20.")
+        private int width = 20;
 
-        @Option(
-                names = "--height",
-                defaultValue = "20",
-                description = "Grid height in tiles. Default: ${DEFAULT-VALUE}.")
-        private int height;
+        @Option(names = "--height", description = "Grid height in tiles. Default: 20.")
+        private int height = 20;
     }
 
     static final class PopulationOptions {
@@ -79,7 +79,7 @@ public final class RunCommand implements Callable<Integer> {
         @Option(
                 names = "--gene",
                 paramLabel = "SPECIES.GENE=VALUE",
-                description = "Start that species' spawn from its baseline with this gene in place. Repeatable, and"
+                description = "Start that species' --spawn from its baseline with this gene in place. Repeatable, and"
                         + " the last value for a gene wins.")
         private List<String> gene = List.of();
 
@@ -120,8 +120,20 @@ public final class RunCommand implements Callable<Integer> {
         private List<Integer> exportDay = List.of();
     }
 
+    private void checkGivenOnce() {
+        for (String name : ONCE) {
+            long given = spec.commandLine().getParseResult().originalArgs().stream()
+                    .filter(arg -> arg.equals(name) || arg.startsWith(name + "="))
+                    .count();
+            if (given > 1) {
+                throw usage(name + " is given more than once");
+            }
+        }
+    }
+
     @Override
     public Integer call() {
+        checkGivenOnce();
         if (world.days == null) {
             throw usage("--days is required");
         }
@@ -155,19 +167,22 @@ public final class RunCommand implements Callable<Integer> {
                 later.computeIfAbsent(day, _ -> new ArrayList<>()).add(edit);
             }
         }
-        List<Command.Spawn> fromFiles = new ArrayList<>();
+        List<GenomeLines.Line> fromFiles = new ArrayList<>();
         for (Path file : population.spawnFrom) {
             List<String> lines;
             try {
                 lines = Files.readAllLines(file, StandardCharsets.UTF_8);
             } catch (IOException e) {
-                throw usage("cannot read " + file);
+                throw usage("cannot read " + file + " (" + e.getClass().getSimpleName() + ")");
             }
             try {
-                fromFiles.addAll(GenomeLines.read(file.getFileName().toString(), lines));
+                fromFiles.addAll(GenomeLines.read(file.toString(), lines));
             } catch (IllegalArgumentException e) {
                 throw usage(e.getMessage());
             }
+        }
+        if (output.export.isPresent()) {
+            write(output.export.orElseThrow(), List.of());
         }
         // A world built the same way checks the later overrides, so a bad one fails before the first line prints.
         World scratch = start(worldSeed, dayZero, fromFiles);
@@ -190,11 +205,12 @@ public final class RunCommand implements Callable<Integer> {
         return CommandLine.ExitCode.OK;
     }
 
-    private static void write(Path file, List<String> lines) {
+    /** Plain line ends whatever the platform, so an export is the same bytes everywhere, like the census. */
+    private void write(Path file, List<String> lines) {
         try {
-            Files.write(file, lines, StandardCharsets.UTF_8);
+            Files.writeString(file, lines.stream().map(line -> line + "\n").collect(Collectors.joining()));
         } catch (IOException e) {
-            throw new UncheckedIOException("cannot write " + file, e);
+            throw usage("cannot write " + file + " (" + e.getClass().getSimpleName() + ")");
         }
     }
 
@@ -214,9 +230,11 @@ public final class RunCommand implements Callable<Integer> {
         }
     }
 
-    private World start(long worldSeed, List<Command.SetSetting> dayZero, List<Command.Spawn> fromFiles) {
+    private World start(long worldSeed, List<Command.SetSetting> dayZero, List<GenomeLines.Line> fromFiles) {
         Map<String, Integer> counts = new TreeMap<>(
-                population.spawn.isEmpty() && fromFiles.isEmpty() ? STARTING_POPULATION : startingPopulation());
+                population.spawn.isEmpty() && population.spawnFrom.isEmpty()
+                        ? STARTING_POPULATION
+                        : startingPopulation());
         Map<String, Map<String, Double>> genes = startingGenes(counts);
         try {
             World built = new World(
@@ -228,7 +246,13 @@ public final class RunCommand implements Callable<Integer> {
             dayZero.forEach(built::submit);
             counts.forEach(
                     (name, count) -> built.submit(new Command.Spawn(name, count, genes.getOrDefault(name, Map.of()))));
-            fromFiles.forEach(built::submit);
+            for (GenomeLines.Line line : fromFiles) {
+                try {
+                    built.submit(line.spawn());
+                } catch (IllegalArgumentException e) {
+                    throw usage(line.where() + ": " + e.getMessage());
+                }
+            }
             return built;
         } catch (IllegalArgumentException e) {
             throw usage(e.getMessage());
@@ -240,7 +264,7 @@ public final class RunCommand implements Callable<Integer> {
         for (String entry : population.gene) {
             Command.SetSetting parsed = setting("--gene", "SPECIES.GENE", entry);
             if (!counts.containsKey(parsed.owner())) {
-                throw usage("--gene names " + parsed.owner() + ", which run does not spawn");
+                throw usage("--gene names " + parsed.owner() + ", which no --spawn starts");
             }
             genes.computeIfAbsent(parsed.owner(), _ -> new TreeMap<>()).put(parsed.key(), parsed.value());
         }

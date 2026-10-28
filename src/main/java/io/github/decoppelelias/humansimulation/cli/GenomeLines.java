@@ -17,20 +17,24 @@ final class GenomeLines {
 
     private GenomeLines() {}
 
+    /** A spawn read from a file, with where it came from so the world's refusal can name the line. */
+    record Line(String where, Command.Spawn spawn) {}
+
     /**
      * One spawn of one per line. Only species is required: genes left out come from the baseline, and fields it does
      * not know are ignored.
      */
-    static List<Command.Spawn> read(String name, List<String> lines) {
-        List<Command.Spawn> spawns = new ArrayList<>();
+    static List<Line> read(String name, List<String> lines) {
+        List<Line> spawns = new ArrayList<>();
         for (int i = 0; i < lines.size(); i++) {
-            if (lines.get(i).isBlank()) {
+            String text = i == 0 ? lines.get(i).replace("﻿", "") : lines.get(i);
+            if (text.isBlank()) {
                 continue;
             }
             String where = name + " line " + (i + 1);
             JsonNode node;
             try {
-                node = JSON.readTree(lines.get(i));
+                node = JSON.readTree(text);
             } catch (JacksonException e) {
                 throw new IllegalArgumentException(where + " is not JSON");
             }
@@ -51,7 +55,7 @@ final class GenomeLines {
                     genes.put(gene.getKey(), gene.getValue().doubleValue());
                 }
             }
-            spawns.add(new Command.Spawn(species.asString(), 1, genes));
+            spawns.add(new Line(where, new Command.Spawn(species.asString(), 1, genes)));
         }
         return spawns;
     }
