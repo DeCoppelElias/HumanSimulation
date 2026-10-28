@@ -87,6 +87,13 @@ public final class RunCommand implements Callable<Integer> {
             description = "Export once DAY days are complete, from 1 to --days. Repeatable.")
     private List<Integer> exportDay = List.of();
 
+    @Option(
+            names = "--spawn-from",
+            paramLabel = "FILE",
+            description = "Spawn one creature per line of an exported FILE, after any --spawn. Repeatable, and replaces"
+                    + " the default of rabbit=10.")
+    private List<Path> spawnFrom = List.of();
+
     @Override
     public Integer call() {
         if (days < 1) {
@@ -118,10 +125,24 @@ public final class RunCommand implements Callable<Integer> {
                 later.computeIfAbsent(day, _ -> new ArrayList<>()).add(edit);
             }
         }
+        List<Command.Spawn> fromFiles = new ArrayList<>();
+        for (Path file : spawnFrom) {
+            List<String> lines;
+            try {
+                lines = Files.readAllLines(file, StandardCharsets.UTF_8);
+            } catch (IOException e) {
+                throw usage("cannot read " + file);
+            }
+            try {
+                fromFiles.addAll(GenomeLines.read(file.getFileName().toString(), lines));
+            } catch (IllegalArgumentException e) {
+                throw usage(e.getMessage());
+            }
+        }
         // A world built the same way checks the later overrides, so a bad one fails before the first line prints.
-        World scratch = start(worldSeed, dayZero);
+        World scratch = start(worldSeed, dayZero, fromFiles);
         later.values().forEach(edits -> edits.forEach(edit -> submit(scratch, edit)));
-        World world = start(worldSeed, dayZero);
+        World world = start(worldSeed, dayZero, fromFiles);
         PrintWriter out = spec.commandLine().getOut();
         List<String> exported = new ArrayList<>();
         for (int completed = 0; completed < days; completed++) {
@@ -163,8 +184,9 @@ public final class RunCommand implements Callable<Integer> {
         }
     }
 
-    private World start(long worldSeed, List<Command.SetSetting> dayZero) {
-        Map<String, Integer> population = new TreeMap<>(spawn.isEmpty() ? STARTING_POPULATION : startingPopulation());
+    private World start(long worldSeed, List<Command.SetSetting> dayZero, List<Command.Spawn> fromFiles) {
+        Map<String, Integer> population =
+                new TreeMap<>(spawn.isEmpty() && fromFiles.isEmpty() ? STARTING_POPULATION : startingPopulation());
         Map<String, Map<String, Double>> genes = startingGenes(population);
         try {
             World world = new World(
@@ -176,6 +198,7 @@ public final class RunCommand implements Callable<Integer> {
             dayZero.forEach(world::submit);
             population.forEach(
                     (name, count) -> world.submit(new Command.Spawn(name, count, genes.getOrDefault(name, Map.of()))));
+            fromFiles.forEach(world::submit);
             return world;
         } catch (IllegalArgumentException e) {
             throw usage(e.getMessage());

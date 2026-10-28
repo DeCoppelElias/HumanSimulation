@@ -286,4 +286,91 @@ class RunCommandTest {
                         .err())
                 .contains("--export and --export-day go together");
     }
+
+    private static List<String> genesOf(List<String> lines) {
+        return lines.stream()
+                .map(line -> line.substring(line.indexOf("\"genes\":")))
+                .sorted()
+                .toList();
+    }
+
+    @Test
+    void aWorldSpawnedFromAnExportHoldsExactlyItsGenomes() throws Exception {
+        Path first = folder.resolve("first.jsonl");
+        Path second = folder.resolve("second.jsonl");
+        run("--seed", "1", "--days", "1", "--export", first.toString(), "--export-day", "1");
+        Result result = run(
+                "--seed",
+                "2",
+                "--days",
+                "1",
+                "--set",
+                "world.mutation=0",
+                "--spawn-from",
+                first.toString(),
+                "--export",
+                second.toString(),
+                "--export-day",
+                "1");
+        assertThat(result.exitCode()).isZero();
+        assertThat(result.out()).contains("\"rabbit\":10}");
+        assertThat(genesOf(Files.readAllLines(second))).isEqualTo(genesOf(Files.readAllLines(first)));
+        assertThat(genesOf(Files.readAllLines(first))).doesNotHaveDuplicates();
+    }
+
+    @Test
+    void aHandWrittenLineSpawnsFromTheBaselineWithItsGenes() throws Exception {
+        Path file = folder.resolve("hand.jsonl");
+        Files.writeString(file, "{\"species\":\"rabbit\",\"genes\":{\"grassPull\":-1.5},\"note\":\"mine\"}\n\n");
+        Result result = run("--seed", "1", "--days", "1", "--set", "world.mutation=0", "--spawn-from", file.toString());
+        assertThat(result.exitCode()).isZero();
+        assertThat(result.out()).contains("\"rabbit\":1}", "\"grassPull\":-1.5,", "\"hungerDrive\":2.0,");
+    }
+
+    @Test
+    void aSpawnFromReplacesTheDefaultAndAddsToSpawn() throws Exception {
+        Path file = folder.resolve("two.jsonl");
+        Files.writeString(file, "{\"species\":\"rabbit\"}\n{\"species\":\"rabbit\"}\n");
+        assertThat(run("--seed", "1", "--days", "1", "--spawn-from", file.toString())
+                        .out())
+                .contains("\"population\":{\"grass\":0,\"rabbit\":2}");
+        assertThat(run("--seed", "1", "--days", "1", "--spawn", "grass=3", "--spawn-from", file.toString())
+                        .out())
+                .contains("\"population\":{\"grass\":3,\"rabbit\":2}");
+    }
+
+    @Test
+    void aBadLineIsAUsageErrorNamingTheLine() throws Exception {
+        Path file = folder.resolve("bad.jsonl");
+        for (String bad :
+                List.of("not json", "{\"genes\":{}}", "{\"species\":\"rabbit\",\"genes\":{\"whim\":\"low\"}}")) {
+            Files.writeString(file, "{\"species\":\"rabbit\"}\n" + bad + "\n");
+            Result result = run("--seed", "1", "--days", "1", "--spawn-from", file.toString());
+            assertThat(result.exitCode()).as(bad).isEqualTo(CommandLine.ExitCode.USAGE);
+            assertThat(result.err()).as(bad).contains("bad.jsonl line 2");
+            assertThat(result.out()).as(bad).isEmpty();
+        }
+    }
+
+    @Test
+    void aGeneOutOfBoundsInAFileIsAUsageError() throws Exception {
+        Path file = folder.resolve("far.jsonl");
+        Files.writeString(file, "{\"species\":\"rabbit\",\"genes\":{\"grassPull\":9}}\n");
+        Result result = run("--seed", "1", "--days", "1", "--spawn-from", file.toString());
+        assertThat(result.exitCode()).isEqualTo(CommandLine.ExitCode.USAGE);
+        assertThat(result.err()).contains("gene grassPull is 9.0, outside -5.0 to 5.0");
+    }
+
+    @Test
+    void aMissingFileIsAUsageError() {
+        Result result = run(
+                "--seed",
+                "1",
+                "--days",
+                "1",
+                "--spawn-from",
+                folder.resolve("none.jsonl").toString());
+        assertThat(result.exitCode()).isEqualTo(CommandLine.ExitCode.USAGE);
+        assertThat(result.err()).contains("cannot read", "none.jsonl");
+    }
 }
