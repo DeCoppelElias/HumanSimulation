@@ -1,6 +1,6 @@
 # 10. Diet
 
-Status: not started.
+Status: done.
 
 A creature says which foods it takes, and the feed step takes only those, so
 the wolf in entry 11 arrives already ignoring grass, per

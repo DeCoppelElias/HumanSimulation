@@ -1,6 +1,6 @@
 # Diet
 
-Status: planned, roadmap entry 10.
+Status: built, [0016](../decisions/0016-feeding-takes-the-tile.md).
 
 ## What it does
 
