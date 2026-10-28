@@ -180,24 +180,25 @@ public final class World {
         }
     }
 
-    /** Walks the day's order, per 0016: a creature takes every edible on its tile. */
+    /** Walks the day's order, per 0016: a creature takes every food on its tile that its eater names. */
     void feed(List<Decision> order) {
         for (Decision decision : order) {
             Entity eater = entities.get(decision.entityId());
             if (eater == null) {
                 continue;
             }
-            eater.part(Metabolism.class).ifPresent(metabolism -> {
-                for (int id : grid.occupants(eater.position())) {
-                    Entity other = entities.get(id);
-                    if (id != eater.id() && other != null) {
-                        other.part(Edible.class).ifPresent(edible -> {
-                            metabolism.credit(edible.amount());
-                            remove(id, EATEN);
-                        });
-                    }
-                }
-            });
+            eater.part(Metabolism.class)
+                    .ifPresent(metabolism -> eater.part(Eater.class).ifPresent(diet -> {
+                        for (int id : grid.occupants(eater.position())) {
+                            Entity other = entities.get(id);
+                            if (id != eater.id() && other != null) {
+                                diet.foodIn(other.parts()).ifPresent(food -> {
+                                    metabolism.credit(food.amount());
+                                    remove(id, EATEN);
+                                });
+                            }
+                        }
+                    }));
         }
     }
 

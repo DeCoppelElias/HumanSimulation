@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 class RabbitTest {
@@ -63,14 +64,15 @@ class RabbitTest {
     }
 
     @Test
-    void isBornWithAMetabolismAFertilityAndTheScoringBrain() {
+    void isBornWithAMetabolismAFertilityAnEaterAndTheScoringBrain() {
         Species rabbit = Rabbit.species();
         Spawn spawn = new Spawn(rabbit.baseline(), rabbit, new SettingValues(rabbit.settings()), 4, Optional.empty());
         assertThat(rabbit.brain())
                 .hasValueSatisfying(factory -> assertThat(factory.apply(spawn)).isInstanceOf(ScoringBrain.class));
-        assertThat(rabbit.parts()).hasSize(2);
+        assertThat(rabbit.parts()).hasSize(3);
         assertThat(rabbit.parts().get(0).apply(spawn)).isInstanceOf(Metabolism.class);
         assertThat(rabbit.parts().get(1).apply(spawn).ownView()).isEqualTo(new Fertility.Since(4));
+        assertThat(rabbit.parts().get(2).apply(spawn).ownView()).isEqualTo(new Eater.Takes(Set.of(Plant.class)));
     }
 
     @Test

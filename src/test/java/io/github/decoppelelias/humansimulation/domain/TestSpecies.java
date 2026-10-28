@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Function;
 
 final class TestSpecies {
     static final Direction NORTH = new Direction("north", 0, -1);
@@ -35,18 +37,36 @@ final class TestSpecies {
                 new Setting.Scalar(BreedRule.PARENT_MARGIN, "Reserve a parent keeps.", 0, 100, 1, 5)));
     }
 
-    /** A species named "eater" that idles, charged one on every interval. */
+    /** A species named "eater" that idles and takes plants, charged one on every interval. */
     static Species eater(int interval, int startingReserve) {
+        return eater("eater", interval, startingReserve, List.of(spawn -> new Eater(Set.of(Plant.class))));
+    }
+
+    /** An idling eater named for the foods it takes, starting with nothing and charged one a day. */
+    static Species eaterTaking(String name, Set<Class<? extends Edible>> foods) {
+        return eater(name, 1, 0, List.of(spawn -> new Eater(foods)));
+    }
+
+    /** An idling species named "unfed" with a metabolism and no eater, starting with nothing. */
+    static Species unfed() {
+        return eater("unfed", 1, 0, List.of());
+    }
+
+    private static Species eater(
+            String name, int interval, int startingReserve, List<Function<Spawn, Component>> diet) {
         List<GeneSpec> layout = List.of(new GeneSpec.Scalar("viewRange", 1, 10, 1.0));
         Brain brain = (perception, options, random) -> new Intent.Idle();
+        List<Function<Spawn, Component>> parts = new ArrayList<>();
+        parts.add(Metabolism::of);
+        parts.addAll(diet);
         return new Species(
-                "eater",
-                "eater",
+                name,
+                name,
                 layout,
                 new Genome(layout, Map.of("viewRange", 1.0)),
                 metabolism(interval, startingReserve),
                 Optional.of(spawn -> brain),
-                List.of(Metabolism::of));
+                parts);
     }
 
     /** A species named "food", a plant worth five, with no brain. */

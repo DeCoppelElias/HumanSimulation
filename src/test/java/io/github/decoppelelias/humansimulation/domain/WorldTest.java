@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalDouble;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.random.RandomGeneratorFactory;
 import java.util.stream.IntStream;
@@ -784,7 +785,7 @@ class WorldTest {
     }
 
     @Test
-    void feedingTakesEveryEdibleOnTheTile() {
+    void feedingTakesEveryFoodTheEaterTakes() {
         World world = new World(3, 3, 1, List.of(TestSpecies.eater(1, 0), TestSpecies.food()));
         world.submit(new Command.SpawnAt("eater", new GridPosition(1, 1)));
         world.submit(new Command.SpawnAt("food", new GridPosition(1, 1)));
@@ -819,6 +820,49 @@ class WorldTest {
         assertThat(world.advance().snapshot().tiles().get(4).entities())
                 .extracting(WorldSnapshot.EntityView::id)
                 .containsExactly(1);
+    }
+
+    @Test
+    void anEaterTakesOnlyTheFoodsItNames() {
+        World world = new World(3, 3, 1, List.of(TestSpecies.eater(1, 0), TestSpecies.food(), TestSpecies.bone()));
+        world.submit(new Command.SpawnAt("eater", new GridPosition(1, 1)));
+        world.submit(new Command.SpawnAt("food", new GridPosition(1, 1)));
+        world.submit(new Command.SpawnAt("bone", new GridPosition(1, 1)));
+        assertThat(world.advance().census().population())
+                .containsEntry("eater", 1)
+                .containsEntry("food", 0)
+                .containsEntry("bone", 1);
+    }
+
+    @Test
+    void grassAnEaterRefusesIsLeftForOneThatTakesIt() {
+        World world = new World(
+                3,
+                3,
+                1,
+                List.of(
+                        TestSpecies.eaterTaking("picky", Set.of(TestSpecies.Bone.class)),
+                        TestSpecies.eaterTaking("grazer", Set.of(Plant.class)),
+                        TestSpecies.food()));
+        world.submit(new Command.SpawnAt("picky", new GridPosition(1, 1)));
+        world.submit(new Command.SpawnAt("grazer", new GridPosition(1, 1)));
+        world.submit(new Command.SpawnAt("food", new GridPosition(1, 1)));
+        world.applyPending();
+        world.feed(List.of(new Decision(0, new Intent.Idle()), new Decision(1, new Intent.Idle())));
+        assertThat(world.advance().census().population())
+                .containsEntry("picky", 0)
+                .containsEntry("grazer", 1)
+                .containsEntry("food", 0);
+    }
+
+    @Test
+    void aCreatureWithNoEaterEatsNothing() {
+        World world = new World(3, 3, 1, List.of(TestSpecies.unfed(), TestSpecies.food()));
+        world.submit(new Command.SpawnAt("unfed", new GridPosition(1, 1)));
+        world.submit(new Command.SpawnAt("food", new GridPosition(1, 1)));
+        assertThat(world.advance().census().population())
+                .containsEntry("unfed", 0)
+                .containsEntry("food", 1);
     }
 
     @Test

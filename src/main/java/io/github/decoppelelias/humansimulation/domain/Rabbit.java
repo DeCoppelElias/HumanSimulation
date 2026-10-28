@@ -3,6 +3,7 @@ package io.github.decoppelelias.humansimulation.domain;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 public final class Rabbit {
     private Rabbit() {}
@@ -83,6 +84,6 @@ public final class Rabbit {
                 baseline,
                 settings,
                 Optional.of(ScoringBrain::of),
-                List.of(Metabolism::of, spawn -> new Fertility(spawn.day())));
+                List.of(Metabolism::of, spawn -> new Fertility(spawn.day()), spawn -> new Eater(Set.of(Plant.class))));
     }
 }
