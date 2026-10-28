@@ -76,6 +76,21 @@ value fails with the same message the panel would give.
 
     java -jar target/HumanSimulation.jar run --seed 1 --days 500 --set world.mutation=0 --set-at 200:world.grassPerDrop=3 --gene rabbit.grassPull=0.2
 
+`--export FILE` with `--export-day DAY`, repeatable, writes every creature
+alive once DAY days are complete to FILE, one line each with its genes.
+`--spawn-from FILE`, repeatable, starts a world from such a file, one creature
+per line, after any `--spawn`. A line needs only its species, and genes it
+leaves out come from the baseline, so a hand-written genome works too.
+`run --help` lists the options under World, Population, Settings and Output.
+
+    java -jar target/HumanSimulation.jar run --seed 7 --days 1000 --export evolved.jsonl --export-day 1000
+    java -jar target/HumanSimulation.jar run --seed 8 --days 500 --set world.mutation=0 --spawn-from evolved.jsonl
+
+    {"seed":7,"day":1000,"species":"rabbit","id":4182,"genes":{"breedPull":1.2,"grassPull":1.4,...,"whim":0.4}}
+
+A rabbit's pull toward grass and its hunger can go negative, so a rabbit can
+evolve to walk away from food, and starve for it.
+
 ## Comparing
 
 `tools/compare.py` runs variants of a world over many seeds, one `run` per seed
@@ -100,6 +115,15 @@ medians, Â12 (the chance that a run of the variant beats a run of the first,
 for a measure you chose before running, and the Holm p, which allows for every
 test in the report, when scanning for anything that stands out. `--per-seed`
 adds each seed's population and genes, and `--json` prints everything. The script never says which variant won.
+
+`tools/ancestor_competition.py` checks that rabbits learn. It evolves a world
+per seed from a genome that barely aims for food, then sets ten of the
+survivors against ten copies of that genome, in one world and each in a world
+of its own, with mutation off. It reports the evolved share of the shared
+world, how many rabbits each group sustains alone, and where the genes moved.
+Its files stay under `target/ancestor-competition/`, one folder per seed.
+
+    python tools/ancestor_competition.py tools/experiments/rabbit-learns-gate.json
 
 ## Serving
 

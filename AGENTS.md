@@ -60,6 +60,11 @@ The pre-commit hook and CI run `docs-check.py`.
 an acceptance line, read the raw `p` for the measure the line names, and `pHolm`
 only when scanning the whole report. CI runs `test_compare.py`.
 
+    python tools/ancestor_competition.py tools/experiments/rabbit-learns-gate.json    entry 9's gate
+    python tools/test_ancestor_competition.py                                          its tests
+
+The gate takes about three minutes, needs the same jar, and CI runs its tests.
+
 ## Branches
 
 - A roadmap entry is built on its own branch off `master`, named

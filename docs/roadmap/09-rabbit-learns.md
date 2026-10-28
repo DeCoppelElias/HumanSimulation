@@ -1,6 +1,6 @@
 # 9. Rabbit learns
 
-Status: not started.
+Status: in progress.
 
 A gate rather than a feature: selection has to be shown working before a second
 species muddies it. Rabbits that evolved compete against the genome they
@@ -24,21 +24,27 @@ equally often.
 `tools/experiments/rabbit-learns-gate.json`, per
 `docs/ideas/ancestor-competition.md`:
 
-- Evolution: a 40×40 grid with 28 grass per drop, the default density, no
-  ramp. 20 identical rabbits start from the poor genome, `grassPull` 0.2,
-  `hungerDrive` 0.5 and `whim` 2 with every other gene at its baseline, and
-  evolve for 1000 days with mutation on, exporting on days 500 and 1000.
-- Sample: 10 of a seed's day 1000 survivors, drawn with a seed the tool
-  records. A seed that died out or has fewer than 10 survivors is not tested.
+- Evolution: a 40×40 grid with 28 grass per drop, the default density once
+  the start has tapered. 20 identical rabbits start from the poor genome,
+  `grassPull` 0.2, `hungerDrive` 0.5 and `whim` 2 with every other gene at
+  its baseline, and evolve for 2000 days with mutation on, exporting on days
+  1000 and 2000. Poor founders starve at the default density, so grass drops
+  every day at first, then every 2, 3, 5 and 7 days from days 400, 800, 1200
+  and 1600, which tuning found lets learning keep up with the food.
+- Sample: 10 of a seed's day 2000 survivors that differ from the original
+  genome, since rabbits do not age and a founder can still be alive, drawn
+  with a seed the tool records. A seed that died out or has fewer than 10 is
+  not tested.
 - Test: mutation off, in the same world on the evolution seed plus 1000, for
   500 days. One world holds the 10 evolved beside 10 of the original genome,
   and each group also runs in a world of its own. Each test run exports its
   survivors on its last day, and an exact genome says which group a rabbit
   descends from.
-- Report: the seeds tested and why the others were not, the time the gate took,
-  the evolved share of living rabbits in the shared world, the population each
-  group sustains in a world of its own, and the evolved genes on days 500 and
-  1000 against the original genome. It never judges, and `--per-seed` and
+- Report: the seeds tested and why the others were not, the sample seed, the
+  time the gate took, the evolved share of living rabbits in the shared world,
+  the population each group sustains in a world of its own as a mean over
+  every day of the test, and the evolved genes on each export day against the
+  original genome. It never judges, and `--per-seed` and
   `--json` work as in `compare.py`.
 
 Acceptance, on the gate's report over seeds 1 to 30:
@@ -66,10 +72,12 @@ on behaviour he does not want, is caught by a person rather than a threshold.
 The mutation shadow stays out, since the signed bounds leave no floor for a
 gene to climb off. The network brain waits, per `DESIGN.md`.
 
-On the page: a world built over the API like the gate's evolution stage, opened
-at `?world=ID`, where rabbits stumble about in the first weeks and head for
-grass more directly after a few hundred days. A 20×20 world with 7 grass per
-drop and 10 rabbits is the fallback if 40×40 tiles are too small to follow.
+On the page: a world built over the API like the gate's evolution stage,
+opened at `?world=ID`, with the drop interval stepped up from the settings
+panel as the gate's taper does, where rabbits stumble about in the first weeks
+and head for grass more directly after a few hundred days. A 20×20 world with
+7 grass per drop and 10 rabbits is the fallback if 40×40 tiles are too small
+to follow.
 
 Depends on entry 8. See
 [0007](../decisions/0007-state-leaves-as-a-snapshot-commands-go-in.md),
