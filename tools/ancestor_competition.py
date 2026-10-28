@@ -42,7 +42,7 @@ def evolve_flags(preset, export):
 
 
 def test_flags(preset, sources, export):
-    flags = [*preset["world"], "--set", "world.mutation=0", "--export", str(export)]
+    flags = [*preset["world"], *preset["test"].get("flags", []), "--set", "world.mutation=0", "--export", str(export)]
     flags += ["--export-day", str(preset["test"]["days"])]
     for source in sources:
         flags += ["--spawn-from", str(source)]

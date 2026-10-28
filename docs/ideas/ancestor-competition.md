@@ -47,7 +47,8 @@ reports counts of seeds rather than the
 ## Open questions
 
 Roadmap entry 9 settles one world, group size and ratio for its gate: the
-world the genomes evolved in, ten of each group, one to one. Whether the result
+world the genomes evolved in with more food, so the original genome can live
+alone, ten of each group, one to one. Whether the result
 depends on the starting ratio is still open.
 
 Once a second species evolves, freezing one while the other evolves needs

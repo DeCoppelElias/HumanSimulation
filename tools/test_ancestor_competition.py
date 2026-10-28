@@ -148,6 +148,12 @@ class TestFlagsTest(unittest.TestCase):
         self.assertNotIn("--spawn", flags)
         self.assertNotIn("--gene", flags)
 
+    def test_its_own_flags_follow_the_world_and_stay_out_of_evolution(self):
+        preset = {**PRESET, "test": {**PRESET["test"], "flags": ["--set", "world.grassDropInterval=3"]}}
+        flags = ac.test_flags(preset, [Path("e.jsonl")], Path("t.jsonl"))
+        self.assertLess(flags.index("world.grassPerDrop=28"), flags.index("world.grassDropInterval=3"))
+        self.assertNotIn("world.grassDropInterval=3", ac.evolve_flags(preset, Path("out.jsonl")))
+
 
 class SampleOfTheOriginalTest(unittest.TestCase):
     def test_a_sample_holding_the_original_genome_is_refused(self):

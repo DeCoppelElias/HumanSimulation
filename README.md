@@ -118,9 +118,9 @@ test in the report, when scanning for anything that stands out. `--per-seed`
 adds each seed's population and genes, and `--json` prints everything. The script never says which variant won.
 
 `tools/ancestor_competition.py` checks that rabbits learn. It evolves a world
-per seed from a genome that barely aims for food, then sets ten of the
-survivors against ten copies of that genome, in one world and each in a world
-of its own, with mutation off. It reports the evolved share of the shared
+per seed from a genome that barely survives, then sets ten of the survivors
+against ten copies of that genome, in one world and each in a world of its
+own, with mutation off and the food the preset's `test` flags give. It reports the evolved share of the shared
 world, how many rabbits each group sustains alone, and where the genes moved.
 Its files stay under `target/ancestor-competition/`, one folder per seed.
 

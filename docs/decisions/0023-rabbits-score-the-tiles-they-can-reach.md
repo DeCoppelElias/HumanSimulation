@@ -58,8 +58,9 @@ gene and stops breeding being a decision, which undoes why
 [0004](0004-creatures-return-intents.md) made it an intent.
 
 `grassPull` and `hungerDrive` first had a floor of 0, since a pull away from
-food is never good. Entry 9's gate starts rabbits from a genome that barely aims
-for food, with `grassPull` at 0.2 and `hungerDrive` at 0.5. A gene that close to
+food is never good. A gate that starts rabbits from a genome that barely aims
+for food, such as `grassPull` at 0.2 and `hungerDrive` at 0.5, starts them near
+that floor. A gene that close to
 its floor climbs by mutation alone, because a step down is cut at the bound and
 a step up never is, so a rise could not be told from learning. A floor also
 leaves the worst strategy, walking away from food, out of reach of selection.
