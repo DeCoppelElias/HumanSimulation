@@ -29,6 +29,10 @@ recommended one, at the cost of a small fixed list of kinds.
 
 No diet at all, which is where the rebuild starts.
 
+[0016](../decisions/0016-feeding-takes-the-tile.md) settled on a fourth: each
+food kind is a component of its own, such as `Plant`, and an `Eater` component
+holds the kinds its carrier takes.
+
 ## Open questions
 
 Whether the accepted kinds become a gene, so a diet can evolve.

@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-03. Revised 2026-10-15.
+Accepted, 2026-09-03. Revised 2026-10-28.
 
 ## Context
 
@@ -172,10 +172,12 @@ mutated genome and `childReserve` as its reserve, per
 [0006](0006-genomes-are-a-named-layout-of-gene-shapes.md), and `breedingLoss` is
 lost to the birth.
 
-There is no attack. Nothing in the base simulation needs one, and designing it
-before there is a predator to ask would be guesswork. When the predator on the
-roadmap needs violence, it arrives as a new intent, never as something the feed
-step does to a creature.
+There is no attack intent. A predator kills by eating: a creature whose `Eater`
+takes a food another creature carries eats it in the feed step when they share
+a tile, per [0016](0016-feeding-takes-the-tile.md). A predator always wants to
+eat, so there is nothing yet for a brain to decide. An attack intent arrives
+when something has to choose whether to kill, such as a predator that spares
+prey or prey that fights back.
 
 ## Consequences
 
@@ -187,8 +189,9 @@ Conflicts become visible, because every intent exists before any is applied.
 One intent per creature per day is the real constraint. A choice that only
 becomes available partway through a day cannot be a decision, because the
 decisions are already collected by then, so anything that wants to be chosen has
-to be visible when the day starts. That is why violence, when it arrives, is an
-intent rather than a rule the feed step applies.
+to be visible when the day starts. So a kill in the feed step is chosen by
+neither side within the day. What each chooses is where to stand, and whether
+to kill becomes a decision only once the attack intent exists.
 
 Breeding costs a creature its move for that day, which is the tradeoff that
 makes it worth deciding, and it allows behaviour a schedule could not express,

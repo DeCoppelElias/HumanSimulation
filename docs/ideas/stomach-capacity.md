@@ -5,7 +5,7 @@ Status: idea.
 ## What it does
 
 Caps what a creature can hold, so a full creature cannot eat. Today feeding is
-unconditional: a creature standing on food takes every edible on its tile.
+unconditional: a creature standing on food takes all of it that it eats.
 
 ## Why it is interesting
 

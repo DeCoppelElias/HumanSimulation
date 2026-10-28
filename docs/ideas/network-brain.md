@@ -30,7 +30,9 @@ network adds beyond that starts at weights that change nothing.
 ## Open questions
 
 How a variable-length perception becomes a fixed input: per-tile weight sharing
-with pooling, a recurrent pass over tiles, or attention.
+with pooling, a recurrent pass over tiles, or attention. Roadmap entry 11 makes
+the scoring brain a sum over a fixed list of visible facts, which is one row of
+input per visible entity.
 
 Whether the network's input is the scoring brain's features or something rawer,
 which would need a fitting step to imitate the rules.

@@ -71,7 +71,8 @@ Commands drain first, per
    [0004](0004-creatures-return-intents.md). Movement walks a tile at a time.
    Breeding checks the window and the reserve, spends the cost and spawns a
    child carrying a mutated genome and `childReserve`.
-3. Feed. In the same order, each creature takes every edible on its tile, per
+3. Feed. In the same order, each creature takes every food on its tile that it
+   eats, per
    [0016](0016-feeding-takes-the-tile.md).
 4. Tick. Every entity's parts update themselves in id order, per
    [0024](0024-a-part-can-end-its-carrier.md). Metabolism charges the eating

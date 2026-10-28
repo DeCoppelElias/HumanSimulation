@@ -4,8 +4,8 @@ Status: idea.
 
 ## What it does
 
-Death leaves a corpse entity on the tile carrying an edible component and a
-flammable one, cleared by a system after some days.
+Death leaves a corpse entity on the tile carrying `Meat` and a flammable
+component, cleared by a system after some days.
 
 ## Why it is interesting
 
@@ -24,11 +24,13 @@ world process, alongside regrowth.
 
 ## Open questions
 
-Whether a kill also feeds the killer directly, which
-[0004](../decisions/0004-creatures-return-intents.md) leaves open.
+Which deaths leave one. A predator kills by eating, per
+[0016](../decisions/0016-feeding-takes-the-tile.md), and takes the whole prey,
+so a corpse from a kill means the predator eats part of it, while a death by
+starving or age leaves the whole body.
 
 Whether the corpse's value comes from what the creature was carrying in its
-reserve, from its species settings, or both.
+reserve, from the `Meat` amount its species declares, or both.
 
 How long a corpse lasts. [Lifespan](lifespan.md) would make it a property of
 the corpse rather than a world setting.

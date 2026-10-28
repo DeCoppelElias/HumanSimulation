@@ -114,8 +114,9 @@ it and no other world. The brain has its own slot rather than sitting among the
 components, because it is the seam that gets swapped. Terrain is a species too,
 and water decides nothing, so the brain slot can be empty.
 
-A component is one capability with whatever state it needs. Being edible is a
-component. Having a metabolism is a component. Being on fire is a component,
+A component is one capability with whatever state it needs. Being a plant is a
+component, and so is being meat, and both are edible. Eating is a component
+that names the foods its carrier takes. Having a metabolism is a component. Being on fire is a component,
 attached when something catches and removed when it burns out. A component that
 cuts across kinds is written once, and every kind that carries it gets the
 behaviour.
@@ -183,8 +184,8 @@ described by its seed and its command log.
 A brain turns a perception and its options into an intent. A perception is what
 one creature can see from where it stands: the tiles within its view range by
 straight-line distance, what stands on each, and the components of its own and
-of those things. A brain asks for components by class, so it checks for
-something edible rather than for a string that says so. Each component declares
+of those things. A brain asks for components by class, so it checks for a
+plant rather than for a string that says so. Each component declares
 what its carrier sees of it and what others in range see, which may be nothing,
 so a creature can read its own reserve while its neighbours cannot, and what one
 creature can know about another is a deliberate choice. Positions in it are
@@ -192,8 +193,8 @@ relative to the creature, and a tile off the grid is simply absent, which is how
 an edge is perceived. A perception also carries the grid's distance, so a brain
 asks how far apart two offsets are and never measures for itself. An intent is
 the single action it wants to take this day, one of moving in a direction for a
-distance, breeding, or doing nothing. There is no attack until a predator needs
-one.
+distance, breeding, or doing nothing. There is no attack: a predator kills by
+eating, until something has to choose whether to kill.
 
 There is one perception type, and what fills it is a component. A species that
 senses differently carries a different sense, the component that builds its
@@ -243,9 +244,9 @@ fuel from what it burns, stays one rule that every fire obeys.
 One intent per creature per day is the constraint that shapes the rest. A choice
 that only becomes available partway through a day cannot be a decision at all,
 because the decisions are already collected by then. Anything that wants to be
-chosen has to be visible when the day starts, which is why violence, when it
-arrives, is an intent a creature returns rather than something the feed step
-does to it.
+chosen has to be visible when the day starts. A predator eating its prey in the
+feed step is chosen by neither side within the day, and becomes an attack
+intent once one side has a choice to make.
 
 ### The day
 
@@ -263,9 +264,10 @@ A day runs these steps in order:
    spends the first two and spawns a child at the parent's position carrying a
    mutated copy of the parent's genome and the child's reserve. A child is not
    on the day's list, so it first acts and feeds the next day.
-3. Feed. In the same order, a creature takes every edible on its tile,
-   crediting its metabolism. A pile taken is gone, so whoever comes later finds
-   nothing.
+3. Feed. In the same order, a creature takes every food on its tile that its
+   eater part names, crediting its metabolism. Food can be another creature,
+   which is how a predator kills. What is taken is gone, so whoever comes later
+   finds nothing.
 4. Tick. Every entity's components update themselves, in id order. Reserves
    are charged on the eating interval, one charge covering eating and the speed
    and view range the creature carries, and lifespans count their days. Anything a
@@ -376,8 +378,10 @@ change to the world, the entity, the genome or the shape of a day, the design
 has a flaw, and the decision entry for the topic it breaks records it.
 
 The rabbit is the first species, and a wolf tests it. The wolf is a species
-value, plus one intent case and its branch in the resolver once it hunts, and
-nothing else changes, because the world has never needed to know what a rabbit
-is. What the species value does not give you is the brain: a wolf that hunts has
-to condition on where prey is, which a brain that picks a weighted-random
-direction cannot do. The data is free and the brain is the work.
+value whose eater part takes meat, which rabbits carry, and nothing else
+changes, because the world has never needed to know what a rabbit is. What the
+species value does not give you is the brain: a wolf that hunts has to
+condition on where prey is. The brain weighs what it sees, each visible fact
+with a signed pull of its own, so a wolf drawn to meat and a rabbit that learns
+to keep away from meat eaters run on the same brain with different genes. The
+data is free and the brain is the work.

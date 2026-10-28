@@ -48,7 +48,8 @@ costs, and what the concrete type shapes are.
 - [0015](0015-geometry-lives-in-the-grid.md) Geometry lives in the grid: four
   directions for now, and the shape stays changeable.
 - [0016](0016-feeding-takes-the-tile.md) Feeding takes the tile, and there is no
-  contest.
+  contest: an eater takes the food its diet names, and a predator kills by
+  eating.
 - [0017](0017-every-number-is-a-setting-or-a-gene.md) Every number is a setting
   or a gene, and a setting is declared with a default.
 - [0018](0018-brain-computation-model-and-warm-starting.md) A fixed-rules brain

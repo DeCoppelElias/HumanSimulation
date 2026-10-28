@@ -59,7 +59,7 @@ two separate JVMs and compares the output byte for byte.
 ## Consequences
 
 The hash-order tiebreak in `collectFood` has nothing left to break. A creature
-takes every edible on its tile, per [0016](0016-feeding-takes-the-tile.md), so
+takes every food on its tile that it eats, per [0016](0016-feeding-takes-the-tile.md), so
 which one it takes first does not matter.
 
 A run replays exactly from its seed and its command log, so a strange outcome

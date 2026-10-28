@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-27. Revised 2026-10-14.
+Accepted, 2026-09-27. Revised 2026-10-28.
 
 ## Context
 
@@ -70,9 +70,10 @@ Optional<Record> seenView();   // empty: invisible to others
 ```
 
 `Metabolism` shows its reserve to its carrier and nothing to others, so a
-neighbour cannot tell it is there. `Edible` shows its amount to everyone. A
+neighbour cannot tell it is there. `Plant` shows its amount to everyone, and
+`Eater` shows nothing. A
 burning component shows its heat to everyone. A brain asks
-`entity.parts().has(Edible.class)` or
+`entity.parts().has(Plant.class)` or
 `self.parts().view(Metabolism.Own.class)`, and a misspelt class does not
 compile.
 
@@ -100,8 +101,8 @@ Ordering is fixed: tiles by straight-line distance ascending, then by `dy` and
 `dx`; entities within a tile by ascending id. A brain that takes the first
 edible tile it finds makes the same choice on a replay.
 
-The type carries derived helpers, such as `nearest(Edible.class)` and
-`tilesWith(Edible.class)`. They are pure functions over the same data, so they
+The type carries derived helpers, such as `nearest(Plant.class)` and
+`tilesWith(Plant.class)`. They are pure functions over the same data, so they
 cost nothing in flexibility.
 
 A `Sense` component builds the perception, through queries per

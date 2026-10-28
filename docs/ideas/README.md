@@ -26,6 +26,8 @@ that settled it.
   actually renders.
 - [Comparison statistics](comparison-statistics.md) an effect size and a
   test in `compare.py`, over more seeds.
+- [Component interactions](component-interactions.md) a list of what happens
+  when two components meet, which the world runs instead of a feed step.
 - [Control species](control-species.md) a species that never learns, run
   beside the rabbits to show what selection adds.
 - [Corpses and scavenging](corpses-and-scavenging.md) death leaves something
