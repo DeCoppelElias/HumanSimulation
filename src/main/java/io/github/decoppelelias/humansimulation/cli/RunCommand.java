@@ -1,17 +1,25 @@
 package io.github.decoppelelias.humansimulation.cli;
 
 import io.github.decoppelelias.humansimulation.domain.Command;
+import io.github.decoppelelias.humansimulation.domain.DayReport;
 import io.github.decoppelelias.humansimulation.domain.FoodDrop;
 import io.github.decoppelelias.humansimulation.domain.Grass;
 import io.github.decoppelelias.humansimulation.domain.Rabbit;
 import io.github.decoppelelias.humansimulation.domain.World;
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import picocli.CommandLine;
 import picocli.CommandLine.Model.CommandSpec;
@@ -67,10 +75,31 @@ public final class RunCommand implements Callable<Integer> {
                     + " last value for a gene wins.")
     private List<String> gene = List.of();
 
+    @Option(
+            names = "--export",
+            paramLabel = "FILE",
+            description = "Write the creatures alive on each --export-day to FILE, one per line.")
+    private Optional<Path> export = Optional.empty();
+
+    @Option(
+            names = "--export-day",
+            paramLabel = "DAY",
+            description = "Export once DAY days are complete, from 1 to --days. Repeatable.")
+    private List<Integer> exportDay = List.of();
+
     @Override
     public Integer call() {
         if (days < 1) {
             throw usage("--days must be at least 1, got " + days);
+        }
+        SortedSet<Integer> exportDays = new TreeSet<>(exportDay);
+        if (export.isPresent() == exportDays.isEmpty()) {
+            throw usage("--export and --export-day go together");
+        }
+        for (int day : exportDays) {
+            if (day < 1 || day > days) {
+                throw usage("--export-day must be from 1 to --days, got " + day);
+            }
         }
         long worldSeed = seed.orElseGet(System::nanoTime);
         List<Command.SetSetting> dayZero = new ArrayList<>();
@@ -94,12 +123,28 @@ public final class RunCommand implements Callable<Integer> {
         later.values().forEach(edits -> edits.forEach(edit -> submit(scratch, edit)));
         World world = start(worldSeed, dayZero);
         PrintWriter out = spec.commandLine().getOut();
+        List<String> exported = new ArrayList<>();
         for (int completed = 0; completed < days; completed++) {
             later.getOrDefault(completed, List.of()).forEach(world::submit);
-            out.print(CensusLine.format(worldSeed, world.advance().census()) + "\n");
+            DayReport report = world.advance();
+            out.print(CensusLine.format(worldSeed, report.census()) + "\n");
+            if (exportDays.contains(report.snapshot().day())) {
+                exported.addAll(GenomeLines.format(worldSeed, report.snapshot()));
+            }
         }
         out.flush();
+        if (export.isPresent()) {
+            write(export.orElseThrow(), exported);
+        }
         return CommandLine.ExitCode.OK;
+    }
+
+    private static void write(Path file, List<String> lines) {
+        try {
+            Files.write(file, lines, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new UncheckedIOException("cannot write " + file, e);
+        }
     }
 
     private static int dayOf(String text) {

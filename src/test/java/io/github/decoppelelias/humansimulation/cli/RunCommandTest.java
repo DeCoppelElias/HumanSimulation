@@ -4,12 +4,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import picocli.CommandLine;
 
 class RunCommandTest {
     private record Result(int exitCode, String out, String err) {}
+
+    @TempDir
+    Path folder;
 
     private static Result run(String... args) {
         StringWriter out = new StringWriter();
@@ -226,5 +232,58 @@ class RunCommandTest {
             assertThat(result.exitCode()).as(bad).isEqualTo(CommandLine.ExitCode.USAGE);
             assertThat(result.err()).as(bad).containsAnyOf("--set-at takes DAY:", "--set-at takes OWNER.KEY=VALUE");
         }
+    }
+
+    @Test
+    void anExportWritesEachCreatureOnItsDay() throws Exception {
+        Path file = folder.resolve("out.jsonl");
+        Result result = run(
+                "--seed",
+                "1",
+                "--days",
+                "3",
+                "--spawn",
+                "rabbit=10",
+                "--spawn",
+                "grass=3",
+                "--export",
+                file.toString(),
+                "--export-day",
+                "1",
+                "--export-day",
+                "3");
+        assertThat(result.exitCode()).isZero();
+        List<String> lines = Files.readAllLines(file);
+        assertThat(lines).hasSize(20);
+        assertThat(lines.subList(0, 10))
+                .allSatisfy(line -> assertThat(line)
+                        .startsWith("{\"seed\":1,\"day\":1,\"species\":\"rabbit\",\"id\":")
+                        .contains(",\"genes\":{\"breedPull\":")
+                        .endsWith("}}"));
+        assertThat(lines.subList(10, 20)).allSatisfy(line -> assertThat(line).contains("\"day\":3,"));
+    }
+
+    @Test
+    void anExportDayPastTheRunIsAUsageError() {
+        Result result = run(
+                "--seed", "1", "--days", "3", "--export", folder.resolve("x").toString(), "--export-day", "4");
+        assertThat(result.exitCode()).isEqualTo(CommandLine.ExitCode.USAGE);
+        assertThat(result.err()).contains("--export-day must be from 1 to --days");
+        assertThat(result.out()).isEmpty();
+    }
+
+    @Test
+    void exportAndExportDayGoTogether() {
+        assertThat(run("--seed", "1", "--days", "3", "--export-day", "1").err())
+                .contains("--export and --export-day go together");
+        assertThat(run(
+                                "--seed",
+                                "1",
+                                "--days",
+                                "3",
+                                "--export",
+                                folder.resolve("x").toString())
+                        .err())
+                .contains("--export and --export-day go together");
     }
 }
