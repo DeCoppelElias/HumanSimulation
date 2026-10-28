@@ -69,6 +69,17 @@ def draw_sample(survivors, size, seed):
     return random.Random(seed).sample(sorted(survivors, key=lambda one: one["id"]), size)
 
 
+def evolved_survivors(survivors, original):
+    """Rabbits do not age, so a founder can outlive evolution, and it carries the original genome."""
+    return [one for one in survivors if one["genes"] != original]
+
+
+def check_sample(sample, original):
+    """A sampled rabbit carrying the original genome would be counted as evolved in the test."""
+    if any(one["genes"] == original for one in sample):
+        raise ValueError("a sampled survivor carries the original genome, so the groups cannot be told apart")
+
+
 def evolved_share(survivors, sample, original):
     """Mutation is off in the test, so every survivor carries a founder's exact genes."""
     evolved = [one["genes"] for one in sample]
@@ -99,7 +110,7 @@ def _median(values):
     return statistics.median(values) if values else None
 
 
-def report(results, original, export_days):
+def report(results, original, export_days, sample_seed=None):
     tested = [seed for seed, result in sorted(results.items()) if result["status"] == "tested"]
     shared = [results[seed]["shared"] for seed in tested]
     known = [one["share"] for one in shared if one["share"] is not None]
@@ -120,6 +131,7 @@ def report(results, original, export_days):
         }
     return {
         "seeds": len(results),
+        "sampleSeed": sample_seed,
         "tested": len(tested),
         "diedOut": sum(result["status"] == "died out" for result in results.values()),
         "tooFew": sum(result["status"] == "too few" for result in results.values()),
@@ -151,7 +163,7 @@ def _number(value):
 def format_text(one, seconds, per_seed):
     shared, alone, days, tested = one["shared"], one["alone"], one["exportDays"], one["tested"]
     out = [
-        f"ancestor competition: {one['seeds']} seeds, {tested} tested",
+        f"ancestor competition: {one['seeds']} seeds, {tested} tested, sample seed {one['sampleSeed']}",
         f"  {one['diedOut']} died out while evolving, {one['tooFew']} had too few survivors to sample",
         f"  took {int(seconds // 60)}m {int(seconds % 60)}s",
         "",
@@ -261,10 +273,11 @@ def _prepare(args, preset, seeds, evolved_census, export_days):
         if not survivors:
             results[seed] = {"status": "died out"}
             continue
-        sample = draw_sample(survivors, preset["sample"], f"{args.sample_seed}:{seed}")
+        sample = draw_sample(evolved_survivors(survivors, original), preset["sample"], f"{args.sample_seed}:{seed}")
         if sample is None:
             results[seed] = {"status": "too few"}
             continue
+        check_sample(sample, original)
         _write_lines(folder / "evolved.jsonl", [json.dumps(one) for one in sample])
         _write_lines(folder / "original.jsonl", original_lines(preset, original))
         sources = {
@@ -289,6 +302,8 @@ def _score(preset, results, original, test_census):
         if result["status"] != "tested":
             continue
         folder = WORK / f"seed-{seed}"
+        for group in ("shared", "evolved", "original"):
+            _write_lines(folder / f"test-{group}-census.jsonl", test_census[(seed, group)])
         survivors = on_day(read_genomes(folder / "test-shared.jsonl"), test["days"])
         result["shared"] = evolved_share(survivors, result.pop("sample"), original)
         result["alone"] = {group: sustained(test_census[(seed, group)], species) for group in ("evolved", "original")}
@@ -302,6 +317,8 @@ def main(argv):
         sys.exit(f"no jar at {args.jar}; build it with ./mvnw package -Pskip-frontend")
     started = time.monotonic()
     shutil.rmtree(WORK, ignore_errors=True)
+    if WORK.exists():
+        sys.exit(f"cannot clear {WORK}; close whatever holds a file in it, or another gate still running")
     for seed in seeds:
         (WORK / f"seed-{seed}").mkdir(parents=True)
     evolve = preset["evolve"]
@@ -312,13 +329,10 @@ def main(argv):
         results, original, jobs = _prepare(args, preset, seeds, evolved_census, export_days)
         _score(preset, results, original, _run_all(pool, args.jar, jobs))
     except (compare.RunFailed, ValueError) as failure:
-        pool.shutdown(cancel_futures=True)
         sys.exit(str(failure))
-    pool.shutdown()
-    one = report(results, original, export_days)
-    for result in one["perSeed"].values():
-        if "genes" in result:
-            result["genes"] = {str(day): means for day, means in result["genes"].items()}
+    finally:
+        pool.shutdown(cancel_futures=True)
+    one = report(results, original, export_days, args.sample_seed)
     seconds = time.monotonic() - started
     if args.json:
         print(json.dumps({**one, "seconds": round(seconds, 1)}, indent=2))

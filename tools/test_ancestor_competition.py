@@ -138,6 +138,39 @@ class TextTest(unittest.TestCase):
         self.assertNotIn("fail", text.lower())
 
 
+class TestFlagsTest(unittest.TestCase):
+    def test_spawns_only_from_its_files_with_mutation_off_and_exports_its_last_day(self):
+        flags = ac.test_flags(PRESET, [Path("e.jsonl"), Path("o.jsonl")], Path("t.jsonl"))
+        self.assertIn(("--set", "world.mutation=0"), list(zip(flags, flags[1:])))
+        self.assertEqual([flags[i + 1] for i, flag in enumerate(flags) if flag == "--spawn-from"], ["e.jsonl", "o.jsonl"])
+        self.assertEqual([flags[i + 1] for i, flag in enumerate(flags) if flag == "--export-day"], ["500"])
+        self.assertEqual(flags[flags.index("--export") + 1], "t.jsonl")
+        self.assertNotIn("--spawn", flags)
+        self.assertNotIn("--gene", flags)
+
+
+class SampleOfTheOriginalTest(unittest.TestCase):
+    def test_a_sample_holding_the_original_genome_is_refused(self):
+        with self.assertRaisesRegex(ValueError, "original genome"):
+            ac.check_sample([genome(1, evolved(1)), genome(2, ORIGINAL)], ORIGINAL)
+
+    def test_a_sample_without_it_passes(self):
+        ac.check_sample([genome(1, evolved(1))], ORIGINAL)
+
+
+class EvolvedSurvivorsTest(unittest.TestCase):
+    def test_a_founder_still_alive_is_not_evolved(self):
+        survivors = [genome(1, ORIGINAL), genome(2, evolved(2)), genome(3, ORIGINAL)]
+        self.assertEqual([one["id"] for one in ac.evolved_survivors(survivors, ORIGINAL)], [2])
+
+
+class SampleSeedTest(unittest.TestCase):
+    def test_the_report_records_the_sample_seed(self):
+        one = ac.report(ReportTest.RESULTS, {"grassPull": 0.2}, [500, 1000], "9")
+        self.assertEqual(one["sampleSeed"], "9")
+        self.assertIn("sample seed 9", ac.format_text(one, 1.0, per_seed=False))
+
+
 class SustainedTest(unittest.TestCase):
     def test_days_after_dying_out_count_as_none(self):
         lines = [
