@@ -52,8 +52,9 @@ Acceptance, on the gate's report over seeds 1 to 30:
 - at least 24 seeds are tested;
 - the evolved share of living rabbits on day 500 of the shared world is above
   one half in at least 70% of the tested seeds;
-- the evolved group in a world of its own does not sustain fewer rabbits than
-  the original genome in 70% or more of the tested seeds;
+- the evolved group in a world of its own sustains fewer rabbits than the
+  original genome in under 70% of the tested seeds, a guard that fails only on
+  clear evidence of a smaller population;
 - `run` spawns every line of an exported file, and a world spawned from an
   export with mutation off holds exactly the exported genomes.
 

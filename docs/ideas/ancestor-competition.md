@@ -40,6 +40,7 @@ which is the [brain library](brain-library.md). With mutation off a child is an
 exact copy, so a genome exported at the end of the test says which group a
 rabbit descends from, and no lineage tag is needed. A script of its own,
 `tools/ancestor_competition.py`, that borrows `tools/compare.py`'s runner and
+reports counts of seeds rather than the
 [comparison statistics](comparison-statistics.md), per
 [0021](../decisions/0021-agents-drive-worlds-over-http-and-run.md).
 

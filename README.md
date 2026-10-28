@@ -65,7 +65,8 @@ which is `starved`, `eaten` or `aged`.
 
 `--days` is required. `--seed` defaults to one drawn from the clock, `--width`
 and `--height` to 20. `--spawn SPECIES=COUNT`, once per species, sets the
-starting population, which is ten rabbits and no grass without it. Grass falls
+starting population, which is ten rabbits and no grass without it or
+`--spawn-from` below. Grass falls
 on its own every seven days either way. The same seed prints the same lines.
 
 `--set OWNER.KEY=VALUE` changes any setting from day 0, and

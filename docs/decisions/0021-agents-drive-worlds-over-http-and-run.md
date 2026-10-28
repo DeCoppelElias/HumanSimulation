@@ -159,13 +159,14 @@ field on a spawn, and the page sends none.
 `--export FILE` with `--export-day DAY`, repeatable, writes every creature with
 genes that is alive once DAY days are complete to FILE, read from the day's
 snapshot, per [0007](0007-state-leaves-as-a-snapshot-commands-go-in.md). A day
-past `--days` is a usage error before the first day runs. The file is JSON
-Lines, one creature per line:
+outside 1 to `--days`, or a FILE that cannot be written, is a usage error
+before the first day runs. The file is JSON Lines, one creature per line:
 
     {"seed":7,"day":1000,"species":"rabbit","id":42,"genes":{"breedPull":1.2,"grassPull":1.4,...}}
 
 `--spawn-from FILE`, repeatable, spawns one creature per line, each a `Spawn`
-of one with that line's genes, in the order of the flags and then of the lines,
+of one with that line's genes, after any `--spawn` counts, in the order of the
+`--spawn-from` flags and then of the lines,
 so the log describes the run as it does for `--gene`. Any `--spawn` or
 `--spawn-from` replaces the default ten rabbits, and the two combine. Reading
 needs only `species`. Genes a line leaves out come from the baseline, and
@@ -202,7 +203,7 @@ an acceptance line that sets a p names which one it means. The earlier, later
 and tied counts stay beside them.
 
 A second script, `tools/ancestor_competition.py`, runs an ancestor competition
-and borrows the comparison script's runner and statistics. It evolves a world
+and borrows the comparison script's runner. It evolves a world
 per seed with mutation on and exports its survivors, draws a sample of them
 with a seed it records, and then, with mutation off, runs the sample beside the
 genome evolution started from, and each group alone, on a test seed of its own.
