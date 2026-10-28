@@ -32,23 +32,28 @@ class ScoringBrainTest {
         return new Options(DIRECTIONS, offered);
     }
 
-    private record Seen(int dx, int dy, String species, boolean edible) {}
+    private record Seen(int dx, int dy, String species, List<Class<? extends Component>> food) {}
 
     private static Seen grass(int dx, int dy) {
-        return new Seen(dx, dy, "grass", true);
+        return new Seen(dx, dy, "grass", List.of(Plant.class));
+    }
+
+    private static Seen bone(int dx, int dy) {
+        return new Seen(dx, dy, "bone", List.of(TestSpecies.Bone.class));
     }
 
     private static Seen rabbit(int dx, int dy) {
-        return new Seen(dx, dy, "rabbit", false);
+        return new Seen(dx, dy, "rabbit", List.of());
     }
 
     private static Perception perception(int daysLeft, Seen... seen) {
         List<Perception.TileView> tiles = new ArrayList<>();
         int id = 1;
         for (Seen one : seen) {
-            ViewParts parts = one.edible()
-                    ? new ViewParts(List.of(Edible.class), List.of(new Edible.Amount(15)))
-                    : new ViewParts(List.of(), List.of());
+            List<Record> views = one.food().stream()
+                    .<Record>map(food -> new Edible.Amount(15))
+                    .toList();
+            ViewParts parts = new ViewParts(one.food(), views);
             tiles.add(new Perception.TileView(
                     one.dx(), one.dy(), Map.of(), List.of(new Perception.EntityView(id++, one.species(), parts))));
         }
@@ -112,6 +117,11 @@ class ScoringBrainTest {
     void closesOnGrassBeyondReach() {
         assertThat(picks(brain(1, 0, 0, 0.05), perception(15, grass(5, 0)), 200))
                 .containsOnlyKeys(new Intent.Move(EAST, 3));
+    }
+
+    @Test
+    void aSeenFoodThatIsNotAPlantDoesNotPull() {
+        assertThat(picks(brain(1, 0, 0, 0.05), perception(15, bone(2, 0)), 200)).hasSizeGreaterThan(1);
     }
 
     @Test

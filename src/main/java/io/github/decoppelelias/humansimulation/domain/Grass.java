@@ -20,6 +20,6 @@ public final class Grass {
                 new Genome(List.of(), Map.of()),
                 settings,
                 Optional.empty(),
-                List.of(spawn -> new Edible(() -> spawn.settings().number(NOURISHMENT)), Lifespan::of));
+                List.of(spawn -> new Plant(() -> spawn.settings().number(NOURISHMENT)), Lifespan::of));
     }
 }

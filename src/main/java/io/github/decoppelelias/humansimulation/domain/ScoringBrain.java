@@ -44,7 +44,7 @@ final class ScoringBrain implements Brain {
         List<Perception.TileView> rabbits = new ArrayList<>();
         for (Perception.TileView tile : perception.tiles()) {
             for (Perception.EntityView entity : tile.entities()) {
-                if (entity.parts().has(Edible.class)) {
+                if (entity.parts().has(Plant.class)) {
                     grass.add(tile);
                 }
                 if (entity.species().equals(species)) {

@@ -7,15 +7,17 @@ import org.junit.jupiter.api.Test;
 
 class GrassTest {
     @Test
-    void isEdibleForItsNourishment() {
+    void carriesAPlantForItsNourishment() {
         Species grass = Grass.species();
         SettingValues values = new SettingValues(grass.settings());
         assertThat(values.number("nourishment")).isEqualTo(15);
-        Edible edible = (Edible)
+        Component part =
                 grass.parts().getFirst().apply(new Spawn(grass.baseline(), grass, values, 0, Optional.empty()));
-        assertThat(edible.amount()).isEqualTo(15);
+        assertThat(part).isInstanceOf(Plant.class);
+        Plant plant = (Plant) part;
+        assertThat(plant.amount()).isEqualTo(15);
         values.set("nourishment", 20);
-        assertThat(edible.amount()).isEqualTo(20);
+        assertThat(plant.amount()).isEqualTo(20);
     }
 
     @Test

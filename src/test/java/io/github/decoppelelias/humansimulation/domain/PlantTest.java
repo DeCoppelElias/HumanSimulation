@@ -5,20 +5,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
-class EdibleTest {
+class PlantTest {
     @Test
-    void showsItsAmountToEveryone() {
-        Edible grass = new Edible(() -> 15);
+    void showsItsAmountToEveryoneUnderItsOwnKey() {
+        Plant grass = new Plant(() -> 15);
+        assertThat(grass).isInstanceOf(Edible.class);
         assertThat(grass.ownView()).isEqualTo(new Edible.Amount(15));
         assertThat(grass.seenView()).contains(new Edible.Amount(15));
-        assertThat(grass.key()).isEqualTo(Edible.class);
+        assertThat(grass.key()).isEqualTo(Plant.class);
     }
 
     @Test
     void readsItsAmountLive() {
         SettingValues values = new SettingValues(
                 new Settings(List.of(new Setting.Scalar(Grass.NOURISHMENT, "Reserve from one grass.", 1, 100, 1, 15))));
-        Edible grass = new Edible(() -> values.number(Grass.NOURISHMENT));
+        Plant grass = new Plant(() -> values.number(Grass.NOURISHMENT));
         values.set(Grass.NOURISHMENT, 20);
         assertThat(grass.amount()).isEqualTo(20);
     }

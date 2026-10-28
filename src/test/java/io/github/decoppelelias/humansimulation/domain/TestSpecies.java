@@ -49,7 +49,7 @@ final class TestSpecies {
                 List.of(Metabolism::of));
     }
 
-    /** A species named "food", worth five, with no brain. */
+    /** A species named "food", a plant worth five, with no brain. */
     static Species food() {
         return new Species(
                 "food",
@@ -58,7 +58,42 @@ final class TestSpecies {
                 new Genome(List.of(), Map.of()),
                 Settings.NONE,
                 Optional.empty(),
-                List.of(spawn -> new Edible(() -> 5)));
+                List.of(spawn -> new Plant(() -> 5)));
+    }
+
+    /** A food kind no production species carries, so a test can tell one kind from another. */
+    static final class Bone implements Edible {
+        @Override
+        public double amount() {
+            return 5;
+        }
+
+        @Override
+        public Class<? extends Component> key() {
+            return Bone.class;
+        }
+
+        @Override
+        public Record ownView() {
+            return new Amount(5);
+        }
+
+        @Override
+        public Optional<Record> seenView() {
+            return Optional.of(new Amount(5));
+        }
+    }
+
+    /** A species named "bone", a bone worth five, with no brain. */
+    static Species bone() {
+        return new Species(
+                "bone",
+                "bone",
+                List.of(),
+                new Genome(List.of(), Map.of()),
+                Settings.NONE,
+                Optional.empty(),
+                List.of(spawn -> new Bone()));
     }
 
     /**
