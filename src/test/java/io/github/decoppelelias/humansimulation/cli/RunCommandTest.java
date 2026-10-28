@@ -373,4 +373,18 @@ class RunCommandTest {
         assertThat(result.exitCode()).isEqualTo(CommandLine.ExitCode.USAGE);
         assertThat(result.err()).contains("cannot read", "none.jsonl");
     }
+
+    @Test
+    void helpGroupsTheOptions() {
+        assertThat(run("--help").out())
+                .containsSubsequence(
+                        "World",
+                        "--days",
+                        "Population",
+                        "--spawn-from",
+                        "Settings",
+                        "--set-at",
+                        "Output",
+                        "--export-day");
+    }
 }
