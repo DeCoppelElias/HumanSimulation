@@ -78,12 +78,12 @@ on behaviour he does not want, is caught by a person rather than a threshold.
 The mutation shadow stays out, since the signed bounds leave no floor for a
 gene to climb off. The network brain waits, per `DESIGN.md`.
 
-On the page: a world built over the API like the gate's evolution stage,
-opened at `?world=ID`, with the drop interval stepped up from the settings
-panel as the gate's taper does, where rabbits stumble about in the first weeks
-and head for grass more directly after a few hundred days. A 20×20 world with
-7 grass per drop and 10 rabbits is the fallback if 40×40 tiles are too small
-to follow.
+On the page: a world built over the API like the gate's evolution stage at the
+same density, 20×20 with 7 grass per drop and 10 rabbits, since a served world
+is at most 25 tiles a side. It opens at `?world=ID`, with the drop interval
+stepped up from the settings panel as the gate's taper does, and rabbits
+stumble about in the first weeks and head for grass more directly after a few
+hundred days.
 
 Depends on entry 8. See
 [0007](../decisions/0007-state-leaves-as-a-snapshot-commands-go-in.md),
