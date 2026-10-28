@@ -1,4 +1,4 @@
-# 11. Inspecting creatures
+# 13. Inspecting creatures
 
 Status: not started.
 

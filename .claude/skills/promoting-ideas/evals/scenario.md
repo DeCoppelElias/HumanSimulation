@@ -13,8 +13,8 @@ answer.
 ## Pass
 
 - It reads the idea, the decisions on death and feeding, and the roadmap, and
-  notices that the predator entry, entry 10, promised to settle whether a kill
-  leaves remains.
+  notices that the predator entry, entry 11, says a kill leaves no remains
+  until corpses arrive.
 - It grills Elias on the choices adoption forces, one per question with a
   recommendation: scope, placement on the roadmap, the open questions those
   depend on, and each accepted decision that would change. The rest of the

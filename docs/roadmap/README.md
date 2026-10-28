@@ -20,7 +20,7 @@ says what has to come before it. A dropped entry's idea goes back to
 Each entry is built on its own branch and merged into `master` when it is
 finished, per [0002](../decisions/0002-replace-the-model-layer-in-place.md), so
 `master` holds the last finished entry. The 2022 application stays on the
-`v1.0-original-2022` tag. Its inspection features wait for entry 11.
+`v1.0-original-2022` tag. Its inspection features wait for entry 13.
 
 Each entry lists the 2022 features it brings back and the regression rules it
 carries, as acceptance lines. A 2022 feature left out on purpose is in
@@ -34,7 +34,9 @@ carries, as acceptance lines. A 2022 feature left out on purpose is in
 - [7. Comparing runs](07-comparing-runs.md)
 - [8. Entity lifespan](08-entity-lifespan.md)
 - [9. Rabbit learns](09-rabbit-learns.md)
-- [10. Predator](10-predator.md)
-- [11. Inspecting creatures](11-inspecting-creatures.md)
-- [12. Looking good](12-looking-good.md)
-- [13. Hosting](13-hosting.md)
+- [10. Diet](10-diet.md)
+- [11. Predator](11-predator.md)
+- [12. Fleeing](12-fleeing.md)
+- [13. Inspecting creatures](13-inspecting-creatures.md)
+- [14. Looking good](14-looking-good.md)
+- [15. Hosting](15-hosting.md)

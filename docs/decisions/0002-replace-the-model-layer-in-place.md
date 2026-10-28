@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-03. Revised 2026-10-04.
+Accepted, 2026-09-03. Revised 2026-10-28.
 
 ## Context
 
@@ -46,6 +46,12 @@ was real. CI built only `master` and pull requests, so pushes to it went
 unbuilt, the roadmap and skills had to explain which branch to use, and it had
 already drifted from `master` before any code landed.
 
+Requiring every entry after the first two to end with something watchable was
+the rule until entry 10. It lost because the point of it is to see results
+quickly, and a strict rule would force a small piece of plumbing, such as a
+diet that changes nothing while rabbits are the only eaters, into a larger
+entry just to give it a page line.
+
 A pull request per entry was the alternative to merging locally. CI would
 build the branch on both platforms before it reached `master`. Elias works
 alone and prefers speed, so a failure on the platform not tested locally is
@@ -63,10 +69,12 @@ Build up from zero rather than porting the current model wholesale. The first
 package is thin and complete: a grid, one species, which is the rabbit, a random
 brain, a move intent, a resolver, a snapshot, and the `run` command printing
 its census. The second serves it over HTTP and the third puts it on the page.
-Capabilities are added one at a time after that, each package ending with
-something watchable. The first two are the exception, watched as data, because
-the domain and the whole web stack together would be a slice too large to
-finish in one go.
+Capabilities are added one at a time after that, as vertical slices, so the
+result of each shows quickly. Most end with something to watch on the page. An
+entry may end without a page change when it is small and the next entry makes it
+visible, and it names that entry. The first two are such entries, watched as
+data, because the domain and the whole web stack together would be a slice too
+large to finish in one go.
 
 No code survives. The 2022 version is a reference for features, and the first
 commit of roadmap entry 1 deletes it with its tests. Each 2022 feature is an

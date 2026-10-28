@@ -69,7 +69,7 @@ flag is passed again. Overrides on the spawn put the starting genome in the log.
 Roadmap entry 9 exports the genomes alive on a day, so genomes have to leave the
 domain. A query on the world that returns them only when asked costs nothing on
 the days nobody exports, and it adds a third outbound port beside the snapshot
-and the census. Roadmap entry 11 shows a selected creature's genes on the page,
+and the census. Roadmap entry 13 shows a selected creature's genes on the page,
 which reads snapshots, so the genes would reach the snapshot anyway and the
 query would be a second way to read them.
 

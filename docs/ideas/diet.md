@@ -1,6 +1,6 @@
 # Diet
 
-Status: idea.
+Status: planned, roadmap entry 10.
 
 ## What it does
 
@@ -32,5 +32,3 @@ No diet at all, which is where the rebuild starts.
 ## Open questions
 
 Whether the accepted kinds become a gene, so a diet can evolve.
-
-Whether it lands with the predator in roadmap entry 10 or before it.

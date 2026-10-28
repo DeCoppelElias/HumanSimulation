@@ -137,7 +137,7 @@ runs. There is no endpoint that stops the process. The server listens on
 `127.0.0.1` unless told otherwise.
 
 `java -jar` runs the server locally and opens the browser. Hosting it is roadmap
-entry 13, which adds sessions, ownership, clean-up of abandoned worlds and a
+entry 15, which adds sessions, ownership, clean-up of abandoned worlds and a
 deploy to Fly.io.
 
 ## Consequences

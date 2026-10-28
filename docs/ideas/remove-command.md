@@ -19,7 +19,7 @@ through.
 ## What it would touch
 
 One command type and its validation. On the page it pairs with selecting a
-creature, which arrives in roadmap entry 11, or with clicking a tile in entry 3.
+creature, which arrives in roadmap entry 13, or with clicking a tile in entry 3.
 
 ## Open questions
 
