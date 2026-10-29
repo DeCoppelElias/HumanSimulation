@@ -128,7 +128,7 @@ class WorldTest {
         world.submit(new Command.SpawnAt("eater", new GridPosition(4, 0)));
         CensusRow row = world.advance().census();
         assertThat(row.geneMeans()).containsOnlyKeys("eater", "rabbit");
-        assertThat(row.geneMeans().get("rabbit")).hasSize(7);
+        assertThat(row.geneMeans().get("rabbit")).hasSize(16);
         for (GeneSpec spec : Rabbit.species().geneLayout()) {
             double sum = 0;
             for (int id = 0; id < 3; id++) {
@@ -136,8 +136,8 @@ class WorldTest {
             }
             assertThat(row.geneMeans().get("rabbit").get(spec.key())).isCloseTo(sum / 3, within(1e-12));
         }
-        assertThat(world.entity(0).orElseThrow().genome().scalar("grassPull"))
-                .isNotEqualTo(world.entity(1).orElseThrow().genome().scalar("grassPull"));
+        assertThat(world.entity(0).orElseThrow().genome().scalar("near.Plant"))
+                .isNotEqualTo(world.entity(1).orElseThrow().genome().scalar("near.Plant"));
 
         CensusRow afterTheEaterStarves = world.advance().census();
         assertThat(afterTheEaterStarves.population()).containsEntry("eater", 0);
@@ -214,7 +214,7 @@ class WorldTest {
         for (int id = 0; id < 20; id++) {
             Genome genome = world.entity(id).orElseThrow().genome();
             assertThat(genome.scalar("viewRange")).isBetween(2.0, 4.0);
-            assertThat(genome.scalar("grassPull")).isBetween(0.8, 1.2);
+            assertThat(genome.scalar("near.Plant")).isBetween(0.8, 1.2);
             views.add(genome.scalar("viewRange"));
         }
         assertThat(views).doesNotHaveDuplicates();
@@ -337,9 +337,9 @@ class WorldTest {
     void aSpawnsGeneOverridesReplaceThoseGenesOfTheBaseline() {
         World world = new World(10, 10, 1, RABBITS);
         world.submit(new Command.SetSetting("world", "mutation", 0));
-        world.submit(new Command.Spawn("rabbit", 5, Map.of("grassPull", 0.2, "whim", 2.0)));
+        world.submit(new Command.Spawn("rabbit", 5, Map.of("near.Plant", 0.2, "whim", 2.0)));
         Map<String, Double> expected = new TreeMap<>(Rabbit.species().baseline().scalars());
-        expected.put("grassPull", 0.2);
+        expected.put("near.Plant", 0.2);
         expected.put("whim", 2.0);
         List<Genome> spawned = genomes(world, world.applyPending());
         assertThat(spawned)
@@ -350,10 +350,10 @@ class WorldTest {
     @Test
     void mutationAppliesAfterTheOverrides() {
         World world = new World(10, 10, 1, RABBITS);
-        world.submit(new Command.Spawn("rabbit", 20, Map.of("grassPull", 0.2)));
+        world.submit(new Command.Spawn("rabbit", 20, Map.of("near.Plant", 0.2)));
         List<Genome> spawned = genomes(world, world.applyPending());
         assertThat(spawned)
-                .extracting(genome -> genome.scalar("grassPull"))
+                .extracting(genome -> genome.scalar("near.Plant"))
                 .allSatisfy(value -> assertThat(value).isBetween(0.0, 0.4))
                 .anySatisfy(value -> assertThat(value).isNotEqualTo(0.2));
     }
@@ -364,9 +364,9 @@ class WorldTest {
         assertThatThrownBy(() -> world.submit(new Command.Spawn("rabbit", 3, Map.of("wings", 1.0))))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("wings");
-        assertThatThrownBy(() -> world.submit(new Command.Spawn("rabbit", 3, Map.of("grassPull", 9.0))))
+        assertThatThrownBy(() -> world.submit(new Command.Spawn("rabbit", 3, Map.of("near.Plant", 9.0))))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("grassPull");
+                .hasMessageContaining("near.Plant");
         assertThat(occupied(world.applyPending())).isEmpty();
         assertThat(world.log()).isEmpty();
     }
@@ -374,20 +374,20 @@ class WorldTest {
     @Test
     void anOverrideWithNoValueIsRefusedByName() {
         Map<String, Double> genes = new HashMap<>();
-        genes.put("grassPull", null);
+        genes.put("near.Plant", null);
         assertThatThrownBy(() -> new Command.Spawn("rabbit", 1, genes))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("grassPull");
+                .hasMessageContaining("near.Plant");
     }
 
     @Test
     void theLogCarriesTheOverrides() {
         World world = new World(10, 10, 1, RABBITS);
-        world.submit(new Command.Spawn("rabbit", 2, Map.of("grassPull", 0.2)));
+        world.submit(new Command.Spawn("rabbit", 2, Map.of("near.Plant", 0.2)));
         world.applyPending();
         assertThat(world.log())
                 .extracting(LoggedCommand::command)
-                .containsExactly(new Command.Spawn("rabbit", 2, Map.of("grassPull", 0.2)));
+                .containsExactly(new Command.Spawn("rabbit", 2, Map.of("near.Plant", 0.2)));
     }
 
     private static List<Genome> genomes(World world, WorldSnapshot snapshot) {
@@ -688,7 +688,7 @@ class WorldTest {
     void theSnapshotCarriesEachEntitysOwnGenes() {
         World world = new World(5, 5, 1, List.of(Grass.species(), Rabbit.species()));
         world.submit(new Command.SetSetting("world", "mutation", 0));
-        world.submit(new Command.Spawn("rabbit", 1, Map.of("grassPull", 0.2)));
+        world.submit(new Command.Spawn("rabbit", 1, Map.of("near.Plant", 0.2)));
         world.submit(new Command.Spawn("grass", 1));
         List<WorldSnapshot.EntityView> views = new ArrayList<>();
         world.applyPending().tiles().forEach(tile -> views.addAll(tile.entities()));
@@ -703,9 +703,9 @@ class WorldTest {
         assertThat(rabbit.genes())
                 .isEqualTo(Rabbit.species()
                         .baseline()
-                        .with(Map.of("grassPull", 0.2))
+                        .with(Map.of("near.Plant", 0.2))
                         .scalars())
-                .containsEntry("grassPull", 0.2);
+                .containsEntry("near.Plant", 0.2);
         assertThat(grass.genes()).isEmpty();
     }
 

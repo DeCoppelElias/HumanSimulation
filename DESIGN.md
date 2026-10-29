@@ -167,9 +167,8 @@ and asking the grid what stands on a tile returns its occupants in that order
 too. Any index or spatial structure added later has to preserve it. Resolving,
 where each turn ends with eating, is the step whose order is a rule rather than
 the id: it walks one order per day, speed descending with equal speeds drawn at
-random, so acting
-and eating first is a trait a creature pays for instead of an accident of when
-it spawned. Nothing loops over a collection whose order is undefined, such as a
+random, so acting and eating first is a trait a creature pays for instead of an
+accident of when it spawned. Nothing loops over a collection whose order is undefined, such as a
 hash map, so two processes given the same seed agree as well as two worlds in
 one.
 

@@ -164,14 +164,14 @@ class RunCommandTest {
     @Test
     void aGeneStartsTheSpawnFromIt() {
         Result result =
-                run("--seed", "1", "--days", "1", "--set", "world.mutation=0", "--gene", "rabbit.grassPull=0.2");
+                run("--seed", "1", "--days", "1", "--set", "world.mutation=0", "--gene", "rabbit.near.Plant=0.2");
         assertThat(result.exitCode()).isZero();
-        assertThat(result.out()).contains("\"grassPull\":0.2,");
+        assertThat(result.out()).contains("\"near.Plant\":0.2,");
     }
 
     @Test
     void aGeneForASpeciesRunDoesNotSpawnIsAUsageError() {
-        Result result = run("--seed", "1", "--days", "1", "--spawn", "grass=1", "--gene", "rabbit.grassPull=0.2");
+        Result result = run("--seed", "1", "--days", "1", "--spawn", "grass=1", "--gene", "rabbit.near.Plant=0.2");
         assertThat(result.exitCode()).isEqualTo(CommandLine.ExitCode.USAGE);
         assertThat(result.err()).contains("--gene names rabbit");
     }
@@ -186,7 +186,7 @@ class RunCommandTest {
 
     @Test
     void aMalformedGeneIsAUsageError() {
-        Result result = run("--seed", "1", "--days", "1", "--gene", "grassPull=0.2");
+        Result result = run("--seed", "1", "--days", "1", "--gene", "whim=0.2");
         assertThat(result.exitCode()).isEqualTo(CommandLine.ExitCode.USAGE);
         assertThat(result.err()).contains("--gene takes SPECIES.GENE=VALUE");
     }
@@ -327,11 +327,11 @@ class RunCommandTest {
     void filesSpawnInFlagOrderThenLineOrderAndKeepEveryDigit() throws Exception {
         Path a = folder.resolve("a.jsonl");
         Path b = folder.resolve("b.jsonl");
-        Files.writeString(a, "{\"species\":\"rabbit\",\"genes\":{\"grassPull\":0.1234567890123}}\n");
+        Files.writeString(a, "{\"species\":\"rabbit\",\"genes\":{\"near.Plant\":0.1234567890123}}\n");
         Files.writeString(
                 b,
-                "{\"species\":\"rabbit\",\"genes\":{\"grassPull\":-1.5}}\n"
-                        + "{\"species\":\"rabbit\",\"genes\":{\"grassPull\":2.5}}\n");
+                "{\"species\":\"rabbit\",\"genes\":{\"near.Plant\":-1.5}}\n"
+                        + "{\"species\":\"rabbit\",\"genes\":{\"near.Plant\":2.5}}\n");
         Path out = folder.resolve("out.jsonl");
         run(
                 "--seed",
@@ -350,9 +350,9 @@ class RunCommandTest {
                 "1");
         assertThat(Files.readAllLines(out))
                 .satisfiesExactly(
-                        line -> assertThat(line).contains("\"grassPull\":-1.5,"),
-                        line -> assertThat(line).contains("\"grassPull\":2.5,"),
-                        line -> assertThat(line).contains("\"grassPull\":0.1234567890123,"));
+                        line -> assertThat(line).contains("\"near.Plant\":-1.5,"),
+                        line -> assertThat(line).contains("\"near.Plant\":2.5,"),
+                        line -> assertThat(line).contains("\"near.Plant\":0.1234567890123,"));
     }
 
     @Test
@@ -385,7 +385,7 @@ class RunCommandTest {
         Path file = folder.resolve("one.jsonl");
         Files.writeString(file, "{\"species\":\"rabbit\"}\n");
         Result result =
-                run("--seed", "1", "--days", "1", "--spawn-from", file.toString(), "--gene", "rabbit.grassPull=0.2");
+                run("--seed", "1", "--days", "1", "--spawn-from", file.toString(), "--gene", "rabbit.near.Plant=0.2");
         assertThat(result.exitCode()).isEqualTo(CommandLine.ExitCode.USAGE);
         assertThat(result.err()).contains("--gene names rabbit, which no --spawn starts");
     }
@@ -424,10 +424,10 @@ class RunCommandTest {
     @Test
     void aHandWrittenLineSpawnsFromTheBaselineWithItsGenes() throws Exception {
         Path file = folder.resolve("hand.jsonl");
-        Files.writeString(file, "{\"species\":\"rabbit\",\"genes\":{\"grassPull\":-1.5},\"note\":\"mine\"}\n\n");
+        Files.writeString(file, "{\"species\":\"rabbit\",\"genes\":{\"near.Plant\":-1.5},\"note\":\"mine\"}\n\n");
         Result result = run("--seed", "1", "--days", "1", "--set", "world.mutation=0", "--spawn-from", file.toString());
         assertThat(result.exitCode()).isZero();
-        assertThat(result.out()).contains("\"rabbit\":1}", "\"grassPull\":-1.5,", "\"hungerDrive\":2.0,");
+        assertThat(result.out()).contains("\"rabbit\":1}", "\"near.Plant\":-1.5,", "\"hungry.near.Plant\":2.0,");
     }
 
     @Test
@@ -458,10 +458,10 @@ class RunCommandTest {
     @Test
     void aGeneOutOfBoundsInAFileIsAUsageError() throws Exception {
         Path file = folder.resolve("far.jsonl");
-        Files.writeString(file, "{\"species\":\"rabbit\",\"genes\":{\"grassPull\":9}}\n");
+        Files.writeString(file, "{\"species\":\"rabbit\",\"genes\":{\"near.Plant\":9}}\n");
         Result result = run("--seed", "1", "--days", "1", "--spawn-from", file.toString());
         assertThat(result.exitCode()).isEqualTo(CommandLine.ExitCode.USAGE);
-        assertThat(result.err()).contains("gene grassPull is 9.0, outside -5.0 to 5.0");
+        assertThat(result.err()).contains("gene near.Plant is 9.0, outside -5.0 to 5.0");
     }
 
     @Test

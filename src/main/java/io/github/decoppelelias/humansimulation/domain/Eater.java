@@ -7,12 +7,15 @@ import java.util.Set;
 
 /** The foods its carrier takes, fixed in its species recipe and shown to others, per 0016. */
 final class Eater implements Component {
-    record Takes(Set<Class<? extends Edible>> foods) {}
+    /** Sorted by simple name, so a set's order cannot reach a replay. */
+    record Takes(List<Class<? extends Edible>> foods) {}
 
-    private final Set<Class<? extends Edible>> foods;
+    private final List<Class<? extends Edible>> foods;
 
     Eater(Set<Class<? extends Edible>> foods) {
-        this.foods = Set.copyOf(foods);
+        this.foods = foods.stream()
+                .sorted(Comparator.comparing(Class::getSimpleName))
+                .toList();
     }
 
     /** The first of these parts that is a food this eater takes. */
@@ -39,12 +42,8 @@ final class Eater implements Component {
         return Optional.of(new Takes(foods));
     }
 
-    /** Sorted by name, so the order of a set cannot change a replay. */
     @Override
     public List<Feature> features() {
-        return foods.stream()
-                .map(Feature::takes)
-                .sorted(Comparator.comparing(Feature::name))
-                .toList();
+        return foods.stream().map(Feature::takes).toList();
     }
 }

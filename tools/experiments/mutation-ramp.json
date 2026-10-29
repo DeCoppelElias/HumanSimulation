@@ -3,8 +3,8 @@
   "seeds": "1-30",
   "days": 1000,
   "flags": [
-    "--gene", "rabbit.grassPull=0.2",
-    "--gene", "rabbit.hungerDrive=0.5",
+    "--gene", "rabbit.near.Plant=0.2",
+    "--gene", "rabbit.hungry.near.Plant=0.5",
     "--gene", "rabbit.whim=2",
     "--set-at", "100:world.grassPerDrop=6",
     "--set-at", "200:world.grassPerDrop=5",

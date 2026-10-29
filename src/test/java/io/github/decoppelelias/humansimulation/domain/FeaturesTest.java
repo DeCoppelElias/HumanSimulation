@@ -13,10 +13,14 @@ class FeaturesTest {
         for (Species species : List.of(Grass.species(), Rabbit.species())) {
             Spawn spawn =
                     new Spawn(species.baseline(), species, new SettingValues(species.settings()), 0, Optional.empty());
-            for (Function<Spawn, Component> part : species.parts()) {
-                assertThat(Features.ALL)
-                        .as(species.name())
-                        .containsAll(part.apply(spawn).features());
+            for (Function<Spawn, Component> recipe : species.parts()) {
+                Component part = recipe.apply(spawn);
+                assertThat(Features.ALL).as(species.name()).containsAll(part.features());
+                if (part.seenView().isEmpty()) {
+                    assertThat(part.features())
+                            .as(species.name() + " shows nothing")
+                            .isEmpty();
+                }
             }
         }
     }

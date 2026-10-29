@@ -8,7 +8,7 @@
     "founders": 20,
     "exportDays": [1000],
     "flags": [
-      "--gene", "rabbit.grassPull=1.6", "--gene", "rabbit.hungerDrive=0.5", "--gene", "rabbit.whim=2",
+      "--gene", "rabbit.near.Plant=1.6", "--gene", "rabbit.hungry.near.Plant=0.5", "--gene", "rabbit.whim=2",
       "--set", "world.grassDropInterval=1",
       "--set-at", "400:world.grassDropInterval=2", "--set-at", "800:world.grassDropInterval=3",
       "--set-at", "1200:world.grassDropInterval=5", "--set-at", "1600:world.grassDropInterval=7"

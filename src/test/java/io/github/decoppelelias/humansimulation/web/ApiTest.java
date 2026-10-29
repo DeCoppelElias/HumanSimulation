@@ -541,7 +541,7 @@ class ApiTest {
     @Test
     void aSpawnTakesGeneOverridesAndRefusesAnUnknownGene() {
         String id = newWorld();
-        assertThat(command(id, "{\"type\":\"spawn\",\"species\":\"rabbit\",\"count\":2,\"genes\":{\"grassPull\":0.2}}")
+        assertThat(command(id, "{\"type\":\"spawn\",\"species\":\"rabbit\",\"count\":2,\"genes\":{\"near.Plant\":0.2}}")
                         .status())
                 .isEqualTo(200);
         HttpTestClient.Response refused =
@@ -555,7 +555,7 @@ class ApiTest {
         String id = newWorld();
         HttpTestClient.Response response = spawn(id, 1);
         assertThat(response.json().findValues("genes")).hasSize(1);
-        assertThat(response.json().findValue("genes").has("grassPull")).isTrue();
+        assertThat(response.json().findValue("genes").has("near.Plant")).isTrue();
     }
 
     private String newWorld() {

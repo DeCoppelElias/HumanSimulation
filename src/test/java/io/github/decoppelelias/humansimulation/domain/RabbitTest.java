@@ -3,37 +3,47 @@ package io.github.decoppelelias.humansimulation.domain;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
+import java.util.TreeMap;
 import org.junit.jupiter.api.Test;
 
 class RabbitTest {
     @Test
     void declaresItsGenesWithBoundsAndMutationSizes() {
-        assertThat(Rabbit.species().geneLayout())
-                .containsExactly(
-                        new GeneSpec.Scalar("viewRange", 1, 10, 1.0),
-                        new GeneSpec.Scalar("grassPull", -5, 5, 0.2),
-                        new GeneSpec.Scalar("hungerDrive", -10, 10, 0.4),
-                        new GeneSpec.Scalar("rabbitPull", -2, 2, 0.1),
-                        new GeneSpec.Scalar("whim", 0.05, 5, 0.1),
-                        new GeneSpec.Scalar("breedPull", 0, 5, 0.2),
-                        new GeneSpec.Scalar("speed", 0, 1, 0.05));
+        List<GeneSpec> expected = new ArrayList<>();
+        expected.add(new GeneSpec.Scalar("viewRange", 1, 10, 1.0));
+        for (String feature : List.of("Plant", "Meat", "takes.Plant", "takes.Meat")) {
+            expected.add(new GeneSpec.Scalar("near." + feature, -5, 5, 0.2));
+            expected.add(new GeneSpec.Scalar("hungry.near." + feature, -10, 10, 0.4));
+            expected.add(new GeneSpec.Scalar("sum." + feature, -2, 2, 0.1));
+        }
+        expected.add(new GeneSpec.Scalar("whim", 0.05, 5, 0.1));
+        expected.add(new GeneSpec.Scalar("breedPull", 0, 5, 0.2));
+        expected.add(new GeneSpec.Scalar("speed", 0, 1, 0.05));
+        assertThat(Rabbit.species().geneLayout()).containsExactlyElementsOf(expected);
     }
 
     @Test
     void startsFromItsBaselineGenome() {
-        assertThat(Rabbit.species().baseline().scalars())
-                .containsExactly(
-                        Map.entry("breedPull", 1.0),
-                        Map.entry("grassPull", 1.0),
-                        Map.entry("hungerDrive", 2.0),
-                        Map.entry("rabbitPull", -0.2),
-                        Map.entry("speed", 0.5),
-                        Map.entry("viewRange", 3.0),
-                        Map.entry("whim", 0.5));
+        Map<String, Double> scalars = Rabbit.species().baseline().scalars();
+        assertThat(scalars)
+                .containsEntry("viewRange", 3.0)
+                .containsEntry("whim", 0.5)
+                .containsEntry("breedPull", 1.0)
+                .containsEntry("speed", 0.5)
+                .containsEntry("near.Plant", 1.0)
+                .containsEntry("hungry.near.Plant", 2.0)
+                .containsEntry("sum.Meat", -0.2);
+        Map<String, Double> rest = new TreeMap<>(scalars);
+        rest.keySet()
+                .removeAll(List.of(
+                        "viewRange", "whim", "breedPull", "speed", "near.Plant", "hungry.near.Plant", "sum.Meat"));
+        assertThat(rest)
+                .hasSize(9)
+                .allSatisfy((gene, value) -> assertThat(value).as(gene).isZero());
     }
 
     @Test
@@ -72,7 +82,7 @@ class RabbitTest {
         assertThat(rabbit.parts()).hasSize(3);
         assertThat(rabbit.parts().get(0).apply(spawn)).isInstanceOf(Metabolism.class);
         assertThat(rabbit.parts().get(1).apply(spawn).ownView()).isEqualTo(new Fertility.Since(4));
-        assertThat(rabbit.parts().get(2).apply(spawn).ownView()).isEqualTo(new Eater.Takes(Set.of(Plant.class)));
+        assertThat(rabbit.parts().get(2).apply(spawn).ownView()).isEqualTo(new Eater.Takes(List.of(Plant.class)));
     }
 
     @Test

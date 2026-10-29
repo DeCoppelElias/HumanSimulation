@@ -54,10 +54,10 @@ class CommandJsonTest {
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty(),
-                Optional.of(Map.of("grassPull", 0.2)));
+                Optional.of(Map.of("near.Plant", 0.2)));
         Command read = CommandJson.toCommand(spawn, () -> 0L);
-        assertThat(read).isEqualTo(new Command.Spawn("rabbit", 3, Map.of("grassPull", 0.2)));
-        assertThat(CommandJson.toJson(read)).containsEntry("genes", Map.of("grassPull", 0.2));
+        assertThat(read).isEqualTo(new Command.Spawn("rabbit", 3, Map.of("near.Plant", 0.2)));
+        assertThat(CommandJson.toJson(read)).containsEntry("genes", Map.of("near.Plant", 0.2));
         assertThat(CommandJson.toJson(new Command.Spawn("rabbit", 3))).doesNotContainKey("genes");
     }
 
