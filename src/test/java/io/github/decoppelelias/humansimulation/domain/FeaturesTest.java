@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 class FeaturesTest {
     @Test
     void everyFeatureASpeciesShowsIsInTheCatalog() {
-        for (Species species : List.of(Grass.species(), Rabbit.species())) {
+        for (Species species : List.of(Grass.species(), Rabbit.species(), Wolf.species())) {
             Spawn spawn =
                     new Spawn(species.baseline(), species, new SettingValues(species.settings()), 0, Optional.empty());
             for (Function<Spawn, Component> recipe : species.parts()) {

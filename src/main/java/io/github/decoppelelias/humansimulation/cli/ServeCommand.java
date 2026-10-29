@@ -3,6 +3,7 @@ package io.github.decoppelelias.humansimulation.cli;
 import io.github.decoppelelias.humansimulation.domain.FoodDrop;
 import io.github.decoppelelias.humansimulation.domain.Grass;
 import io.github.decoppelelias.humansimulation.domain.Rabbit;
+import io.github.decoppelelias.humansimulation.domain.Wolf;
 import io.github.decoppelelias.humansimulation.web.Api;
 import io.github.decoppelelias.humansimulation.web.IdleWatch;
 import io.github.decoppelelias.humansimulation.web.Worlds;
@@ -77,7 +78,10 @@ public final class ServeCommand implements Callable<Integer> {
         }
         Worlds worlds;
         try {
-            worlds = new Worlds(maxWorlds, List.of(Grass.species(), Rabbit.species()), List.of(new FoodDrop("grass")));
+            worlds = new Worlds(
+                    maxWorlds,
+                    List.of(Grass.species(), Rabbit.species(), Wolf.species()),
+                    List.of(new FoodDrop("grass")));
         } catch (IllegalArgumentException e) {
             throw new ParameterException(spec.commandLine(), e.getMessage());
         }

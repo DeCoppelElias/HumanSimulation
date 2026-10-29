@@ -94,9 +94,11 @@ class RabbitTest {
         assertThat(settings.declared().scalar("nourishment"))
                 .extracting(Setting.Scalar::min, Setting.Scalar::max)
                 .containsExactly(1.0, 100.0);
-        assertThat(rabbit.parts().get(3).apply(spawn))
+        Component meat = rabbit.parts().get(3).apply(spawn);
+        settings.set("nourishment", 20);
+        assertThat(meat)
                 .isInstanceOfSatisfying(
-                        Meat.class, meat -> assertThat(meat.amount()).isEqualTo(30));
+                        Meat.class, part -> assertThat(part.amount()).isEqualTo(20));
     }
 
     @Test

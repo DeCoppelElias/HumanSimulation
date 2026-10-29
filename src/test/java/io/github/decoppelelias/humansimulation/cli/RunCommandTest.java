@@ -35,14 +35,17 @@ class RunCommandTest {
                 .hasSize(3)
                 .satisfiesExactly(
                         line -> assertThat(line)
-                                .startsWith("{\"seed\":42,\"day\":1,\"population\":{\"grass\":0,\"rabbit\":10},"
-                                        + "\"geneMeans\":{\"rabbit\":{\"breedPull\":"),
+                                .startsWith(
+                                        "{\"seed\":42,\"day\":1,\"population\":{\"grass\":0,\"rabbit\":10,\"wolf\":0},"
+                                                + "\"geneMeans\":{\"rabbit\":{\"breedPull\":"),
                         line -> assertThat(line)
-                                .startsWith("{\"seed\":42,\"day\":2,\"population\":{\"grass\":0,\"rabbit\":10},"
-                                        + "\"geneMeans\":{\"rabbit\":{\"breedPull\":"),
+                                .startsWith(
+                                        "{\"seed\":42,\"day\":2,\"population\":{\"grass\":0,\"rabbit\":10,\"wolf\":0},"
+                                                + "\"geneMeans\":{\"rabbit\":{\"breedPull\":"),
                         line -> assertThat(line)
-                                .startsWith("{\"seed\":42,\"day\":3,\"population\":{\"grass\":0,\"rabbit\":10},"
-                                        + "\"geneMeans\":{\"rabbit\":{\"breedPull\":"));
+                                .startsWith(
+                                        "{\"seed\":42,\"day\":3,\"population\":{\"grass\":0,\"rabbit\":10,\"wolf\":0},"
+                                                + "\"geneMeans\":{\"rabbit\":{\"breedPull\":"));
     }
 
     @Test
@@ -52,9 +55,16 @@ class RunCommandTest {
     }
 
     @Test
+    void spawnsWolvesWhenAsked() {
+        assertThat(run("--seed", "1", "--days", "1", "--spawn", "rabbit=3", "--spawn", "wolf=2")
+                        .out())
+                .contains("\"wolf\":2}");
+    }
+
+    @Test
     void aSpawnReplacesTheDefaultStartingPopulation() {
         assertThat(run("--seed", "1", "--days", "1", "--spawn", "rabbit=3").out())
-                .startsWith("{\"seed\":1,\"day\":1,\"population\":{\"grass\":0,\"rabbit\":3},"
+                .startsWith("{\"seed\":1,\"day\":1,\"population\":{\"grass\":0,\"rabbit\":3,\"wolf\":0},"
                         + "\"geneMeans\":{\"rabbit\":{");
     }
 
@@ -62,13 +72,13 @@ class RunCommandTest {
     void spawnsGrassAndCountsIt() {
         assertThat(run("--seed", "1", "--days", "1", "--spawn", "grass=3").out())
                 .isEqualTo(
-                        "{\"seed\":1,\"day\":1,\"population\":{\"grass\":3,\"rabbit\":0},\"geneMeans\":{},\"deaths\":{}}\n");
+                        "{\"seed\":1,\"day\":1,\"population\":{\"grass\":3,\"rabbit\":0,\"wolf\":0},\"geneMeans\":{},\"deaths\":{}}\n");
     }
 
     @Test
     void theSeedDefaultsToTheClockAndIsPrinted() {
         assertThat(run("--days", "1").out())
-                .matches("\\{\"seed\":-?\\d+,\"day\":1,\"population\":\\{\"grass\":0,\"rabbit\":10},"
+                .matches("\\{\"seed\":-?\\d+,\"day\":1,\"population\":\\{\"grass\":0,\"rabbit\":10,\"wolf\":0},"
                         + "\"geneMeans\":\\{\"rabbit\":\\{.*}},\"deaths\":\\{.*}}\n");
     }
 
@@ -86,9 +96,9 @@ class RunCommandTest {
 
     @Test
     void anUnknownSpeciesIsAUsageError() {
-        Result result = run("--days", "1", "--spawn", "wolf=2");
+        Result result = run("--days", "1", "--spawn", "fox=2");
         assertThat(result.exitCode()).isEqualTo(CommandLine.ExitCode.USAGE);
-        assertThat(result.err()).contains("wolf");
+        assertThat(result.err()).contains("fox");
     }
 
     @Test
@@ -124,7 +134,7 @@ class RunCommandTest {
     void aSetReachesTheStartingPopulation() {
         assertThat(run("--seed", "1", "--days", "1", "--set", "rabbit.startingReserve=0")
                         .out())
-                .startsWith("{\"seed\":1,\"day\":1,\"population\":{\"grass\":0,\"rabbit\":0},");
+                .startsWith("{\"seed\":1,\"day\":1,\"population\":{\"grass\":0,\"rabbit\":0,\"wolf\":0},");
     }
 
     @Test
@@ -214,7 +224,7 @@ class RunCommandTest {
     void aSetAtZeroIsASet() {
         assertThat(run("--seed", "1", "--days", "1", "--set-at", "0:rabbit.startingReserve=0")
                         .out())
-                .startsWith("{\"seed\":1,\"day\":1,\"population\":{\"grass\":0,\"rabbit\":0},");
+                .startsWith("{\"seed\":1,\"day\":1,\"population\":{\"grass\":0,\"rabbit\":0,\"wolf\":0},");
     }
 
     @Test
@@ -308,7 +318,7 @@ class RunCommandTest {
         Files.writeString(file, "\n\n");
         assertThat(run("--seed", "1", "--days", "1", "--spawn-from", file.toString())
                         .out())
-                .contains("\"population\":{\"grass\":0,\"rabbit\":0}");
+                .contains("\"population\":{\"grass\":0,\"rabbit\":0,\"wolf\":0}");
     }
 
     @Test
@@ -357,11 +367,11 @@ class RunCommandTest {
 
     @Test
     void anUnknownSpeciesInAFileNamesTheLine() throws Exception {
-        Path file = folder.resolve("wolf.jsonl");
-        Files.writeString(file, "{\"species\":\"rabbit\"}\n{\"species\":\"wolf\"}\n");
+        Path file = folder.resolve("fox.jsonl");
+        Files.writeString(file, "{\"species\":\"rabbit\"}\n{\"species\":\"fox\"}\n");
         Result result = run("--seed", "1", "--days", "1", "--spawn-from", file.toString());
         assertThat(result.exitCode()).isEqualTo(CommandLine.ExitCode.USAGE);
-        assertThat(result.err()).contains("wolf.jsonl line 2", "wolf");
+        assertThat(result.err()).contains("fox.jsonl line 2", "fox");
     }
 
     @Test
@@ -416,7 +426,7 @@ class RunCommandTest {
                 "--export-day",
                 "1");
         assertThat(result.exitCode()).isZero();
-        assertThat(result.out()).contains("\"rabbit\":10}");
+        assertThat(result.out()).contains("\"rabbit\":10,\"wolf\":0}");
         assertThat(genesOf(Files.readAllLines(second))).isEqualTo(genesOf(Files.readAllLines(first)));
         assertThat(genesOf(Files.readAllLines(first))).doesNotHaveDuplicates();
     }
@@ -427,7 +437,8 @@ class RunCommandTest {
         Files.writeString(file, "{\"species\":\"rabbit\",\"genes\":{\"near.Plant\":-1.5},\"note\":\"mine\"}\n\n");
         Result result = run("--seed", "1", "--days", "1", "--set", "world.mutation=0", "--spawn-from", file.toString());
         assertThat(result.exitCode()).isZero();
-        assertThat(result.out()).contains("\"rabbit\":1}", "\"near.Plant\":-1.5,", "\"hungry.near.Plant\":2.0,");
+        assertThat(result.out())
+                .contains("\"rabbit\":1,\"wolf\":0}", "\"near.Plant\":-1.5,", "\"hungry.near.Plant\":2.0,");
     }
 
     @Test
@@ -436,10 +447,10 @@ class RunCommandTest {
         Files.writeString(file, "{\"species\":\"rabbit\"}\n{\"species\":\"rabbit\"}\n");
         assertThat(run("--seed", "1", "--days", "1", "--spawn-from", file.toString())
                         .out())
-                .contains("\"population\":{\"grass\":0,\"rabbit\":2}");
+                .contains("\"population\":{\"grass\":0,\"rabbit\":2,\"wolf\":0}");
         assertThat(run("--seed", "1", "--days", "1", "--spawn", "grass=3", "--spawn-from", file.toString())
                         .out())
-                .contains("\"population\":{\"grass\":3,\"rabbit\":2}");
+                .contains("\"population\":{\"grass\":3,\"rabbit\":2,\"wolf\":0}");
     }
 
     @Test

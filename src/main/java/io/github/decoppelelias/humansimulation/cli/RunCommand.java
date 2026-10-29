@@ -5,6 +5,7 @@ import io.github.decoppelelias.humansimulation.domain.DayReport;
 import io.github.decoppelelias.humansimulation.domain.FoodDrop;
 import io.github.decoppelelias.humansimulation.domain.Grass;
 import io.github.decoppelelias.humansimulation.domain.Rabbit;
+import io.github.decoppelelias.humansimulation.domain.Wolf;
 import io.github.decoppelelias.humansimulation.domain.World;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -241,7 +242,7 @@ public final class RunCommand implements Callable<Integer> {
                     world.width,
                     world.height,
                     worldSeed,
-                    List.of(Grass.species(), Rabbit.species()),
+                    List.of(Grass.species(), Rabbit.species(), Wolf.species()),
                     List.of(new FoodDrop("grass")));
             dayZero.forEach(built::submit);
             counts.forEach(
