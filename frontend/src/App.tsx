@@ -38,7 +38,9 @@ export function App({ api }: { api: Api }) {
                 />
             )}
             <footer>
-                Rabbit sprite by <a href="https://kenney.nl">Kenney</a>, CC0.
+                Rabbit sprite by <a href="https://kenney.nl">Kenney</a>, CC0. Wolf sprite from{" "}
+                <a href="https://github.com/jdecked/twemoji">Twemoji</a> by Twitter, Inc and other
+                contributors, <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>.
             </footer>
         </main>
     );

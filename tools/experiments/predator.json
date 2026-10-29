@@ -1,0 +1,13 @@
+{
+  "about": "Entry 11: wolves living on rabbits that do not flee. Expectations are in docs/roadmap/11-predator.md.",
+  "seeds": "1-30",
+  "days": 2000,
+  "flags": [
+    "--width", "40", "--height", "40",
+    "--set", "world.grassPerDrop=28", "--set", "world.grassDropInterval=3",
+    "--spawn", "rabbit=40", "--spawn", "wolf=6"
+  ],
+  "variants": {
+    "predator": []
+  }
+}

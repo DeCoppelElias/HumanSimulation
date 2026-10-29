@@ -3,9 +3,6 @@ package io.github.decoppelelias.humansimulation.cli;
 import io.github.decoppelelias.humansimulation.domain.Command;
 import io.github.decoppelelias.humansimulation.domain.DayReport;
 import io.github.decoppelelias.humansimulation.domain.FoodDrop;
-import io.github.decoppelelias.humansimulation.domain.Grass;
-import io.github.decoppelelias.humansimulation.domain.Rabbit;
-import io.github.decoppelelias.humansimulation.domain.Wolf;
 import io.github.decoppelelias.humansimulation.domain.World;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -238,12 +235,7 @@ public final class RunCommand implements Callable<Integer> {
                         : startingPopulation());
         Map<String, Map<String, Double>> genes = startingGenes(counts);
         try {
-            World built = new World(
-                    world.width,
-                    world.height,
-                    worldSeed,
-                    List.of(Grass.species(), Rabbit.species(), Wolf.species()),
-                    List.of(new FoodDrop("grass")));
+            World built = new World(world.width, world.height, worldSeed, Kinds.all(), List.of(new FoodDrop("grass")));
             dayZero.forEach(built::submit);
             counts.forEach(
                     (name, count) -> built.submit(new Command.Spawn(name, count, genes.getOrDefault(name, Map.of()))));
