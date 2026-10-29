@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-03. Revised 2026-10-28.
+Accepted, 2026-09-03. Revised 2026-10-29.
 
 ## Context
 
@@ -125,7 +125,7 @@ something that moved first.
 A move's distance is at least one, checked when it is built, per
 [0022](0022-warnings-fail-the-build-and-nothing-is-null.md). A move carries a
 direction and a distance rather than a delta, matching the tiles a brain scores
-per [0023](0023-rabbits-score-the-tiles-they-can-reach.md) and making the
+per [0023](0023-creatures-score-the-tiles-they-can-reach.md) and making the
 walked path unambiguous. `Intent` and `Option` are sealed, so a switch with no
 default branch fails to compile when a case is missing. `Brain` defaults its own key and offers no views, since a brain shows
 only in what it does, so an implementation supplies only the decision. The
@@ -173,8 +173,8 @@ mutated genome and `childReserve` as its reserve, per
 lost to the birth.
 
 There is no attack intent. A predator kills by eating: a creature whose `Eater`
-takes a food another creature carries eats it in the feed step when they share
-a tile, per [0016](0016-feeding-takes-the-tile.md). A predator always wants to
+takes a food another creature carries eats it at the end of its own turn when
+they share a tile, per [0016](0016-feeding-takes-the-tile.md). A predator always wants to
 eat, so there is nothing yet for a brain to decide. An attack intent arrives
 when something has to choose whether to kill, such as a predator that spares
 prey or prey that fights back.
@@ -189,8 +189,9 @@ Conflicts become visible, because every intent exists before any is applied.
 One intent per creature per day is the real constraint. A choice that only
 becomes available partway through a day cannot be a decision, because the
 decisions are already collected by then, so anything that wants to be chosen has
-to be visible when the day starts. So a kill in the feed step is chosen by
-neither side within the day. What each chooses is where to stand, and whether
+to be visible when the day starts. So a kill is chosen by neither side within
+the day. What each chooses is where to stand, its speed decides who moves
+first, and whether
 to kill becomes a decision only once the attack intent exists.
 
 Breeding costs a creature its move for that day, which is the tradeoff that

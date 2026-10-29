@@ -25,7 +25,7 @@ Polyworld both keep everything except selection.
 
 It matters less once evolution starts mid-range. Entry 9 made `grassPull` and
 `hungerDrive` signed, per
-[0023](../decisions/0023-rabbits-score-the-tiles-they-can-reach.md), so its
+[0023](../decisions/0023-creatures-score-the-tiles-they-can-reach.md), so its
 poor starting genome has no floor to climb off and its gate needs no shadow. A
 start near a bound, such as `whim` near its floor or a gene pinned by a later
 species, would need one again.

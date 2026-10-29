@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-27. Revised 2026-10-28.
+Accepted, 2026-09-27. Revised 2026-10-29.
 
 ## Context
 
@@ -32,6 +32,20 @@ property is free, a typo is a silent miss at runtime, and every tag needs some
 component to be responsible for it. Components already say what a thing is, so a
 brain can ask for them directly.
 
+A brain that names the component classes it reacts to was the first reading
+side. Each fact it cared about was an `if` on a class and a gene written for it,
+so a new visible component, such as something burning, reached no creature
+until someone edited every brain and every species to introduce it. That is
+the opposite of a wolf avoiding fire nobody introduced to wolves. A component
+saying which features it shows, and the brain summing a gene per feature,
+moves that work to the component that is added. The genes those features need
+could be created the first time a creature sees one, which gives two creatures
+of one species different gene lists and breaks the fixed layout in
+[0006](0006-genomes-are-a-named-layout-of-gene-shapes.md). They could come from
+the species the world knows, which makes a rabbit's genome depend on whether
+wolves exist and stops a rabbit-only run's exports from matching one with
+wolves. A catalog of every feature is neither.
+
 Whether a creature sees its own state matters to
 [0004](0004-creatures-return-intents.md), since a brain that cannot read its own
 reserve can only breed on a schedule, which is a system's job.
@@ -42,7 +56,8 @@ starving, which no animal can know.
 
 ## Decision
 
-One type, filled by a per-species builder. A brain reads components by class.
+One type, filled by a per-species builder. A brain reads the features other
+entities show, and its own components by class.
 
 ```java
 public record Perception(SelfView self, List<TileView> tiles, Metric metric) {
@@ -67,12 +82,25 @@ one exception, per [0004](0004-creatures-return-intents.md).
 // on Component
 Record ownView();
 Optional<Record> seenView();   // empty: invisible to others
+List<Feature> features();      // what others in range see it as; empty when the seen view is
 ```
 
+A feature is a named fact a component shows, such as carrying `Plant` or taking
+`Meat`. Every feature is a constant in one catalog, `Features.ALL`, so a
+component returns `Features.MEAT` and a misspelt feature does not compile. The
+features are presence flags, `Plant`, `Meat`, `takes.Plant` and `takes.Meat`,
+and the catalog lists them in that order. A test builds each species and fails
+when a component shows a feature the catalog lacks. `Parts` gains
+`features()`, the features of every component in its seen view. A brain that
+reads features names no component class, so a new component reaches every
+brain through the catalog, per
+[0023](0023-creatures-score-the-tiles-they-can-reach.md).
+
 `Metabolism` shows its reserve to its carrier and nothing to others, so a
-neighbour cannot tell it is there. `Plant` shows its amount to everyone, and
-`Eater` shows nothing. A
-burning component shows its heat to everyone. A brain asks
+neighbour cannot tell it is there. `Plant` and `Meat` show their amount to
+everyone and the feature of their own name, and `Eater` shows the foods it takes
+and one `takes` feature per food. A burning component would show its heat to
+everyone. A brain asks
 `entity.parts().has(Plant.class)` or
 `self.parts().view(Metabolism.Own.class)`, and a misspelt class does not
 compile.
@@ -128,9 +156,17 @@ is weak, would arrive as a new `Sense` with access to the own views of others,
 so that knowledge can become a trait under selection rather than a fixed fact of
 the world.
 
-A fixed-rules brain names the component classes it reacts to. A network brain
-needs a generic encoding of whatever components it meets, which is part of the
-open input question in
+A new visible component costs its features in the catalog, one line each, and
+every species with the scoring brain gains their pull genes at 0, so nothing
+reacts until selection moves them. An exported genome missing those genes still
+loads, since a spawn fills a missing gene from the baseline.
+
+Same species is not a component, so it is not a feature, and a creature cannot
+tell its own kind from another showing the same features.
+`docs/ideas/kin-recognition.md` keeps that.
+
+The features are one row of flags per visible entity, which is a candidate
+input for the network brain in
 [0018](0018-brain-computation-model-and-warm-starting.md).
 
 No absolute position means a brain cannot navigate to a fixed point on the map,

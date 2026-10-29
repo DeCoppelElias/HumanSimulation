@@ -21,7 +21,7 @@ the export reads. Saving a library, versioning layouts and loading genomes on
 the page wait.
 
 `grassPull` and `hungerDrive` become signed, -5 to 5 and -10 to 10, per
-[0023](../decisions/0023-rabbits-score-the-tiles-they-can-reach.md), so a
+[0023](../decisions/0023-creatures-score-the-tiles-they-can-reach.md), so a
 poor starting genome sits mid-range and mutation alone moves it up or down
 equally often.
 
@@ -95,6 +95,6 @@ Depends on entry 8. See
 [0012](../decisions/0012-tests-target-brains-without-a-world.md),
 [0018](../decisions/0018-brain-computation-model-and-warm-starting.md),
 [0021](../decisions/0021-agents-drive-worlds-over-http-and-run.md),
-[0023](../decisions/0023-rabbits-score-the-tiles-they-can-reach.md),
+[0023](../decisions/0023-creatures-score-the-tiles-they-can-reach.md),
 `docs/ideas/ancestor-competition.md`, `docs/ideas/brain-library.md`,
 `docs/ideas/mutation-shadow.md`.

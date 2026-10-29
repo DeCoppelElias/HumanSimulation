@@ -44,4 +44,4 @@ direction is used, and means a brain cannot hardcode north.
 
 A gene holding a distribution over directions would have its length tied to the
 shape of the grid. A brain scores the directions the grid offers instead, per
-[0023](0023-rabbits-score-the-tiles-they-can-reach.md), so nothing needs one.
+[0023](0023-creatures-score-the-tiles-they-can-reach.md), so nothing needs one.

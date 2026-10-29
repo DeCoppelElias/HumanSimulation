@@ -18,7 +18,7 @@ reserve is at least `childReserve + breedingLoss + parentMargin`. The parent
 pays `childReserve + breedingLoss`, and the child spawns on its tile with a
 mutated genome and `childReserve`. The scoring brain scores breeding as idling
 plus a `breedPull` gene, per
-[0023](../decisions/0023-rabbits-score-the-tiles-they-can-reach.md).
+[0023](../decisions/0023-creatures-score-the-tiles-they-can-reach.md).
 
 `GeneSpec` gains scalar mutation: a uniform offset within plus or minus the
 mutation size, clamped to the bounds, drawn from the world's generator one gene
@@ -97,4 +97,4 @@ Depends on entry 5. See
 [0018](../decisions/0018-brain-computation-model-and-warm-starting.md),
 [0020](../decisions/0020-the-interface-is-a-web-page.md),
 [0021](../decisions/0021-agents-drive-worlds-over-http-and-run.md),
-[0023](../decisions/0023-rabbits-score-the-tiles-they-can-reach.md).
+[0023](../decisions/0023-creatures-score-the-tiles-they-can-reach.md).

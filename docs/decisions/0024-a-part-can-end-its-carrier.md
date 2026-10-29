@@ -58,7 +58,7 @@ interface Component {
 }
 ```
 
-The day's fourth step, Tick, walks every entity in id order and ticks each of
+The day's third step, Tick, walks every entity in id order and ticks each of
 its parts. The first part to return a cause ends its carrier, which is removed
 at once, per [0005](0005-a-day-is-one-method.md), and its later parts are not
 ticked.

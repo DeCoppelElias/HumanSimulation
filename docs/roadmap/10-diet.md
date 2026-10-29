@@ -8,7 +8,7 @@ the wolf in entry 11 arrives already ignoring grass, per
 interface, grass carries a `Plant` component that implements it, and a rabbit
 carries `Eater` taking `Plant`, fixed in its species recipe. `Eater` shows
 nothing to others. The scoring brain counts a tile as food when something there
-carries `Plant`, which entry 11 replaces with a pull per visible fact.
+carries `Plant`, which entry 11 replaces with a pull per feature.
 
 `Meat`, a rabbit carrying it, and an `Eater` that takes it wait for the wolf in
 entry 11, since nothing would eat meat before then.

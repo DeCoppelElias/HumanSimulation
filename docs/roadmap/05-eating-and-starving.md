@@ -42,7 +42,7 @@ each on a tile drawn uniformly from the whole grid, wherever it lands.
 All of these step by 1.
 
 Rabbit gets the scoring brain of
-[0023](../decisions/0023-rabbits-score-the-tiles-they-can-reach.md), with its
+[0023](../decisions/0023-creatures-score-the-tiles-they-can-reach.md), with its
 genes as plain values in the baseline genome until entry 6. `RandomBrain`, the
 `steps` gene and `GeneSpec.Simplex` are deleted, per
 [0006](../decisions/0006-genomes-are-a-named-layout-of-gene-shapes.md).
@@ -84,4 +84,4 @@ Depends on entry 3. See
 [0016](../decisions/0016-feeding-takes-the-tile.md),
 [0017](../decisions/0017-every-number-is-a-setting-or-a-gene.md),
 [0018](../decisions/0018-brain-computation-model-and-warm-starting.md),
-[0023](../decisions/0023-rabbits-score-the-tiles-they-can-reach.md).
+[0023](../decisions/0023-creatures-score-the-tiles-they-can-reach.md).

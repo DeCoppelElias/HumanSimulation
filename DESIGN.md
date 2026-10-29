@@ -184,11 +184,14 @@ described by its seed and its command log.
 A brain turns a perception and its options into an intent. A perception is what
 one creature can see from where it stands: the tiles within its view range by
 straight-line distance, what stands on each, and the components of its own and
-of those things. A brain asks for components by class, so it checks for a
-plant rather than for a string that says so. Each component declares
+of those things. Each component declares
 what its carrier sees of it and what others in range see, which may be nothing,
 so a creature can read its own reserve while its neighbours cannot, and what one
-creature can know about another is a deliberate choice. Positions in it are
+creature can know about another is a deliberate choice. What others see
+includes the features a component shows, such as carrying plant food or eating
+meat. Every feature is listed in one catalog, so a brain reads features rather
+than naming components, and a new component reaches every brain without
+editing one. Positions in it are
 relative to the creature, and a tile off the grid is simply absent, which is how
 an edge is perceived. A perception also carries the grid's distance, so a brain
 asks how far apart two offsets are and never measures for itself. An intent is
@@ -244,9 +247,9 @@ fuel from what it burns, stays one rule that every fire obeys.
 One intent per creature per day is the constraint that shapes the rest. A choice
 that only becomes available partway through a day cannot be a decision at all,
 because the decisions are already collected by then. Anything that wants to be
-chosen has to be visible when the day starts. A predator eating its prey in the
-feed step is chosen by neither side within the day, and becomes an attack
-intent once one side has a choice to make.
+chosen has to be visible when the day starts. A predator eating its prey is
+chosen by neither side within the day, and becomes an attack intent once one
+side has a choice to make.
 
 ### The day
 
@@ -262,19 +265,20 @@ A day runs these steps in order:
    component records, while its reserve
    covers the child's reserve, the loss and the margin the parent must keep. It
    spends the first two and spawns a child at the parent's position carrying a
-   mutated copy of the parent's genome and the child's reserve. A child is not
-   on the day's list, so it first acts and feeds the next day.
-3. Feed. In the same order, a creature takes every food on its tile that its
-   eater part names, crediting its metabolism. Food can be another creature,
-   which is how a predator kills. What is taken is gone, so whoever comes later
-   finds nothing.
-4. Tick. Every entity's components update themselves, in id order. Reserves
+   mutated copy of the parent's genome and the child's reserve. At the end of
+   its turn, whatever it chose, a creature takes every food on its tile that
+   its eater part names, crediting its metabolism. Food can be another
+   creature, which is how a predator kills, so a predator whose turn comes
+   first catches prey before it leaves. What is taken is gone, so whoever comes
+   later finds nothing. A child is not on the day's list, so it first acts and
+   feeds the next day.
+3. Tick. Every entity's components update themselves, in id order. Reserves
    are charged on the eating interval, one charge covering eating and the speed
    and view range the creature carries, and lifespans count their days. Anything a
    component ends dies. A reserve counts days: by default a creature pays one a
    day for eating.
-5. World processes, in list order: spawning new food, regrowth, fire.
-6. Clean up. One census row is produced.
+4. World processes, in list order: spawning new food, regrowth, fire.
+5. Clean up. One census row is produced.
 
 A day is one method on the world, and the steps are calls in it. The intents
 and the day's order pass between them as local variables, so an entity holds
@@ -381,7 +385,11 @@ The rabbit is the first species, and a wolf tests it. The wolf is a species
 value whose eater part takes meat, which rabbits carry, and nothing else
 changes, because the world has never needed to know what a rabbit is. What the
 species value does not give you is the brain: a wolf that hunts has to
-condition on where prey is. The brain weighs what it sees, each visible fact
-with a signed pull of its own, so a wolf drawn to meat and a rabbit that learns
-to keep away from meat eaters run on the same brain with different genes. The
-data is free and the brain is the work.
+condition on where prey is. The brain weighs every feature it sees with signed
+pulls of its own, on the nearest one and on all of them together, so a wolf
+drawn to meat and a rabbit that learns to keep away from meat eaters run on the
+same brain with different genes. The data is free and the brain is the work.
+
+Eating at the end of each creature's turn is the one change the wolf forced on
+the shape of a day, since a predator has to catch prey before it leaves, and
+the decision entry for the day records it as the flaw this claim asks for.

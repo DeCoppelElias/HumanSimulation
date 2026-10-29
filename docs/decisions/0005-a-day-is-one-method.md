@@ -2,12 +2,12 @@
 
 ## Status
 
-Accepted, 2026-09-03. Revised 2026-10-26.
+Accepted, 2026-09-03. Revised 2026-10-29.
 
 ## Context
 
 The steps of a day hand data to each other. Decide produces one intent per
-creature, and resolve and feed both need those intents and the day's order from
+creature, and resolve needs those intents and the day's order from
 [0014](0014-resolve-order-comes-from-a-speed-gene.md). Where that data lives
 between steps is part of how a day is sequenced.
 
@@ -34,6 +34,21 @@ line you can point at. An event bus makes a day a cascade to trace, and the
 guarantee that nothing is applied until every brain has decided cannot be
 stated in a pure bus without re-imposing phases on top of it.
 
+Feeding was first a step of its own after resolve, in the same order. A
+predator kills by eating, per [0016](0016-feeding-takes-the-tile.md), so under
+that order a wolf caught only a rabbit still on its tile once every move was
+done: one that idled or bred. A rabbit with grass in view rarely does either,
+and one with nothing in view idles about one day in thirteen. At 60 rabbits on
+a 40 by 40 grid a wolf's twelve reachable tiles hold a rabbit on about 45% of
+days, so that is roughly one kill a month, and the wolf's speed changes nothing,
+since a rabbit that walks away is gone whichever of them moved first. Eating
+everything a creature walks over catches a rabbit standing on the wolf's line,
+and also feeds a rabbit every grass it crosses, which changes every species'
+food. Deciding each creature on its turn against the live world lets a slow wolf
+see where a rabbit went, but needs eating on arrival as well, since a fast wolf
+would otherwise walk to a rabbit that then walks away, and it changes rabbits
+too: a slow one sees grass a fast one already ate.
+
 Taking the census and the snapshot before advancing the counter was the first
 order. The first completed day then reported day 0, the number shown was the
 day about to run, and a snapshot taken while paused would disagree with the
@@ -51,7 +66,6 @@ DayReport advance() {
     List<Decision> decisions = decide();
     List<Decision> order = speedOrder(decisions);
     resolve(order);
-    feed(order);
     tick();
     for (WorldProcess p : processes) p.run(this);
     day++;
@@ -70,16 +84,15 @@ Commands drain first, per
 2. Resolve. Apply each decision in the day's order, under the legality rules in
    [0004](0004-creatures-return-intents.md). Movement walks a tile at a time.
    Breeding checks the window and the reserve, spends the cost and spawns a
-   child carrying a mutated genome and `childReserve`.
-3. Feed. In the same order, each creature takes every food on its tile that it
-   eats, per
-   [0016](0016-feeding-takes-the-tile.md).
-4. Tick. Every entity's parts update themselves in id order, per
+   child carrying a mutated genome and `childReserve`. Whatever it chose, the
+   creature then takes every food on the tile it ended on that it eats, per
+   [0016](0016-feeding-takes-the-tile.md), before the next creature's turn.
+3. Tick. Every entity's parts update themselves in id order, per
    [0024](0024-a-part-can-end-its-carrier.md). Metabolism charges the eating
    cost plus the costs of speed and view range on the eating interval, and a
    lifespan counts down. Anything a part ends dies.
-5. World processes, in list order: spawning food, regrowth, fire.
-6. Take one census row, and return it with the snapshot.
+4. World processes, in list order: spawning food, regrowth, fire.
+5. Take one census row, and return it with the snapshot.
 
 The day counter counts days completed, so it rises before the census and the
 snapshot are taken and both carry the number of the day just run. A new world
@@ -104,12 +117,23 @@ The order of a day is read top to bottom in one method.
 A new system that wants the day's intents takes them as an argument, which is
 one edit in the method you are already editing to add it.
 
-The order is itself a coupling. Breeding before feeding means a creature cannot
+Eating on its own turn is what makes speed the chase. A wolf whose turn comes
+before a rabbit's lands on the rabbit's tile and eats it before it leaves, and a
+slower one finds the tile empty. Grass never moves, so for a creature that only
+eats grass, eating on its turn gives what a later pass in the same order would.
+A rabbit that walks onto a wolf's tile after the wolf's turn survives the day,
+and is eaten on the wolf's next turn if neither moves.
+
+This is the first change to the shape of a day, which `DESIGN.md` counts as a
+flaw in the design: a separate feed step could not time a kill to the
+predator's turn, and a capability needed it.
+
+The order is itself a coupling. Breeding before eating means a creature cannot
 eat and then afford a child on the same day, and that rule lives in the sequence
 rather than anywhere a reader would look for it. Changing the order changes
 behaviour with no compiler help.
 
-A creature that starves in step four is already gone in step five, so nothing in
+A creature that starves in step three is already gone in step four, so nothing in
 the world processes can see or burn it.
 
 Every day is a full pass over every step, with no notion of a quiet region that

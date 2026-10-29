@@ -112,7 +112,7 @@ than adding to it. Each line is a census row with the seed added, since a
 comparison gathers many seeds' lines together and a line should stand on its
 own:
 
-    {"seed":42,"day":1,"population":{"grass":0,"rabbit":10},"geneMeans":{"rabbit":{"breedPull":1.01,"grassPull":1.03,...}}}
+    {"seed":42,"day":1,"population":{"grass":0,"rabbit":10},"geneMeans":{"rabbit":{"breedPull":1.01,"hungry.near.Plant":2.02,...}}}
 
 A species with no members, or no genes, has no entry under `geneMeans`.
 
@@ -162,7 +162,7 @@ snapshot, per [0007](0007-state-leaves-as-a-snapshot-commands-go-in.md). A day
 outside 1 to `--days`, or a FILE that cannot be written, is a usage error
 before the first day runs. The file is JSON Lines, one creature per line:
 
-    {"seed":7,"day":1000,"species":"rabbit","id":42,"genes":{"breedPull":1.2,"grassPull":1.4,...}}
+    {"seed":7,"day":1000,"species":"rabbit","id":42,"genes":{"breedPull":1.2,"hungry.near.Plant":2.4,...}}
 
 `--spawn-from FILE`, repeatable, spawns one creature per line, each a `Spawn`
 of one with that line's genes, after any `--spawn` counts, in the order of the

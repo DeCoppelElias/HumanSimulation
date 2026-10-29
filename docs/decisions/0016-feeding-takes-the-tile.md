@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-27. Revised 2026-10-28.
+Accepted, 2026-09-27. Revised 2026-10-29.
 
 ## Context
 
@@ -36,6 +36,17 @@ interactions the world runs, with eating as one row, is
 `docs/ideas/component-interactions.md`, left out while eating is the only
 interaction there is.
 
+`Eater` showed nothing to others while nothing needed to know a diet. A rabbit
+that should learn to keep away from wolves has to see something a wolf shows,
+and a component that names a wolf as a threat, or a rule that marks whatever
+eats what a rabbit carries as dangerous, would tell it the answer. Showing what
+an eater takes leaves the reaction to its pull genes, per
+[0023](0023-creatures-score-the-tiles-they-can-reach.md).
+
+Feeding was first a step of its own after every move had resolved, which let a
+wolf catch only a rabbit that stayed put, per
+[0005](0005-a-day-is-one-method.md).
+
 A predator could kill through an attack intent, per
 [0004](0004-creatures-return-intents.md), and then eat. A wolf always wants to
 eat, so for now there is nothing for a brain to decide, and killing goes
@@ -43,22 +54,28 @@ through feeding until something has to choose whether to kill.
 
 ## Decision
 
-The feed step walks the day's order from
-[0014](0014-resolve-order-comes-from-a-speed-gene.md), the same order the
-resolve step used.
+A creature eats at the end of its own turn in the resolve step, whatever it
+chose, so feeding walks the day's order from
+[0014](0014-resolve-order-comes-from-a-speed-gene.md), per
+[0005](0005-a-day-is-one-method.md).
 
 `Edible` is an interface, the amount a food is worth and what others see of
 it. Each kind of food is a component of its own that implements it, with its
-own key: `Plant`, which grass carries, and `Meat`, which a rabbit carries once
-a predator exists. An `Eater` component holds the food classes its carrier
-takes, fixed in the species recipe rather than a setting or a gene. A rabbit
-takes `Plant`, and a wolf takes `Meat`. `Eater` shows nothing to others.
+own key: `Plant`, which grass carries, and `Meat`, which a rabbit carries. Each
+shows its amount to others, and its feature, per
+[0013](0013-perception-is-one-type.md). What a food is worth is a setting of the
+species that carries it: grass's `nourishment` is 15 and the rabbit's is 30. An
+`Eater` component holds the food classes its carrier takes, fixed in the
+species recipe rather than a setting or a gene. A rabbit takes `Plant`, and a
+wolf takes `Meat`. `Eater` shows others what it takes, as one feature per food,
+such as `takes.Meat`.
 
 A creature with an `Eater` and a `Metabolism` takes every occupant of its tile
 that carries a food class in its set. The value is credited to its metabolism
 and the occupant is removed as eaten, so a creature later in the order finds
 nothing there. Food can be a creature: a wolf on a rabbit's tile eats the
-rabbit, and a rabbit eaten before its turn in the order does not feed. There is
+rabbit, and a rabbit eaten before its turn in the order neither moves nor
+feeds. There is
 no contest, no aggression gene, and no splitting. Which food is taken first
 does not matter, since all of it is.
 
@@ -71,18 +88,25 @@ day.
 
 Every behaviour that differs between individuals is decided by a brain.
 
-Speed matters twice, in acting and in eating, and the second one is where it
-mostly earns its cost.
+Speed decides who reaches food first, and for prey whether it is still there
+when a predator arrives. A wolf whose turn comes before a rabbit's eats it on
+the rabbit's own tile, and one whose turn comes after finds the tile empty, so
+a wolf and a rabbit race on the same gene and both pay for it.
 
 The 2022 regression rule that a food fight leaves exactly one winner has nothing
 left to guard, per [0012](0012-tests-target-brains-without-a-world.md). The
 contest is written down in `docs/ideas/aggression-at-contested-food.md` so
 nobody restores it thinking it went missing.
 
+A rabbit sees what a wolf takes and a wolf sees what a rabbit carries, so what
+each does about the other is a pull gene that selection moves, and nothing in
+the world says a wolf is dangerous.
+
 A newborn missing its first feed costs nothing. It is born on its parent's tile,
 and the parent has already taken every food there that it eats.
 
-Predation is decided only by where each creature chooses to stand. A rabbit
+Predation is decided only by where each creature chooses to stand and by who
+moves first. A rabbit
 cannot fight back and a wolf cannot spare a rabbit it stands beside. When either
 is wanted, the attack intent in 0004 comes back.
 

@@ -19,8 +19,9 @@ costs, and what the concrete type shapes are.
   on.
 - [0004](0004-creatures-return-intents.md) Creatures return one intent a day and
   the world resolves it. The resolver owns legality, and the dead leave at once.
-- [0005](0005-a-day-is-one-method.md) A day is one method in six
-  steps, passing intents as local data, with world processes as a list.
+- [0005](0005-a-day-is-one-method.md) A day is one method in five
+  steps, passing intents as local data, with world processes as a list. A
+  creature eats at the end of its own turn.
 - [0006](0006-genomes-are-a-named-layout-of-gene-shapes.md) Genomes are a named
   layout of gene shapes, bounded scalars today, and a child's reserve comes
   from its parent.
@@ -40,16 +41,16 @@ costs, and what the concrete type shapes are.
   target brains without a world, and a headless runner watches for lost
   selection.
 - [0013](0013-perception-is-one-type.md) Perception is one type, the builder is
-  the seam, brains read components by class, and each component declares what
-  others see of it.
+  the seam, and each component declares what others see of it and the features
+  it shows, which a catalog lists.
 - [0014](0014-resolve-order-comes-from-a-speed-gene.md) Resolve order comes from
   a speed gene, with equal speeds drawn at random, and speed and view range
   are charged against the reserve.
 - [0015](0015-geometry-lives-in-the-grid.md) Geometry lives in the grid: four
   directions for now, and the shape stays changeable.
 - [0016](0016-feeding-takes-the-tile.md) Feeding takes the tile, and there is no
-  contest: an eater takes the food its diet names, and a predator kills by
-  eating.
+  contest: an eater takes the food its diet names on its own turn, others see
+  the diet, and a predator kills by eating.
 - [0017](0017-every-number-is-a-setting-or-a-gene.md) Every number is a setting
   or a gene, and a setting is declared with a default.
 - [0018](0018-brain-computation-model-and-warm-starting.md) A fixed-rules brain
@@ -66,9 +67,9 @@ costs, and what the concrete type shapes are.
 - [0022](0022-warnings-fail-the-build-and-nothing-is-null.md) Warnings fail
   the build and nothing is null: Java 25, lint as errors, values that validate
   themselves, picocli, and formatting without a ratchet.
-- [0023](0023-rabbits-score-the-tiles-they-can-reach.md) A rabbit scores
-  every tile it can reach by its pull toward grass and other rabbits, and picks
-  one by softmax.
+- [0023](0023-creatures-score-the-tiles-they-can-reach.md) Every creature scores
+  every tile it can reach by a pull per feature it sees, nearest and summed, and
+  picks one by softmax.
 - [0024](0024-a-part-can-end-its-carrier.md) Every part updates itself once a
   day and may end its carrier with a cause, which the census counts; grass has
   a lifespan and withers.

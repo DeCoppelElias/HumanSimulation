@@ -18,7 +18,7 @@ and an omnivore carries two.
 
 ## What it would touch
 
-The feed step, which becomes the first runner of the list, and
+Feeding, which becomes the first runner of the list, and
 [0005](../decisions/0005-a-day-is-one-method.md), since what happens when two
 things meet would live in a table rather than in the day method. Order becomes
 data: which entity acts first, which row runs first when two match, and whether

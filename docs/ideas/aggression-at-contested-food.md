@@ -18,7 +18,7 @@ early runs select on finding food and nothing else.
 
 ## What it would touch
 
-The feed step, which currently has no contest at all. A gene in the rabbit
+Feeding, which currently has no contest at all. A gene in the rabbit
 species layout. Nothing else, since it needs no new component and no new intent.
 
 ## Open questions
@@ -26,8 +26,8 @@ species layout. Nothing else, since it needs no new component and no new intent.
 Whether it belongs anywhere, since
 [0016](../decisions/0016-feeding-takes-the-tile.md) settles feeding without it.
 
-Whether it is still wanted once violence exists. A predator kills by eating in
-the feed step, per [0016](../decisions/0016-feeding-takes-the-tile.md), and an
+Whether it is still wanted once violence exists. A predator kills by eating on
+its turn, per [0016](../decisions/0016-feeding-takes-the-tile.md), and an
 attack intent, a home where a creature chooses violence, comes only when one
 side has a choice to make. Keeping both means two combat systems, one decided
 and one automatic.

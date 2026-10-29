@@ -2,49 +2,75 @@
 
 Status: not started.
 
-A second species that eats rabbits. Rabbits carry `Meat`, and a wolf carries an
-`Eater` that takes it, so a wolf on a rabbit's tile eats it in the feed step,
-per [0016](../decisions/0016-feeding-takes-the-tile.md). There is no attack
-intent, per [0004](../decisions/0004-creatures-return-intents.md). A kill
-leaves no remains. `docs/ideas/corpses-and-scavenging.md` holds what remains
-would add. Rabbits do not flee yet, which is entry 12, so this entry shows
-whether a wolf can hunt at all.
+A second species that eats rabbits. Rabbits carry `Meat`, worth the rabbit's
+`nourishment` setting of 30 where grass is worth 15, and a wolf carries an
+`Eater` that takes it. There is no attack intent, per
+[0004](../decisions/0004-creatures-return-intents.md). A kill leaves no
+remains, and `docs/ideas/corpses-and-scavenging.md` holds what remains would
+add. Rabbits do not flee yet, which is entry 12, so this entry shows whether a
+wolf can hunt at all.
 
-The scoring brain becomes one sum over what a creature sees. Each visible fact
-about an entity, such as being the same species, carrying `Plant` or `Meat`, or
-taking `Plant` or `Meat`, has a signed pull gene of its own, weighted by how
-close the fact would be from the tile an option ends on. A fact may also come in
-a hunger-weighted version with its own gene. The brain never reads its own
-diet: a rabbit's baseline pulls toward `Plant` and a wolf's toward `Meat`, and
-selection keeps or changes that. `Eater` opens its seen view so a diet is a
-visible fact. `grassPull` and `rabbitPull` give way to the new names, and the
-rabbit's baseline is retuned and entry 9's gate rerun, per
-[0023](../decisions/0023-rabbits-score-the-tiles-they-can-reach.md).
+A creature eats at the end of its own turn in the resolve step, and the feed
+step goes, per [0005](../decisions/0005-a-day-is-one-method.md) and
+[0016](../decisions/0016-feeding-takes-the-tile.md). A wolf whose turn comes
+before a rabbit's lands on its tile and eats it before it leaves, so speed is
+the chase.
 
-Details to settle in this entry's grill:
+The scoring brain becomes a sum over features, per
+[0013](../decisions/0013-perception-is-one-type.md) and
+[0023](../decisions/0023-creatures-score-the-tiles-they-can-reach.md). Each
+component lists the features it shows, the catalog holds `Plant`, `Meat`,
+`takes.Plant` and `takes.Meat`, and `Meat` and `Eater` open their seen views.
+Every species with the brain carries `near.X`, `hungry.near.X` and `sum.X` for
+each feature, twelve pull genes that replace `grassPull`, `hungerDrive` and
+`rabbitPull`. The rabbit's baselines give its old scores. The wolf is a copy of
+the rabbit except for its `Eater`, its pull baselines and its sprite, with
+speed 0 to 1 at 0.5 and a stride of 3 like the rabbit's, so the race starts
+even.
 
-- the distance shape. 0023 chose distance to the nearest grass for food and
-  summed closeness for other rabbits on purpose: summed closeness to grass
-  drifts toward distant grass and can prefer the empty middle between two
-  patches, and nearest distance for avoidance pushes a rabbit to the edge of
-  its vision. One shape for every fact, or a shape per fact, is open;
-- which facts are in the starting set, and which get a hunger-weighted version;
-- whether a wolf can catch anything. Every creature decides before anyone
-  moves, and a move is a direction and a distance, so a wolf walks toward where
-  a rabbit was. The ways out are deciding on each creature's turn, which
-  [0005](../decisions/0005-a-day-is-one-method.md) names as a change to one
-  method, or living with it, since a wolf only has to end its day on a
-  rabbit's tile;
-- the acceptance lines: wolves that sustain themselves on rabbits over a seed
-  range without wiping them out.
+`run` and `serve` know the wolf, and their default worlds stay rabbit-only, so
+`tools/experiments/watchable.json` and entries 7 and 8 keep their meaning. The
+wolf's sprite is a wolf, free to use, credited in
+`frontend/public/sprites/LICENSE.txt` as its licence asks.
 
-On the page: a wolf with its own sprite that ignores grass and walks toward
-rabbits it can see, and a rabbit that disappears when a wolf reaches its tile.
+Acceptance:
+
+- a wolf whose turn comes before a rabbit's on its tile eats it, and one whose
+  turn comes after finds the tile empty;
+- the brain is pulled by a feature it sees, tested with a perception and no
+  world, and at the rabbit's baselines scores the tiles of a fixed perception
+  as the old brain did;
+- a test fails when a component shows a feature the catalog lacks;
+- entry 9's gate, its preset renamed to the new genes with every value and mark
+  kept, passes on seeds 1 to 30. A failure gets 5 runs of tuning under entry
+  9's rules, then Elias gets the log and the report with `--per-seed`, and
+  nothing merges until he decides;
+- `tools/experiments/predator.json` runs a 40×40 world with 28 grass every 3
+  days, 40 rabbits and 6 wolves, mutation on, for 2000 days on seeds 1 to 30.
+  Both species are alive on day 2000 in at least 24 seeds, and the median wolf
+  population over the run is at least 5.
+
+Where the wolves' `speed` and `near.Meat` and the rabbits' `speed` drift is
+reported with no mark, and Elias reads it before the entry is done.
+
+Tuning the predator preset changes only the wolf's settings, the rabbit's
+`nourishment`, the starting counts and the world's food, never the marks, the
+brain or the bounds. The budget is 15 runs, each logged with the symptom it
+addressed. If it runs out without a pass, Elias gets the log, the last report
+with `--per-seed` and a proposal, and nothing merges until he decides.
+
+On the page: a world built over the API, 25×25 with grass at the predator
+preset's density, 25 rabbits and 2 wolves, opened at `?world=ID`. A wolf with
+its own sprite ignores grass and walks toward rabbits it can see, and a rabbit
+disappears when a wolf reaches its tile. Nobody expects that world to stay
+balanced.
 
 Depends on entry 10. See
 [0004](../decisions/0004-creatures-return-intents.md),
 [0005](../decisions/0005-a-day-is-one-method.md),
 [0013](../decisions/0013-perception-is-one-type.md),
+[0014](../decisions/0014-resolve-order-comes-from-a-speed-gene.md),
 [0016](../decisions/0016-feeding-takes-the-tile.md),
-[0023](../decisions/0023-rabbits-score-the-tiles-they-can-reach.md),
-`docs/ideas/corpses-and-scavenging.md`, `docs/ideas/network-brain.md`.
+[0023](../decisions/0023-creatures-score-the-tiles-they-can-reach.md),
+`docs/ideas/corpses-and-scavenging.md`, `docs/ideas/kin-recognition.md`,
+`docs/ideas/network-brain.md`.

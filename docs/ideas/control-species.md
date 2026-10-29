@@ -5,8 +5,8 @@ Status: idea.
 ## What it does
 
 Runs a species that never learns beside the rabbits. It uses the scoring brain
-of [0023](../decisions/0023-rabbits-score-the-tiles-they-can-reach.md) with
-`grassPull`, `hungerDrive` and `rabbitPull` fixed at zero and every gene's
+of [0023](../decisions/0023-creatures-score-the-tiles-they-can-reach.md) with
+every pull gene fixed at zero and every gene's
 mutation size at zero, so it picks among its moves evenly and stays that way
 across generations.
 

@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-03. Revised 2026-10-28.
+Accepted, 2026-09-03. Revised 2026-10-29.
 
 ## Context
 
@@ -40,7 +40,7 @@ Every behaviour on the brain side of the test is decided by a brain. Breeding is
 an intent, per [0004](0004-creatures-return-intents.md). There is no automatic
 fight at contested food, per [0016](0016-feeding-takes-the-tile.md), since that
 contest would not exist until every intent had been collected and so could
-never be decided. A predator eating its prey in the feed step is a system's
+never be decided. A predator eating its prey on its turn is a system's
 rule, the same for every predator, and it differs from no individual's choice
 while every predator would choose to eat. Once one might not, killing becomes
 an intent.

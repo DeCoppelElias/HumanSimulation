@@ -12,7 +12,7 @@ adding a trait means editing signatures.
 
 A second shape, a normalised distribution whose own length mutates, was built
 for the step amount, a distribution over step distances of one to three. It was
-removed when [0023](0023-rabbits-score-the-tiles-they-can-reach.md) made distance
+removed when [0023](0023-creatures-score-the-tiles-they-can-reach.md) made distance
 a choice the brain scores rather than a roll, which left no gene needing a
 distribution. It mutated by shifting weight between two entries and occasionally
 growing or shrinking by one, then renormalising. It comes back when a gene needs

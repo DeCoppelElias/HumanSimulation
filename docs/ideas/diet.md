@@ -4,7 +4,7 @@ Status: built, [0016](../decisions/0016-feeding-takes-the-tile.md).
 
 ## What it does
 
-Lets a creature say which edibles it accepts, so the feed step stops taking
+Lets a creature say which edibles it accepts, so feeding stops taking
 every edible on the tile. Until then every eater eats everything edible, per
 [0016](../decisions/0016-feeding-takes-the-tile.md).
 
@@ -16,7 +16,7 @@ introduced: a new plant gets eaten by every herbivore without anyone listing it.
 
 ## What it would touch
 
-`Edible` and `Metabolism`, and the feed step's filter. Three shapes were
+`Edible` and `Metabolism`, and the filter in feeding. Three shapes were
 considered.
 
 A diet lists the species a creature eats. It is the simplest, and every new

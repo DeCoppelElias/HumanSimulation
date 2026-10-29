@@ -3,8 +3,8 @@
 Status: not started.
 
 Rabbits learn to keep away from wolves. Nothing names a wolf as a threat: a
-rabbit sees that something takes `Meat`, through the pull per visible fact from
-entry 11, and its gene for that fact evolves. Its baseline starts somewhat
+rabbit sees that something takes `Meat`, through its `takes.Meat` pull genes
+from entry 11, and those genes evolve. Their baselines start somewhat
 negative, since an animal keeps a little away from what is not its kind, and
 selection refines it or finds something else. This is the first test of
 capabilities meeting without having been introduced.
@@ -21,5 +21,5 @@ On the page: rabbits keeping away from a wolf they can see.
 
 Depends on entry 11. See
 [0013](../decisions/0013-perception-is-one-type.md),
-[0023](../decisions/0023-rabbits-score-the-tiles-they-can-reach.md),
+[0023](../decisions/0023-creatures-score-the-tiles-they-can-reach.md),
 `docs/ideas/ancestor-competition.md`.

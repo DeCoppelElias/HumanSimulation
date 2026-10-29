@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-27. Revised 2026-10-15.
+Accepted, 2026-09-27. Revised 2026-10-29.
 
 ## Context
 
@@ -44,8 +44,8 @@ The draw is reproducible because the id ordering feeds it. Take the entities
 holding an intent in ascending id order, shuffle with the world's generator,
 then stable sort by speed descending.
 
-One order is computed per day and both the resolve step and the feed step use
-it, per [0016](0016-feeding-takes-the-tile.md). Every other system iterates in
+One order is computed per day, and the resolve step uses it for moving and for
+eating at the end of each turn, per [0016](0016-feeding-takes-the-tile.md). Every other system iterates in
 ascending id order.
 
 Speed is charged for by the metabolism, in proportion to the gene, so it
@@ -55,7 +55,7 @@ since only the ranking matters and the charge sets the scale.
 
 View range has the same defect, since seeing farther never hurts a brain that
 walks to the nearest grass, per
-[0023](0023-rabbits-score-the-tiles-they-can-reach.md). It is charged the same
+[0023](0023-creatures-score-the-tiles-they-can-reach.md). It is charged the same
 way, per tile of range, by a species setting. It is charged on the rounded
 range, the tiles actually seen, so a fraction that buys nothing costs nothing.
 Both charges fold into the eating charge, so each charge on the eating interval

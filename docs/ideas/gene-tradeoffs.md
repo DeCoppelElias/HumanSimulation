@@ -11,7 +11,7 @@ cost precision, or make a creature overshoot.
 
 It is also how gait could evolve again. 2022 evolved how far a creature walks,
 as a distribution over one to three tiles. Since
-[0023](../decisions/0023-rabbits-score-the-tiles-they-can-reach.md) a rabbit
+[0023](../decisions/0023-creatures-score-the-tiles-they-can-reach.md) a rabbit
 chooses its distance up to a reach that is a setting, the same for every rabbit.
 As a gene, reach would pin to its bound unless something prices it.
 

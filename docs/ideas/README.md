@@ -27,7 +27,7 @@ that settled it.
 - [Comparison statistics](comparison-statistics.md) an effect size and a
   test in `compare.py`, over more seeds.
 - [Component interactions](component-interactions.md) a list of what happens
-  when two components meet, which the world runs instead of a feed step.
+  when two components meet, which the world runs instead of feeding.
 - [Control species](control-species.md) a species that never learns, run
   beside the rabbits to show what selection adds.
 - [Corpses and scavenging](corpses-and-scavenging.md) death leaves something
@@ -56,6 +56,8 @@ that settled it.
   days, the way food does.
 - [Javadoc on the domain](javadoc-on-the-domain.md) short Javadoc on public
   domain types and decision numbers in comments.
+- [Kin recognition](kin-recognition.md) a creature telling its own species
+  from others that show the same features.
 - [Measuring test quality](measuring-test-quality.md) coverage reports, a
   coverage threshold, or mutation testing.
 - [Lifespan](lifespan.md) a part that ends its carrier after some days, so

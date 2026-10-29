@@ -1,8 +1,8 @@
-# 0023. Rabbits score the tiles they can reach
+# 0023. Creatures score the tiles they can reach
 
 ## Status
 
-Accepted, 2026-10-12. Revised 2026-10-28.
+Accepted, 2026-10-12. Revised 2026-10-29.
 
 ## Context
 
@@ -65,30 +65,63 @@ its floor climbs by mutation alone, because a step down is cut at the bound and
 a step up never is, so a rise could not be told from learning. A floor also
 leaves the worst strategy, walking away from food, out of reach of selection.
 
+The brain first named what it scored: `grassPull` and `hungerDrive` on the
+nearest grass, and `rabbitPull` on summed closeness to other rabbits, with a
+term and a gene of its own to come for each new species. A predator made that a
+term per pair of species, and [0013](0013-perception-is-one-type.md) says why
+the brain now sums over features instead.
+
+A sum over features has to measure every feature the same way, since it cannot
+know which one is food. Summed closeness for everything weakens food-seeking at
+range: with grass 6 tiles away, moving 3 toward it scores `1/4 - 1/7`, about 0.11,
+better, about 1.2 times likelier than staying at a `whim` of 0.5, where the
+nearest distance scores it 3 better and makes it about 400 times likelier.
+Nearest distance for everything loses counts, so five neighbours weigh what one
+does, and avoiding the nearest pushes a creature to the edge of its view.
+Choosing a shape per feature in the catalog would tell the brain what a feature
+means. Both shapes for every feature let selection weigh each, and they contain
+the brain that came before, so its baselines carry over unchanged.
+
+A hunger version of every pull doubles the summed genes for uses nothing has
+yet, such as hunger changing how much a creature minds a crowd. One hunger gene
+scaling every pull makes a starving rabbit avoid crowds harder too, and tangles
+eating only when hungry with everything else. Hunger on the nearest pulls is
+where walking to or away from something is decided.
+
 ## Decision
 
-Each day a rabbit scores every tile it could land on and picks one.
+Each day a creature with the scoring brain scores every tile it could land on
+and picks one. Every species uses the same brain, and its genes are what
+differ.
 
 The candidates are the options it is offered, per
 [0004](0004-creatures-return-intents.md): idling, each of the grid's directions
 at each distance from one up to `stride`, a species setting with a default of 3,
 and breeding when it is legal. A move is scored at the tile it lands on, so a
-rabbit chooses how far to walk.
+creature chooses how far to walk.
+
+The score sums over the features other entities in view show, per
+[0013](0013-perception-is-one-type.md), and names no component. Each feature
+`X` in the catalog has three pulls: `near.X` on the distance to the nearest
+entity showing it, `hungry.near.X` added to that pull in proportion to hunger,
+and `sum.X` on summed closeness to every entity showing it.
 
 ```
-weight = grassPull + hungerDrive / (1 + daysLeft)
-score  = -weight * (distance from the tile it ends on to the nearest visible grass)
-       + rabbitPull * sum over visible rabbits of 1 / (1 + distance from the tile it ends on)
+urgency = 1 / (1 + daysLeft)
+score   = sum over features X with something in view showing X of
+            -(near.X + hungry.near.X * urgency) * (distance from the tile it ends on to the nearest one)
+            + sum.X * sum over them of 1 / (1 + distance from the tile it ends on)
 ```
 
-Idling is scored at the rabbit's own tile. Breeding keeps it there too, and
+Idling is scored at the creature's own tile. Breeding keeps it there too, and
 scores as idling plus `breedPull`, so breeding competes with walking toward food
-and with staying, and a rabbit far from grass usually walks instead.
+and with staying, and a creature far from food usually walks instead.
 
 `daysLeft` comes from the own view of `Metabolism`, computed from the reserve and
-the live eating charge and interval. A term with nothing of its kind in view is
-zero for every candidate. Rabbits means entities of the perceiver's own species,
-read from `EntityView.species`. A second species gets a term of its own.
+the live eating charge and interval. A feature with nothing in view showing it
+adds zero for every candidate. The brain reads only other entities, so it never
+reads its own diet: a rabbit's baselines pull it toward `Plant` and a wolf's
+toward `Meat`, and selection keeps or changes that.
 
 The pick is a softmax: each candidate's chance is proportional to
 `exp(score / whim)`, with scores shifted by their maximum first. One draw from
@@ -96,23 +129,43 @@ the world's generator picks among the candidates in the order they are offered,
 idling first, then the grid's directions in order, each at distances one up to
 `stride`, then breeding.
 
-| Gene | Bounds | Baseline | Mutation size |
-|---|---|---|---|
-| `viewRange` | 1 to 10 | 3 | 1.0 |
-| `grassPull` | -5 to 5 | 1 | 0.2 |
-| `hungerDrive` | -10 to 10 | 2 | 0.4 |
-| `rabbitPull` | -2 to 2 | -0.2 | 0.1 |
-| `whim` | 0.05 to 5 | 0.5 | 0.1 |
-| `breedPull` | 0 to 5 | 1 | 0.2 |
+Every species with the scoring brain carries one pull gene of each shape for
+every feature in the catalog, in catalog order, with these bounds:
+
+| Gene | Bounds | Mutation size |
+|---|---|---|
+| `near.X` | -5 to 5 | 0.2 |
+| `hungry.near.X` | -10 to 10 | 0.4 |
+| `sum.X` | -2 to 2 | 0.1 |
+
+A pull gene is 0 unless its species gives a baseline. The other genes and the
+baselines:
+
+| Gene | Bounds | Mutation size | Rabbit | Wolf |
+|---|---|---|---|---|
+| `viewRange` | 1 to 10 | 1.0 | 3 | 3 |
+| `whim` | 0.05 to 5 | 0.1 | 0.5 | 0.5 |
+| `breedPull` | 0 to 5 | 0.2 | 1 | 1 |
+| `near.Plant` | | | 1 | 0 |
+| `hungry.near.Plant` | | | 2 | 0 |
+| `sum.Meat` | | | -0.2 | 0 |
+| `near.Meat` | | | 0 | 1 |
+| `hungry.near.Meat` | | | 0 | 2 |
+| `sum.takes.Meat` | | | 0 | -0.2 |
+
+The rabbit's baselines give the scores of the brain it had before features, so
+it starts each run behaving as it did. The wolf's are the rabbit's aimed at
+rabbits and at other wolves, so a wolf differs from a rabbit only where it is a
+predator.
 
 ## Consequences
 
 Behaviour comes from weights rather than cases. Whether rabbits spread out or
-herd is where `rabbitPull` drifts, and a fed rabbit wanders more than a starving
+herd is where `sum.Meat` drifts, and a fed rabbit wanders more than a starving
 one because hunger raises the weight that `whim` divides, with no rule saying so.
 
-The grass term is measured in tiles, so `whim` reads in tiles too. At a grass
-weight of 1 and a `whim` of 1, a tile one step worse is e⁻¹ as likely as the
+The nearest terms are measured in tiles, so `whim` reads in tiles too. At a
+`near.Plant` of 1 and a `whim` of 1, a tile one step worse is e⁻¹ as likely as the
 best.
 
 With nothing in view every score ties, and the rabbit picks uniformly among its
@@ -121,7 +174,7 @@ candidates, which is how it wanders.
 Every gene is a continuous nudge with a gradual effect, which is what 0018
 wants from a gene under selection.
 
-The pulls are signed, as `rabbitPull` always was. A negative grass weight
+The pulls are signed. A negative `near.Plant`
 rewards tiles far from grass, so a rabbit that drifts there walks away from food
 and starves, with no case in the score for it. A starting value near the middle
 of a gene's bounds moves up or down by mutation equally often, so a gate can
@@ -132,8 +185,11 @@ and `whim` changes nothing when it is not. That is a finding rather than a
 fault, and if watching shows rabbits need to explore, the answer is memory or
 patchy food rather than a cost on `whim`.
 
-`hungerDrive` has little to select on until breeding gives a reserve a use in
-entry 6.
+Another rabbit shows `Meat` and `takes.Plant` together, so a rabbit's
+`sum.Meat` and `sum.takes.Plant` act only as their sum. The two can drift apart
+with no change in behaviour, and the sum mutates by about 0.14 a generation
+where one gene alone would by 0.1. A gene report shows both moving where one
+thing is learned.
 
 At the baseline `whim` of 0.5, a `breedPull` of 1 makes breeding about seven
 times likelier than idling, and about as attractive as one tile closer to
@@ -144,11 +200,13 @@ the world does, per [0004](0004-creatures-return-intents.md).
 A rabbit between two equal patches can alternate between them, since nothing
 remembers a target. `docs/ideas/brain-memory.md` is the fix when it matters.
 
-While food lands uniformly, `rabbitPull` can only select on competition, so it
+While food lands uniformly, `sum.Meat` can only select on competition, so it
 can only push rabbits apart. `docs/ideas/patchy-food.md` gives herding a payoff.
 
-A predator adds a term and a gene, such as a pull toward wolves, rather than a
-new strategy.
+A new species meets the others through the features they show, rather than
+through a new strategy. A rabbit's reaction to wolves is its `takes.Meat` genes,
+which start at 0 until roadmap entry 12 gives them a baseline, and a wolf whose
+`near.Plant` rises waits at grass where rabbits arrive, which nothing wrote.
 
 The score is a weighted sum of features followed by a softmax, which is a network
 with one layer, so the network brain in 0018 can start from these exact weights

@@ -37,7 +37,7 @@ A first grouping, to be settled when the idea is promoted:
 - brains and perception:
   [0013](../decisions/0013-perception-is-one-type.md),
   [0018](../decisions/0018-brain-computation-model-and-warm-starting.md),
-  [0023](../decisions/0023-rabbits-score-the-tiles-they-can-reach.md);
+  [0023](../decisions/0023-creatures-score-the-tiles-they-can-reach.md);
 - genes and settings:
   [0006](../decisions/0006-genomes-are-a-named-layout-of-gene-shapes.md),
   [0017](../decisions/0017-every-number-is-a-setting-or-a-gene.md);
