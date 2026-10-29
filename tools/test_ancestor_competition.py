@@ -137,6 +137,15 @@ class TextTest(unittest.TestCase):
         self.assertNotIn("pass", text.lower())
         self.assertNotIn("fail", text.lower())
 
+    def test_the_gene_column_fits_the_longest_name(self):
+        long = "hungry.near.takes.Plant"
+        results = {1: tested(0.8, 30, 20, {long: 0.5, "whim": 1.0}, {long: 0.9, "whim": 1.0})}
+        text = ac.format_text(ac.report(results, {long: 0.2, "whim": 2.0}, [500, 1000]), 1.0, per_seed=False)
+        rows = text.split("evolved genes against the original genome")[1].splitlines()[1:4]
+        self.assertEqual(len({row.index("original") + len("original") for row in rows[:1]}
+                             | {row.index("0.20") + 4 for row in rows if long in row}
+                             | {row.index("2.00") + 4 for row in rows if "whim" in row}), 1)
+
 
 class TestFlagsTest(unittest.TestCase):
     def test_spawns_only_from_its_files_with_mutation_off_and_exports_its_last_day(self):

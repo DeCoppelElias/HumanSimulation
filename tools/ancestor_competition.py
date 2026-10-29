@@ -162,6 +162,7 @@ def _number(value):
 
 def format_text(one, seconds, per_seed):
     shared, alone, days, tested = one["shared"], one["alone"], one["exportDays"], one["tested"]
+    width = max([12] + [len(gene) for gene in one["genes"]])
     out = [
         f"ancestor competition: {one['seeds']} seeds, {tested} tested, sample seed {one['sampleSeed']}",
         f"  {one['diedOut']} died out while evolving, {one['tooFew']} had too few survivors to sample",
@@ -182,11 +183,11 @@ def format_text(one, seconds, per_seed):
         f"  evolved sustains fewer in      {alone['fewer']} of {tested}",
         "",
         "evolved genes against the original genome, mean of each seed's survivors",
-        "  gene          original  " + "  ".join(f"day {day} median" for day in days) + f"  up on day {days[-1]}",
+        f"  {'gene':<{width}}  original  " + "  ".join(f"day {day} median" for day in days) + f"  up on day {days[-1]}",
     ]
     for gene, row in one["genes"].items():
         medians = "  ".join(f"{_number(row['medians'][day]):>{len(f'day {day} median')}}" for day in days)
-        out.append(f"  {gene:<12}  {_number(row['original']):>8}  {medians}  {row['up']} of {row['of']}")
+        out.append(f"  {gene:<{width}}  {_number(row['original']):>8}  {medians}  {row['up']} of {row['of']}")
     if per_seed:
         out += ["", "per seed: evolved share in one world, rabbits sustained alone by evolved / original"]
         for seed, result in one["perSeed"].items():
