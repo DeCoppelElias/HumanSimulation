@@ -79,10 +79,24 @@ class RabbitTest {
         Spawn spawn = new Spawn(rabbit.baseline(), rabbit, new SettingValues(rabbit.settings()), 4, Optional.empty());
         assertThat(rabbit.brain())
                 .hasValueSatisfying(factory -> assertThat(factory.apply(spawn)).isInstanceOf(ScoringBrain.class));
-        assertThat(rabbit.parts()).hasSize(3);
+        assertThat(rabbit.parts()).hasSize(4);
         assertThat(rabbit.parts().get(0).apply(spawn)).isInstanceOf(Metabolism.class);
         assertThat(rabbit.parts().get(1).apply(spawn).ownView()).isEqualTo(new Fertility.Since(4));
         assertThat(rabbit.parts().get(2).apply(spawn).ownView()).isEqualTo(new Eater.Takes(List.of(Plant.class)));
+    }
+
+    @Test
+    void carriesMeatWorthItsNourishment() {
+        Species rabbit = Rabbit.species();
+        SettingValues settings = new SettingValues(rabbit.settings());
+        Spawn spawn = new Spawn(rabbit.baseline(), rabbit, settings, 0, Optional.empty());
+        assertThat(settings.number("nourishment")).isEqualTo(30);
+        assertThat(settings.declared().scalar("nourishment"))
+                .extracting(Setting.Scalar::min, Setting.Scalar::max)
+                .containsExactly(1.0, 100.0);
+        assertThat(rabbit.parts().get(3).apply(spawn))
+                .isInstanceOfSatisfying(
+                        Meat.class, meat -> assertThat(meat.amount()).isEqualTo(30));
     }
 
     @Test
