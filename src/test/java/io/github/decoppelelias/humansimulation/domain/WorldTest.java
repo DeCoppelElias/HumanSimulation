@@ -816,10 +816,44 @@ class WorldTest {
         world.submit(new Command.SpawnAt("eater", new GridPosition(1, 1)));
         world.submit(new Command.SpawnAt("food", new GridPosition(1, 1)));
         world.applyPending();
-        world.feed(List.of(new Decision(1, new Intent.Idle()), new Decision(0, new Intent.Idle())));
+        world.resolve(List.of(new Decision(1, new Intent.Idle()), new Decision(0, new Intent.Idle())));
         assertThat(world.advance().snapshot().tiles().get(4).entities())
                 .extracting(WorldSnapshot.EntityView::id)
                 .containsExactly(1);
+    }
+
+    @Test
+    void aHunterWhoseTurnComesFirstCatchesPreyBeforeItLeaves() {
+        Intent east = new Intent.Move(TestSpecies.EAST, 1);
+        World world = new World(4, 1, 1, List.of(TestSpecies.hunter(east), TestSpecies.prey(east)));
+        world.submit(new Command.SpawnAt("hunter", new GridPosition(0, 0)));
+        world.submit(new Command.SpawnAt("prey", new GridPosition(1, 0)));
+        world.applyPending();
+        world.resolve(List.of(new Decision(0, east), new Decision(1, east)));
+        assertThat(world.entity(1)).isEmpty();
+        assertThat(world.entity(0)
+                        .orElseThrow()
+                        .part(Metabolism.class)
+                        .orElseThrow()
+                        .reserve())
+                .isEqualTo(5);
+    }
+
+    @Test
+    void aHunterWhoseTurnComesAfterFindsThePreyGone() {
+        Intent east = new Intent.Move(TestSpecies.EAST, 1);
+        World world = new World(4, 1, 1, List.of(TestSpecies.hunter(east), TestSpecies.prey(east)));
+        world.submit(new Command.SpawnAt("hunter", new GridPosition(0, 0)));
+        world.submit(new Command.SpawnAt("prey", new GridPosition(1, 0)));
+        world.applyPending();
+        world.resolve(List.of(new Decision(1, east), new Decision(0, east)));
+        assertThat(world.entity(1).orElseThrow().position()).isEqualTo(new GridPosition(2, 0));
+        assertThat(world.entity(0)
+                        .orElseThrow()
+                        .part(Metabolism.class)
+                        .orElseThrow()
+                        .reserve())
+                .isEqualTo(0);
     }
 
     @Test
@@ -848,7 +882,7 @@ class WorldTest {
         world.submit(new Command.SpawnAt("grazer", new GridPosition(1, 1)));
         world.submit(new Command.SpawnAt("food", new GridPosition(1, 1)));
         world.applyPending();
-        world.feed(List.of(new Decision(0, new Intent.Idle()), new Decision(1, new Intent.Idle())));
+        world.resolve(List.of(new Decision(0, new Intent.Idle()), new Decision(1, new Intent.Idle())));
         assertThat(world.advance().census().population())
                 .containsEntry("picky", 0)
                 .containsEntry("grazer", 1)

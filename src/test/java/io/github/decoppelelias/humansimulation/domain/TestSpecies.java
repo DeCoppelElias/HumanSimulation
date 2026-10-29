@@ -104,6 +104,31 @@ final class TestSpecies {
         }
     }
 
+    /** A species named "prey", a bone worth five, whose brain always returns one intent. */
+    static Species prey(Intent intent) {
+        return mover("prey", intent, List.of(spawn -> new Bone()), Settings.NONE);
+    }
+
+    /** A species named "hunter" that takes bones, starts with nothing, and always returns one intent. */
+    static Species hunter(Intent intent) {
+        return mover(
+                "hunter", intent, List.of(Metabolism::of, spawn -> new Eater(Set.of(Bone.class))), metabolism(1, 0));
+    }
+
+    private static Species mover(
+            String name, Intent intent, List<Function<Spawn, Component>> parts, Settings settings) {
+        List<GeneSpec> layout = List.of(new GeneSpec.Scalar("viewRange", 1, 10, 1.0));
+        Brain brain = (perception, options, random) -> intent;
+        return new Species(
+                name,
+                name,
+                layout,
+                new Genome(layout, Map.of("viewRange", 1.0)),
+                settings,
+                Optional.of(spawn -> brain),
+                parts);
+    }
+
     /** A species named "bone", a bone worth five, with no brain. */
     static Species bone() {
         return new Species(

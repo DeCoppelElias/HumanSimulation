@@ -78,7 +78,6 @@ public final class World {
         drain();
         List<Decision> order = dayOrder(decide(), this::speedOf, random);
         resolve(order);
-        feed(order);
         tick();
         runProcesses();
         day++;
@@ -160,7 +159,8 @@ public final class World {
         return genome.declares(SPEED) ? OptionalDouble.of(genome.scalar(SPEED)) : OptionalDouble.empty();
     }
 
-    private void resolve(List<Decision> order) {
+    /** Applies each decision in the day's order. A creature eats its tile as its own turn ends, per 0005. */
+    void resolve(List<Decision> order) {
         for (Decision decision : order) {
             Entity entity = entities.get(decision.entityId());
             if (entity == null) {
@@ -177,29 +177,24 @@ public final class World {
                                     Optional.of(reserve)));
                 case Intent.Idle _ -> {}
             }
+            eat(entity);
         }
     }
 
-    /** Walks the day's order, per 0016: a creature takes every food on its tile that its eater names. */
-    void feed(List<Decision> order) {
-        for (Decision decision : order) {
-            Entity creature = entities.get(decision.entityId());
-            if (creature == null) {
-                continue;
-            }
-            Optional<Metabolism> metabolism = creature.part(Metabolism.class);
-            Optional<Eater> eater = creature.part(Eater.class);
-            if (metabolism.isEmpty() || eater.isEmpty()) {
-                continue;
-            }
-            for (int id : grid.occupants(creature.position())) {
-                Entity other = entities.get(id);
-                if (id != creature.id() && other != null) {
-                    eater.get().foodIn(other.parts()).ifPresent(food -> {
-                        metabolism.get().credit(food.amount());
-                        remove(id, EATEN);
-                    });
-                }
+    /** Per 0016: a creature takes every food on its tile that its eater names. */
+    private void eat(Entity creature) {
+        Optional<Metabolism> metabolism = creature.part(Metabolism.class);
+        Optional<Eater> eater = creature.part(Eater.class);
+        if (metabolism.isEmpty() || eater.isEmpty()) {
+            return;
+        }
+        for (int id : grid.occupants(creature.position())) {
+            Entity other = entities.get(id);
+            if (id != creature.id() && other != null) {
+                eater.get().foodIn(other.parts()).ifPresent(food -> {
+                    metabolism.get().credit(food.amount());
+                    remove(id, EATEN);
+                });
             }
         }
     }
