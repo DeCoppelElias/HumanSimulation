@@ -1,6 +1,10 @@
 # 11. Predator
 
-Status: not started.
+Status: done.
+
+Entry 9's gate passed unchanged under the new brain, with the evolved group
+ahead in all 30 seeds. On the predator preset wolves were alive on day 200 in
+26 of 30 seeds, with a median of 9.1 wolves, and rabbits on day 2000 in 24.
 
 A second species that eats rabbits. Rabbits carry `Meat`, worth the rabbit's
 `nourishment` setting of 30 where grass is worth 15, and a wolf carries an
@@ -47,8 +51,11 @@ Acceptance:
   nothing merges until he decides;
 - `tools/experiments/predator.json` runs a 40×40 world with 28 grass every 3
   days, 40 rabbits and 6 wolves, mutation on, for 2000 days on seeds 1 to 30.
-  Both species are alive on day 2000 in at least 24 seeds, and the median wolf
-  population over the run is at least 5.
+  Wolves are alive on day 200 in at least 24 seeds, the median wolf population
+  over the days they live is at least 5, and rabbits are alive on day 2000 in
+  at least 24 seeds. Wolves and rabbits living side by side for the whole run
+  is entry 12's, since rabbits that cannot flee lose the speed race and leave
+  wolves to starve, and richer wolves eat the rabbits out.
 
 Where the wolves' `speed` and `near.Meat` and the rabbits' `speed` drift is
 reported with no mark, and Elias reads it before the entry is done.

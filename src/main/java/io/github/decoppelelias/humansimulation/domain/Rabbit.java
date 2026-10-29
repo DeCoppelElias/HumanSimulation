@@ -15,8 +15,8 @@ public final class Rabbit {
                         ScoringBrain.hungryNear(Features.PLANT), 2.0,
                         ScoringBrain.sum(Features.MEAT), -0.2),
                 Set.of(Plant.class),
-                List.of(spawn -> new Meat(() -> spawn.settings().number(Grass.NOURISHMENT))),
+                List.of(spawn -> new Meat(() -> spawn.settings().number(Edible.NOURISHMENT))),
                 List.of(new Setting.Scalar(
-                        Grass.NOURISHMENT, "Reserve an eater gains from one rabbit.", 1, 100, 1, 30)));
+                        Edible.NOURISHMENT, "Reserve an eater gains from one rabbit.", 1, 100, 1, 30)));
     }
 }

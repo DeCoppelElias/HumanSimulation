@@ -12,13 +12,13 @@ spec = importlib.util.spec_from_file_location(
 ac = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(ac)
 
-ORIGINAL = {"grassPull": 0.2, "whim": 2.0}
+ORIGINAL = {"near.Plant": 0.2, "whim": 2.0}
 
 PRESET = {
     "seeds": "1-30",
     "species": "rabbit",
     "world": ["--width", "40", "--height", "40", "--set", "world.grassPerDrop=28"],
-    "evolve": {"days": 1000, "founders": 20, "exportDays": [500], "flags": ["--gene", "rabbit.grassPull=0.2"]},
+    "evolve": {"days": 1000, "founders": 20, "exportDays": [500], "flags": ["--gene", "rabbit.near.Plant=0.2"]},
     "sample": 10,
     "test": {"days": 500, "seedOffset": 1000},
 }
@@ -29,7 +29,7 @@ def genome(id_, genes, day=1000):
 
 
 def evolved(n):
-    return {"grassPull": 1.0 + n / 100, "whim": 1.0}
+    return {"near.Plant": 1.0 + n / 100, "whim": 1.0}
 
 
 class EvolveFlagsTest(unittest.TestCase):
@@ -37,7 +37,7 @@ class EvolveFlagsTest(unittest.TestCase):
         flags = ac.evolve_flags(PRESET, Path("out.jsonl"))
         self.assertLess(flags.index("world.mutation=0"), flags.index("1:world.mutation=1"))
         self.assertIn("rabbit=20", flags)
-        self.assertLess(flags.index("world.grassPerDrop=28"), flags.index("rabbit.grassPull=0.2"))
+        self.assertLess(flags.index("world.grassPerDrop=28"), flags.index("rabbit.near.Plant=0.2"))
 
     def test_exports_day_one_each_export_day_and_the_last(self):
         flags = ac.evolve_flags(PRESET, Path("out.jsonl"))
@@ -51,7 +51,7 @@ class OriginalGenomeTest(unittest.TestCase):
 
     def test_founders_that_differ_are_refused(self):
         with self.assertRaisesRegex(ValueError, "mutated"):
-            ac.original_genome([genome(1, ORIGINAL, 1), genome(2, {"grassPull": 0.3, "whim": 2.0}, 1)])
+            ac.original_genome([genome(1, ORIGINAL, 1), genome(2, {"near.Plant": 0.3, "whim": 2.0}, 1)])
 
 
 class SampleTest(unittest.TestCase):
@@ -87,7 +87,7 @@ class ShareTest(unittest.TestCase):
 
     def test_a_rabbit_in_neither_group_is_refused(self):
         with self.assertRaisesRegex(ValueError, "neither group"):
-            ac.evolved_share([genome(5, {"grassPull": 3.0, "whim": 1.0}, 500)], self.SAMPLE, ORIGINAL)
+            ac.evolved_share([genome(5, {"near.Plant": 3.0, "whim": 1.0}, 500)], self.SAMPLE, ORIGINAL)
 
     def test_no_survivors_has_no_share(self):
         self.assertIsNone(ac.evolved_share([], self.SAMPLE, ORIGINAL)["share"])
@@ -98,7 +98,7 @@ def tested(share, evolved_alone, original_alone, genes_500=None, genes_1000=None
         "status": "tested",
         "shared": {"evolved": 0, "original": 0, "share": share},
         "alone": {"evolved": evolved_alone, "original": original_alone},
-        "genes": {500: genes_500 or {"grassPull": 0.5}, 1000: genes_1000 or {"grassPull": 0.9}},
+        "genes": {500: genes_500 or {"near.Plant": 0.5}, 1000: genes_1000 or {"near.Plant": 0.9}},
     }
 
 
@@ -107,31 +107,31 @@ class ReportTest(unittest.TestCase):
         1: tested(0.8, 30, 20),
         2: tested(0.5, 20, 20),
         3: tested(None, 10, 20),
-        4: tested(0.6, 25, 26, genes_1000={"grassPull": 0.1}),
+        4: tested(0.6, 25, 26, genes_1000={"near.Plant": 0.1}),
         5: {"status": "died out"},
         6: {"status": "too few"},
     }
 
     def test_counts_seeds_by_status(self):
-        report = ac.report(self.RESULTS, {"grassPull": 0.2}, [500, 1000])
+        report = ac.report(self.RESULTS, {"near.Plant": 0.2}, [500, 1000])
         self.assertEqual((report["seeds"], report["tested"], report["diedOut"], report["tooFew"]), (6, 4, 1, 1))
 
     def test_a_share_counts_only_above_one_half(self):
-        self.assertEqual(ac.report(self.RESULTS, {"grassPull": 0.2}, [500, 1000])["shared"]["aboveHalf"], 2)
+        self.assertEqual(ac.report(self.RESULTS, {"near.Plant": 0.2}, [500, 1000])["shared"]["aboveHalf"], 2)
 
     def test_alone_counts_more_and_fewer_with_ties_in_neither(self):
-        alone = ac.report(self.RESULTS, {"grassPull": 0.2}, [500, 1000])["alone"]
+        alone = ac.report(self.RESULTS, {"near.Plant": 0.2}, [500, 1000])["alone"]
         self.assertEqual((alone["more"], alone["fewer"]), (1, 2))
 
     def test_genes_count_seeds_above_the_original_on_the_last_day(self):
-        genes = ac.report(self.RESULTS, {"grassPull": 0.2}, [500, 1000])["genes"]["grassPull"]
+        genes = ac.report(self.RESULTS, {"near.Plant": 0.2}, [500, 1000])["genes"]["near.Plant"]
         self.assertEqual((genes["original"], genes["up"], genes["of"]), (0.2, 3, 4))
         self.assertEqual(genes["medians"], {500: 0.5, 1000: 0.9})
 
 
 class TextTest(unittest.TestCase):
     def test_names_each_section_without_a_verdict(self):
-        text = ac.format_text(ac.report(ReportTest.RESULTS, {"grassPull": 0.2}, [500, 1000]), 12.0, per_seed=False)
+        text = ac.format_text(ac.report(ReportTest.RESULTS, {"near.Plant": 0.2}, [500, 1000]), 12.0, per_seed=False)
         for heading in ("both groups in one world", "each group in a world of its own", "evolved genes"):
             self.assertIn(heading, text)
         self.assertNotIn("pass", text.lower())
@@ -181,7 +181,7 @@ class EvolvedSurvivorsTest(unittest.TestCase):
 
 class SampleSeedTest(unittest.TestCase):
     def test_the_report_records_the_sample_seed(self):
-        one = ac.report(ReportTest.RESULTS, {"grassPull": 0.2}, [500, 1000], "9")
+        one = ac.report(ReportTest.RESULTS, {"near.Plant": 0.2}, [500, 1000], "9")
         self.assertEqual(one["sampleSeed"], "9")
         self.assertIn("sample seed 9", ac.format_text(one, 1.0, per_seed=False))
 
@@ -211,7 +211,7 @@ class PlanTest(unittest.TestCase):
     def test_the_original_file_holds_size_copies_by_species_and_genes(self):
         lines = ac.original_lines(PRESET, ORIGINAL)
         self.assertEqual(len(lines), 10)
-        self.assertEqual(lines[0], '{"species": "rabbit", "genes": {"grassPull": 0.2, "whim": 2.0}}')
+        self.assertEqual(lines[0], '{"species": "rabbit", "genes": {"near.Plant": 0.2, "whim": 2.0}}')
 
 
 if __name__ == "__main__":

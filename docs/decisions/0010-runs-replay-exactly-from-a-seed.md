@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-03. Revised 2026-10-04.
+Accepted, 2026-09-03. Revised 2026-10-29.
 
 ## Context
 
@@ -44,7 +44,8 @@ class constructs its own. It is built by naming its algorithm,
 
 Entities are held sorted by id, and asking the grid what stands on a tile
 returns occupants in ascending id order. Every system iterates in ascending id
-order, except that resolve and feed walk the day's speed order from
+order, except that resolve, where each turn ends with eating, walks the day's
+speed order from
 [0014](0014-resolve-order-comes-from-a-speed-gene.md), which is itself built
 from the id order and the world's generator.
 

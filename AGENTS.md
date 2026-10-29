@@ -54,6 +54,7 @@ scenario on a fresh agent and check the result against the pass criteria there.
 The pre-commit hook and CI run `docs-check.py`.
 
     python tools/compare.py tools/experiments/watchable.json    compare variants over seeds
+    python tools/compare.py tools/experiments/predator.json     entry 11's wolves
     python tools/test_compare.py                                 its tests
 
 `compare.py` needs a jar from `./mvnw package`. When checking a report against
@@ -119,6 +120,9 @@ CI runs `./mvnw -B verify` on Linux and Windows, on pushes to `master` and on
 pull requests. A `v*` tag builds the jar and attaches it to a GitHub Release,
 taking the version from the tag, so the pom stays on `-SNAPSHOT` between
 releases and never needs a manual bump. The jar is byte-reproducible.
+
+A change to a species' genes or to what draws from the generator changes every
+seeded run, so rerun the sample output in `README.md` from the new jar.
 
 ## Comments
 

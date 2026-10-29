@@ -5,7 +5,8 @@ A world you watch evolve. Grass falls on a grid every seven days and withers if
 nothing eats it within twelve. Rabbits walk toward the grass they can see, eat
 it, and starve when they go too long without. A rabbit with enough reserve can
 breed, and its child inherits its genes with small mutations, so the population
-drifts toward whatever works.
+drifts toward whatever works. Wolves hunt the rabbits, and a wolf that moves
+before a rabbit and lands on its tile eats it.
 `DESIGN.md` says where it is going and `docs/roadmap/` how far it has got.
 
 The 2022 version, a Swing app of humans looking for food, is on the
@@ -33,21 +34,25 @@ or one drawn from the clock, and it starts with ten rabbits and seven grass on a
 20 by 20 grid. Play, pause, step, change the speed or fast-forward up to 10,000
 days. Pick a species beside the spawn count, then spawn that many or click a
 tile to drop one there. Grass draws under a rabbit standing on it, and a tile's
-number counts its rabbits. A chart beside the grid follows each species. The
-address holds the world's id, so a reload or a second tab shows the same world.
+number counts its creatures. Worlds start without wolves, so spawn a few to
+watch them hunt. A chart beside the grid follows each species. The address
+holds the world's id, so a reload or a second tab shows the same world.
 
 Under the chart, the settings panel has a slider for every number the world
-reads, grouped as World, Grass and Rabbit, each with its description: how much
-grass falls, how often and how long it lasts, what a rabbit pays a day, how far
-it walks, and what breeding costs. An edit takes effect at the next day and
-only in that world. An
-edited setting is marked in bold, its ↺ button puts the default back, and
+reads, grouped as World, Grass, Rabbit and Wolf, each with its description:
+how much grass falls, how often and how long it lasts, what a rabbit or a wolf
+pays a day, how far it walks, what breeding costs, and what a rabbit is worth
+to the wolf that eats it. An edit takes effect at the next day and only in that
+world. An edited setting is marked in bold, its ↺ button puts the default back, and
 "Restore all" resets every one. A reset keeps the edits. The World group starts
 with a `mutation` checkbox. Untick it and children and new spawns become exact
 copies, so the world stops evolving.
 
-The sprites are from [Kenney](https://kenney.nl), CC0: the rabbit from Animal
-Pack Remastered and the grass from Foliage Pack.
+The rabbit and grass sprites are from [Kenney](https://kenney.nl), CC0: the
+rabbit from Animal Pack Remastered and the grass from Foliage Pack. The wolf is
+the wolf face from [Twemoji](https://github.com/jdecked/twemoji), by Twitter,
+Inc and other contributors, under
+[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 
 ## Running
 
@@ -57,17 +62,17 @@ over the members alive that day, and that day's deaths per species by cause,
 which is `starved`, `eaten` or `aged`.
 
     java -jar target/HumanSimulation.jar run --seed 42 --days 300
-    {"seed":42,"day":1,"population":{"grass":0,"rabbit":10},"geneMeans":{"rabbit":{"breedPull":1.01,...,"whim":0.53}},"deaths":{}}
+    {"seed":42,"day":1,"population":{"grass":0,"rabbit":10,"wolf":0},"geneMeans":{"rabbit":{"breedPull":1.02,...,"whim":0.49}},"deaths":{}}
     ...
-    {"seed":42,"day":64,"population":{...},"geneMeans":{...},"deaths":{"grass":{"eaten":2},"rabbit":{"starved":1}}}
+    {"seed":42,"day":53,"population":{...},"geneMeans":{...},"deaths":{"grass":{"eaten":1},"rabbit":{"starved":1}}}
     ...
-    {"seed":42,"day":300,"population":{"grass":2,"rabbit":7},"geneMeans":{"rabbit":{"breedPull":1.53,...,"whim":0.62}},"deaths":{}}
+    {"seed":42,"day":300,"population":{"grass":0,"rabbit":8,"wolf":0},"geneMeans":{"rabbit":{"breedPull":1.13,...,"whim":0.44}},"deaths":{}}
 
 `--days` is required. `--seed` defaults to one drawn from the clock, `--width`
 and `--height` to 20. `--spawn SPECIES=COUNT`, once per species, sets the
-starting population, which is ten rabbits and no grass without it or
-`--spawn-from` below. Grass falls
-on its own every seven days either way. The same seed prints the same lines.
+starting population, which is ten rabbits and no grass or wolves without it
+or `--spawn-from` below, so `--spawn rabbit=40 --spawn wolf=6` adds a predator.
+Grass falls on its own every seven days either way. The same seed prints the same lines.
 
 `--set OWNER.KEY=VALUE` changes any setting from day 0, and
 `--set-at DAY:OWNER.KEY=VALUE` changes it once DAY days are complete, so a run
@@ -75,7 +80,7 @@ can get harsher as it goes. `--gene SPECIES.GENE=VALUE` starts that species'
 spawn from another value of one gene. Each is repeatable, and a bad name or
 value fails with the same message the panel would give.
 
-    java -jar target/HumanSimulation.jar run --seed 1 --days 500 --set world.mutation=0 --set-at 200:world.grassPerDrop=3 --gene rabbit.grassPull=0.2
+    java -jar target/HumanSimulation.jar run --seed 1 --days 500 --set world.mutation=0 --set-at 200:world.grassPerDrop=3 --gene rabbit.near.Plant=0.2
 
 `--export FILE` with `--export-day DAY`, repeatable, writes every creature
 alive once DAY days are complete to FILE, one line each with its genes.
@@ -87,10 +92,16 @@ leaves out come from the baseline, so a hand-written genome works too.
     java -jar target/HumanSimulation.jar run --seed 7 --days 1000 --export evolved.jsonl --export-day 1000
     java -jar target/HumanSimulation.jar run --seed 8 --days 500 --set world.mutation=0 --spawn-from evolved.jsonl
 
-    {"seed":7,"day":1000,"species":"rabbit","id":4182,"genes":{"breedPull":1.2,"grassPull":1.4,...,"whim":0.4}}
+    {"seed":7,"day":1000,"species":"rabbit","id":4182,"genes":{"breedPull":1.2,...,"near.Plant":1.4,...,"whim":0.4}}
 
-A rabbit's pull toward grass and its hunger can go negative, so a rabbit can
-evolve to walk away from food, and starve for it.
+A creature scores every tile it could end the day on by what it sees there.
+Each thing in view shows features: `Plant` or `Meat` for the food it is, and
+`takes.Plant` or `takes.Meat` for the food it eats. Each feature has three
+genes: `near.X` pulls toward the nearest one, `hungry.near.X` adds to that pull
+as the creature gets hungry, and `sum.X` pulls by closeness to all of them. A rabbit starts pulled toward grass
+and a little away from other rabbits, a wolf toward rabbits and a little away
+from other wolves. Every pull can go negative, so a rabbit can evolve to walk
+away from food, and starve for it.
 
 ## Comparing
 
@@ -104,7 +115,8 @@ and variant in parallel, and reports how each fared. It needs the jar from
 A preset in `tools/experiments/` names the seeds, days, shared flags and the
 variants, and flags on the command line override it. `watchable` is the world
 the page starts from. `mutation-ramp` runs mutating rabbits against clones as
-food runs short.
+food runs short. `predator` puts 6 wolves among 40 rabbits on a 40 by 40 grid
+for 2000 days.
 
 Per species, the report gives the day each world died out, how far each gene's
 mean moved from day 1, and each cause's share of the species' deaths, such as
@@ -155,6 +167,6 @@ commands change them:
 
 `restoreDefaults` with no owner restores everything, and with an owner and a
 `key` one setting. A spawn takes an optional `genes` object, such as
-`{"grassPull":0.2}`, which overrides those genes for the members it creates. Process settings belong to the owner `world`. With `--no-browser` the server quits after 10 minutes without a
+`{"near.Plant":0.2}`, which overrides those genes for the members it creates. Process settings belong to the owner `world`. With `--no-browser` the server quits after 10 minutes without a
 request or an open stream, and without it never quits. It listens on `127.0.0.1` unless `--host`
 says otherwise.

@@ -35,5 +35,6 @@ The pack's own licence follows.
 wolf.png is the wolf face from Twemoji, by Twitter, Inc and other contributors,
 maintained at https://github.com/jdecked/twemoji, file assets/72x72/1f43a.png
 at version 15.1.0, unchanged. Copyright 2019 Twitter, Inc and other
-contributors, as the original twitter/twemoji repository states. It is licensed under Creative Commons Attribution
-4.0 International (CC BY 4.0), https://creativecommons.org/licenses/by/4.0/.
+contributors, as the original twitter/twemoji repository states. It is licensed
+under Creative Commons Attribution 4.0 International (CC BY 4.0),
+https://creativecommons.org/licenses/by/4.0/.

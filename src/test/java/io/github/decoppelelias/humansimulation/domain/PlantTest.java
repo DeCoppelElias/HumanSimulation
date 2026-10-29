@@ -22,10 +22,10 @@ class PlantTest {
 
     @Test
     void readsItsAmountLive() {
-        SettingValues values = new SettingValues(
-                new Settings(List.of(new Setting.Scalar(Grass.NOURISHMENT, "Reserve from one grass.", 1, 100, 1, 15))));
-        Plant grass = new Plant(() -> values.number(Grass.NOURISHMENT));
-        values.set(Grass.NOURISHMENT, 20);
+        SettingValues values = new SettingValues(new Settings(
+                List.of(new Setting.Scalar(Edible.NOURISHMENT, "Reserve from one grass.", 1, 100, 1, 15))));
+        Plant grass = new Plant(() -> values.number(Edible.NOURISHMENT));
+        values.set(Edible.NOURISHMENT, 20);
         assertThat(grass.amount()).isEqualTo(20);
     }
 }
