@@ -1,5 +1,6 @@
 package io.github.decoppelelias.humansimulation.domain;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.random.RandomGenerator;
 
@@ -21,5 +22,10 @@ interface Brain extends Component {
     @Override
     default Optional<Record> seenView() {
         return Optional.empty();
+    }
+
+    @Override
+    default List<Feature> features() {
+        return List.of();
     }
 }

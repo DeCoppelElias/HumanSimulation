@@ -102,6 +102,11 @@ final class TestSpecies {
         public Optional<Record> seenView() {
             return Optional.of(new Amount(5));
         }
+
+        @Override
+        public List<Feature> features() {
+            return List.of(Feature.of(Bone.class));
+        }
     }
 
     /** A species named "prey", a bone worth five, whose brain always returns one intent. */

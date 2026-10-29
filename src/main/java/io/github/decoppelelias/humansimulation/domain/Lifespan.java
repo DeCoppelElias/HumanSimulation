@@ -1,5 +1,6 @@
 package io.github.decoppelelias.humansimulation.domain;
 
+import java.util.List;
 import java.util.Optional;
 
 /** Counts its carrier's days and ends it when they reach the species' lifespan, read live. */
@@ -34,6 +35,11 @@ final class Lifespan implements Component {
     @Override
     public Optional<Record> seenView() {
         return Optional.empty();
+    }
+
+    @Override
+    public List<Feature> features() {
+        return List.of();
     }
 
     @Override

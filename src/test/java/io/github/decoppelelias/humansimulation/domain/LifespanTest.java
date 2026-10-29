@@ -34,5 +34,6 @@ class LifespanTest {
     @Test
     void othersSeeNothing() {
         assertThat(new Lifespan(lasting(3)).seenView()).isEmpty();
+        assertThat(new Lifespan(lasting(3)).features()).isEmpty();
     }
 }

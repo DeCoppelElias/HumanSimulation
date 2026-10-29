@@ -25,5 +25,6 @@ class FertilityTest {
     void showsItsDayToItsCarrierOnly() {
         assertThat(new Fertility(4).ownView()).isEqualTo(new Fertility.Since(4));
         assertThat(new Fertility(4).seenView()).isEmpty();
+        assertThat(new Fertility(4).features()).isEmpty();
     }
 }

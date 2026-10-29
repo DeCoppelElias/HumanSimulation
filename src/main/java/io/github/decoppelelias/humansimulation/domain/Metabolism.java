@@ -1,5 +1,6 @@
 package io.github.decoppelelias.humansimulation.domain;
 
+import java.util.List;
 import java.util.Optional;
 
 final class Metabolism implements Component {
@@ -45,6 +46,11 @@ final class Metabolism implements Component {
     @Override
     public Optional<Record> seenView() {
         return Optional.empty();
+    }
+
+    @Override
+    public List<Feature> features() {
+        return List.of();
     }
 
     void credit(double amount) {

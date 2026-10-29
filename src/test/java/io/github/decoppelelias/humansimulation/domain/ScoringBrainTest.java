@@ -53,11 +53,12 @@ class ScoringBrainTest {
             List<Record> views = one.food().stream()
                     .<Record>map(food -> new Edible.Amount(15))
                     .toList();
-            ViewParts parts = new ViewParts(one.food(), views);
+            ViewParts parts = new ViewParts(one.food(), views, List.of());
             tiles.add(new Perception.TileView(
                     one.dx(), one.dy(), Map.of(), List.of(new Perception.EntityView(id++, one.species(), parts))));
         }
-        ViewParts self = new ViewParts(List.of(Metabolism.class), List.of(new Metabolism.Own(daysLeft, daysLeft)));
+        ViewParts self =
+                new ViewParts(List.of(Metabolism.class), List.of(new Metabolism.Own(daysLeft, daysLeft)), List.of());
         return new Perception(new Perception.SelfView(0, self), tiles, Grid::distance);
     }
 

@@ -116,5 +116,6 @@ class MetabolismTest {
     @Test
     void othersSeeNothing() {
         assertThat(metabolism(1, 1, 15).seenView()).isEmpty();
+        assertThat(metabolism(1, 1, 15).features()).isEmpty();
     }
 }

@@ -673,6 +673,11 @@ class WorldTest {
         }
 
         @Override
+        public List<Feature> features() {
+            return List.of();
+        }
+
+        @Override
         public Optional<String> tick() {
             ticked.add(cause);
             return Optional.of(cause);
@@ -839,6 +844,7 @@ class WorldTest {
                 .isEqualTo(5);
     }
 
+    /** Rejects a resolve that walks some fixed order, such as id order, instead of the one it is given. */
     @Test
     void aHunterWhoseTurnComesAfterFindsThePreyGone() {
         Intent east = new Intent.Move(TestSpecies.EAST, 1);

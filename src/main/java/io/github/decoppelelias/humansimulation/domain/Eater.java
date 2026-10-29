@@ -1,10 +1,11 @@
 package io.github.decoppelelias.humansimulation.domain;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-/** The foods its carrier takes, fixed in its species recipe, per 0016. Others see nothing of it. */
+/** The foods its carrier takes, fixed in its species recipe and shown to others, per 0016. */
 final class Eater implements Component {
     record Takes(Set<Class<? extends Edible>> foods) {}
 
@@ -35,6 +36,15 @@ final class Eater implements Component {
 
     @Override
     public Optional<Record> seenView() {
-        return Optional.empty();
+        return Optional.of(new Takes(foods));
+    }
+
+    /** Sorted by name, so the order of a set cannot change a replay. */
+    @Override
+    public List<Feature> features() {
+        return foods.stream()
+                .map(Feature::takes)
+                .sorted(Comparator.comparing(Feature::name))
+                .toList();
     }
 }
