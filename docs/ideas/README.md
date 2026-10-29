@@ -80,6 +80,8 @@ that settled it.
   whether a variant did better.
 - [Run settings and genes file](run-settings-file.md) many `run` overrides,
   of settings or starting genes, kept in one file.
+- [Run speed](run-speed.md) profiling a headless run and removing its hot
+  spots, so probes and gates finish sooner.
 - [Shared workflow kit](shared-workflow-kit.md) the generic skills and checks
   in a repository of their own, installed rather than copied.
 - [Skill review](skill-review.md) checking each project skill still earns its

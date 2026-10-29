@@ -88,6 +88,17 @@ scaling every pull makes a starving rabbit avoid crowds harder too, and tangles
 eating only when hungry with everything else. Hunger on the nearest pulls is
 where walking to or away from something is decided.
 
+A rabbit's pulls on what a wolf shows could start at 0, so that keeping away
+from wolves is wholly learned. Selection gets there on its own: on entry 11's
+predator preset `near.takes.Meat` drifted from 0 to -0.37 by day 2000. An
+animal keeps a little away from what is not its kind, though, and a neutral
+start drops that. Starting at -1, with `sum.takes.Meat` at -0.5, is about where
+selection settles, since by day 2000 it had moved down in only half the seeds,
+so a gene report shows little being learned. The wolf could keep away from
+`takes.Plant` in the same way, but every rabbit shows `takes.Plant` beside
+`Meat`, so an aversion of 0.3 weakens the wolf's pull toward the nearest rabbit
+by 30%, which is the wolf's whole job.
+
 ## Decision
 
 Each day a creature with the scoring brain scores every tile it could land on
@@ -151,11 +162,15 @@ baselines:
 | `sum.Meat` | | | -0.2 | 0 |
 | `near.Meat` | | | 0 | 1 |
 | `hungry.near.Meat` | | | 0 | 2 |
-| `sum.takes.Meat` | | | 0 | -0.2 |
+| `near.takes.Meat` | | | -0.5 | 0 |
+| `sum.takes.Meat` | | | -0.2 | -0.2 |
 
-The rabbit's baselines give the scores of the brain it had before features, so
-it starts each run behaving as it did. The wolf's are the rabbit's aimed at
-rabbits and at other wolves, so a wolf differs from a rabbit only where it is a
+Away from wolves, the rabbit's baselines give the scores of the brain it had
+before features, so it starts each run behaving as it did. Its `takes.Meat`
+pulls keep it somewhat away from anything that eats meat: a tile one step
+farther from the nearest wolf is worth half what a step toward grass is worth
+to a fed rabbit. The wolf's are the rabbit's food pulls aimed at rabbits and its
+crowd pull at other wolves, so a wolf differs from a rabbit only where it is a
 predator.
 
 ## Consequences
@@ -205,7 +220,7 @@ can only push rabbits apart. `docs/ideas/patchy-food.md` gives herding a payoff.
 
 A new species meets the others through the features they show, rather than
 through a new strategy. A rabbit's reaction to wolves is its `takes.Meat` genes,
-which start at 0 until roadmap entry 12 gives them a baseline, and a wolf whose
+which start somewhat negative and evolve, and a wolf whose
 `near.Plant` rises waits at grass where rabbits arrive, which nothing wrote.
 
 The score is a weighted sum of features followed by a softmax, which is a network

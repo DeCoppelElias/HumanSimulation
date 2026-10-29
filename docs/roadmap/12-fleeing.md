@@ -4,27 +4,81 @@ Status: not started.
 
 Rabbits learn to keep away from wolves. Nothing names a wolf as a threat: a
 rabbit sees that something takes `Meat`, through its `takes.Meat` pull genes
-from entry 11, and those genes evolve. Their baselines start somewhat
-negative, since an animal keeps a little away from what is not its kind, and
-selection refines it or finds something else. This is the first test of
+from entry 11, and those genes evolve. The rabbit's `near.takes.Meat` starts at
+-0.5 and its `sum.takes.Meat` at -0.2, since an animal keeps a little away from
+what is not its kind, and selection refines it or finds something else, per
+[0023](../decisions/0023-creatures-score-the-tiles-they-can-reach.md). Its
+`hungry.near.takes.Meat` stays at 0, so selection decides whether a starving
+rabbit takes more risk. The wolf keeps entry 11's genes and settings, speed 0.5
+and a stride of 3, so the race still starts even. This is the first test of
 capabilities meeting without having been introduced.
 
-A gate in the style of entry 9: rabbits evolved with wolves present compete
-against the genome they started from, with wolves present, and the world
-judges which lives better.
+Wolves and rabbits live side by side on a larger world.
+`tools/experiments/fleeing.json` runs an 80×80 world at the predator preset's
+density, 75 grass every 2 days, 160 rabbits and 24 wolves, mutation on, for
+2000 days on seeds 1 to 30. Probes while grilling found no wolf setting that
+keeps both alive on entry 11's 40×40 world: a faster wolf, a stride of 4 or 5
+and a dearer birth all left wolves alive on day 2000 in at most 4 of 30 seeds,
+since a few wolves at the bottom of a boom and bust die out by chance. On
+80×80, with the rabbit's new baselines, both lived in 25 of 30. The predator
+preset stays as entry 11's record.
 
-Wolves and rabbits live side by side: on entry 11's predator preset, both are
-alive on day 2000 in at least 24 of 30 seeds. Entry 11 found 4 of 30 without
-fleeing, and the same density on an 80×80 world held both in 27 of 30.
+A gate in the style of entry 9 shows that what rabbits learn comes from the
+wolves. `tools/ancestor_competition.py` gains an optional `control` block: a
+second evolution arm whose survivors replace the starting genome as the
+comparison group. A preset without one runs as before, so
+`tools/experiments/rabbit-learns-gate.json` keeps its meaning. The preset
+`tools/experiments/rabbit-flees-gate.json`:
 
-Details to settle in this entry's grill: the baseline pulls, the gate's preset
-and marks, whether a rabbit that evolves away from wolves can still be caught,
-given how entry 11 settled catching, and what steadies the cycle if fleeing
-alone does not.
+- Evolution: both arms start from the rabbit's baseline on `fleeing.json`'s
+  world and food for 1000 days, mutation on. One has wolves, which co-evolve,
+  and the control has none.
+- Sample: 10 of each arm's day 1000 survivors that differ from the starting
+  genome. A seed is not tested when its wolves died out during evolution or
+  either arm has fewer than 10.
+- Test: mutation off, entry 9's test world, 40×40 with 28 grass every 3 days
+  for 500 days, plus 4 wolves at their baseline spawned on day 1. One world
+  holds 10 of each group, and each group also runs in a world of its own. The
+  groups are told apart by exact genome, as in entry 9.
+- Report: as entry 9's, naming the control where it names the original genome,
+  plus the test worlds where wolves outlived day 250, and the drift of each
+  arm's `takes.Meat` genes.
 
-On the page: rabbits keeping away from a wolf they can see.
+Acceptance:
+
+- a rabbit at its baseline, handed a perception with grass on one side and a
+  wolf on the other, scores tiles away from the wolf higher than it did with
+  its `takes.Meat` genes at 0;
+- `tools/experiments/fleeing.json`: wolves and rabbits are both alive on day
+  2000 in at least 24 of 30 seeds;
+- the gate, over seeds 1 to 30: at least 24 seeds are tested; the with-wolves
+  share of living rabbits on day 500 of the shared world is above one half in
+  at least 70% of the tested seeds; the with-wolves group in a world of its own
+  sustains fewer rabbits than the control in under 70% of the tested seeds;
+- `rabbit-learns-gate.json` runs unchanged, and the tool's tests cover a preset
+  with and without a `control` block.
+
+Where both arms' `takes.Meat` genes and both species' `speed` drift is reported
+with no mark, and Elias reads it before the entry is done.
+
+Tuning `fleeing.json` changes only the wolf's settings, the rabbit's
+`nourishment`, the starting counts and the world's food, with a budget of 10
+runs. Tuning the gate changes only the test world's wolf count, length and
+food, the group sizes and the evolution world's food, with a budget of 8 runs.
+Neither changes the marks, the brain, the bounds, the baselines, the wolf's
+speed or stride, or a world's size. Every run uses `--jobs 6`, one at a time,
+and none may take over 30 minutes; measured while grilling, `fleeing.json`
+takes about 4 minutes and the gate about 5. Each run is logged with the symptom
+it addressed. If a budget runs out without a pass, Elias gets the log, the last
+report with `--per-seed` and a proposal, and nothing merges until he decides.
+
+On the page: entry 11's world, built over the API, 25×25 with 11 grass every 3
+days, 25 rabbits and 2 wolves, opened at `?world=ID`. A rabbit steps away when
+a wolf comes into view, and wolves still catch rabbits busy with grass or
+cornered. Nobody expects that world to stay balanced.
 
 Depends on entry 11. See
 [0013](../decisions/0013-perception-is-one-type.md),
 [0023](../decisions/0023-creatures-score-the-tiles-they-can-reach.md),
-`docs/ideas/ancestor-competition.md`.
+`docs/ideas/ancestor-competition.md`, `docs/ideas/immigration.md`,
+`docs/ideas/patchy-food.md`, `docs/ideas/run-speed.md`.

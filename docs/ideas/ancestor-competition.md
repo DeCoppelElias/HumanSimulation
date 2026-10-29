@@ -51,8 +51,11 @@ world the genomes evolved in with more food, so the original genome can live
 alone, ten of each group, one to one. Whether the result
 depends on the starting ratio is still open.
 
-Once a second species evolves, freezing one while the other evolves needs
-mutation per species rather than per world, and comparing them needs day-1000
-wolves against day-0 rabbits, since both improving can look like neither
-improving (Cliff and Miller's Red Queen problem). With mutation on, a group can
-no longer be read off an exact genome and needs a tag.
+Roadmap entry 12 settles one way to measure a lesson that a second species
+teaches: rabbits evolved with co-evolving wolves against rabbits evolved without
+them, tested beside wolves at their baseline. A fixed opponent in the test
+sidesteps the Red Queen problem (Cliff and Miller), where both species improving
+can look like neither improving. Measuring the wolves themselves still needs
+day-1000 wolves against day-0 rabbits, and freezing one species while the other
+evolves needs mutation per species rather than per world. With mutation on, a
+group can no longer be read off an exact genome and needs a tag.
