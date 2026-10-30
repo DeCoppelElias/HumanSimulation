@@ -1,6 +1,6 @@
 # 12. Fleeing
 
-Status: not started.
+Status: done.
 
 Rabbits learn to keep away from wolves. Nothing names a wolf as a threat: a
 rabbit sees that something takes `Meat`, through its `takes.Meat` pull genes

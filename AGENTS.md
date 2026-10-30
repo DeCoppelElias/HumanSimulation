@@ -55,6 +55,7 @@ The pre-commit hook and CI run `docs-check.py`.
 
     python tools/compare.py tools/experiments/watchable.json    compare variants over seeds
     python tools/compare.py tools/experiments/predator.json     entry 11's wolves
+    python tools/compare.py tools/experiments/fleeing.json      entry 12's wolves and rabbits
     python tools/test_compare.py                                 its tests
 
 `compare.py` needs a jar from `./mvnw package`. When checking a report against
@@ -62,9 +63,11 @@ an acceptance line, read the raw `p` for the measure the line names, and `pHolm`
 only when scanning the whole report. CI runs `test_compare.py`.
 
     python tools/ancestor_competition.py tools/experiments/rabbit-learns-gate.json    entry 9's gate
+    python tools/ancestor_competition.py tools/experiments/rabbit-flees-gate.json     entry 12's gate
     python tools/test_ancestor_competition.py                                          its tests
 
-The gate takes about three minutes, needs the same jar, and CI runs its tests.
+Entry 9's gate takes about five minutes and entry 12's about seven. Both need
+the same jar, and CI runs the tool's tests.
 
 ## Branches
 
