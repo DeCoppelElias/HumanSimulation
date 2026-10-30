@@ -47,6 +47,10 @@ class ScoringBrainTest {
         return new Seen(dx, dy, List.of(Features.MEAT));
     }
 
+    private static Seen wolf(int dx, int dy) {
+        return new Seen(dx, dy, List.of(Features.TAKES_MEAT));
+    }
+
     private static Perception perception(int daysLeft, Seen... seen) {
         List<Perception.TileView> tiles = new ArrayList<>();
         int id = 1;
@@ -230,5 +234,26 @@ class ScoringBrainTest {
             expected[i] = score;
         }
         assertThat(baseline.scores(seen, openGround(false))).containsExactly(expected);
+    }
+
+    /**
+     * Grass east, a meat eater south. Rejects a baseline left at 0, which leaves the gap unchanged, one with the wrong
+     * sign, which narrows it, and one much weaker than -0.5, which widens it by less than 1.
+     */
+    @Test
+    void theRabbitsBaselineKeepsItAwayFromAMeatEater() {
+        Genome baseline = Rabbit.species().baseline();
+        Map<String, Double> unafraid = new HashMap<>(baseline.scalars());
+        unafraid.put(ScoringBrain.near(Features.TAKES_MEAT), 0.0);
+        unafraid.put(ScoringBrain.hungryNear(Features.TAKES_MEAT), 0.0);
+        unafraid.put(ScoringBrain.sum(Features.TAKES_MEAT), 0.0);
+        Perception seen = perception(15, grass(3, 0), wolf(0, 2));
+        Options options = openGround(false);
+        int away = options.offered().indexOf(new Option.Move(NORTH, 1, 0, -1));
+        int toward = options.offered().indexOf(new Option.Move(SOUTH, 1, 0, 1));
+        double[] afraid = ScoringBrain.from(baseline).scores(seen, options);
+        double[] calm =
+                ScoringBrain.from(new Genome(baseline.layout(), unafraid)).scores(seen, options);
+        assertThat(afraid[away] - afraid[toward]).isGreaterThan(calm[away] - calm[toward] + 1);
     }
 }

@@ -13,7 +13,9 @@ public final class Rabbit {
                 Map.of(
                         ScoringBrain.near(Features.PLANT), 1.0,
                         ScoringBrain.hungryNear(Features.PLANT), 2.0,
-                        ScoringBrain.sum(Features.MEAT), -0.2),
+                        ScoringBrain.sum(Features.MEAT), -0.2,
+                        ScoringBrain.near(Features.TAKES_MEAT), -0.5,
+                        ScoringBrain.sum(Features.TAKES_MEAT), -0.2),
                 Set.of(Plant.class),
                 List.of(spawn -> new Meat(() -> spawn.settings().number(Edible.NOURISHMENT))),
                 List.of(new Setting.Scalar(

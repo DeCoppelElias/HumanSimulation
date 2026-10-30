@@ -36,13 +36,23 @@ class RabbitTest {
                 .containsEntry("speed", 0.5)
                 .containsEntry("near.Plant", 1.0)
                 .containsEntry("hungry.near.Plant", 2.0)
-                .containsEntry("sum.Meat", -0.2);
+                .containsEntry("sum.Meat", -0.2)
+                .containsEntry("near.takes.Meat", -0.5)
+                .containsEntry("sum.takes.Meat", -0.2);
         Map<String, Double> rest = new TreeMap<>(scalars);
         rest.keySet()
                 .removeAll(List.of(
-                        "viewRange", "whim", "breedPull", "speed", "near.Plant", "hungry.near.Plant", "sum.Meat"));
+                        "viewRange",
+                        "whim",
+                        "breedPull",
+                        "speed",
+                        "near.Plant",
+                        "hungry.near.Plant",
+                        "sum.Meat",
+                        "near.takes.Meat",
+                        "sum.takes.Meat"));
         assertThat(rest)
-                .hasSize(9)
+                .hasSize(7)
                 .allSatisfy((gene, value) -> assertThat(value).as(gene).isZero());
     }
 
