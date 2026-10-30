@@ -678,6 +678,11 @@ class WorldTest {
         }
 
         @Override
+        public Map<String, Double> shown() {
+            return Map.of();
+        }
+
+        @Override
         public Optional<String> tick() {
             ticked.add(cause);
             return Optional.of(cause);
@@ -943,5 +948,42 @@ class WorldTest {
         assertThat(snapshot.tiles().get(4).entities())
                 .extracting(WorldSnapshot.EntityView::species, WorldSnapshot.EntityView::creature)
                 .containsExactly(tuple("grass", false), tuple("rabbit", true));
+    }
+
+    @Test
+    void twoPartsShowingOneNameIsRefusedByName() {
+        Species doubled = new Species(
+                "doubled",
+                "doubled",
+                List.of(),
+                new Genome(List.of(), Map.of()),
+                new Settings(List.of()),
+                Optional.empty(),
+                List.of(spawn -> new Plant(() -> 1), spawn -> new Plant(() -> 2)));
+        World world = new World(1, 1, 1, List.of(doubled));
+        world.submit(new Command.SpawnAt("doubled", new GridPosition(0, 0)));
+        assertThatThrownBy(world::applyPending)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("amount");
+    }
+
+    @Test
+    void theSnapshotShowsWhatEachPartDeclares() {
+        World world = new World(9, 1, 1, List.of(Grass.species(), Rabbit.species()));
+        world.submit(new Command.SetSetting("world", "mutation", 0));
+        world.submit(new Command.SpawnAt("rabbit", new GridPosition(0, 0)));
+        world.submit(new Command.SpawnAt("grass", new GridPosition(8, 0)));
+        WorldSnapshot snapshot = world.advance().snapshot();
+        Map<String, Double> rabbit = snapshot.tiles().stream()
+                .flatMap(tile -> tile.entities().stream())
+                .filter(entity -> entity.species().equals("rabbit"))
+                .findFirst()
+                .orElseThrow()
+                .info();
+        assertThat(rabbit).containsOnlyKeys("age", "reserve", "daysToStarve", "amount");
+        assertThat(rabbit).containsEntry("age", 1.0).containsEntry("amount", 30.0);
+        assertThat(rabbit.get("reserve")).isLessThan(15.0);
+        assertThat(snapshot.tiles().get(8).entities().get(0).info())
+                .isEqualTo(Map.of("age", 1.0, "amount", 15.0, "daysToLive", 10.0));
     }
 }

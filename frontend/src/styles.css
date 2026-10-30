@@ -70,3 +70,44 @@ footer {
 .setting.edited .setting-name {
     font-weight: bold;
 }
+.click-mode {
+    margin-left: 16px;
+    display: inline-flex;
+    gap: 8px;
+}
+.side {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.inspector dl {
+    display: grid;
+    grid-template-columns: auto auto;
+    gap: 2px 12px;
+    margin: 4px 0;
+}
+.inspector dd {
+    margin: 0;
+}
+.tile-list {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+.creatures-head {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+.creatures-scroll {
+    max-height: 240px;
+    overflow-y: auto;
+}
+.creatures tbody tr {
+    cursor: pointer;
+}
+.creatures tr.selected {
+    background: #e8f0ff;
+}

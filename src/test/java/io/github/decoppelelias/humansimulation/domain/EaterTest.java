@@ -32,4 +32,9 @@ class EaterTest {
         assertThat(grazer.foodIn(List.of(new TestSpecies.Bone()))).isEmpty();
         assertThat(new Eater(Set.of()).foodIn(List.of(plant))).isEmpty();
     }
+
+    @Test
+    void showsAPersonNothing() {
+        assertThat(new Eater(Set.of(Plant.class)).shown()).isEmpty();
+    }
 }

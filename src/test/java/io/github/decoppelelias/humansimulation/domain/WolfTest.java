@@ -43,4 +43,15 @@ class WolfTest {
         assertThat(settings.declared().declares("nourishment")).isFalse();
         assertThat(settings.whole("stride")).isEqualTo(3);
     }
+
+    @Test
+    void carriesALifespanWithNoLength() {
+        assertThat(Wolf.species().settings().declares(Lifespan.LIFESPAN)).isFalse();
+        World world = new World(1, 1, 1, List.of(Wolf.species()));
+        world.submit(new Command.SpawnAt("wolf", new GridPosition(0, 0)));
+        world.advance();
+        assertThat(world.advance().snapshot().tiles().get(0).entities().get(0).info())
+                .containsEntry("age", 2.0)
+                .doesNotContainKey("daysToLive");
+    }
 }

@@ -6,16 +6,17 @@ import type { GridPosition, PlayState, WorldSnapshot } from "./types";
 type Props = {
     snapshot: WorldSnapshot;
     play: PlayState;
+    sight: GridPosition[];
     onTileClick(at: GridPosition): void;
     onError(message: string): void;
 };
 
-export function Grid({ snapshot, play, onTileClick, onError }: Props) {
+export function Grid({ snapshot, play, sight, onTileClick, onError }: Props) {
     const host = useRef<HTMLDivElement>(null);
     const scene = useRef<Scene | null>(null);
-    const latest = useRef({ snapshot, play, onTileClick, onError });
+    const latest = useRef({ snapshot, play, sight, onTileClick, onError });
     useEffect(() => {
-        latest.current = { snapshot, play, onTileClick, onError };
+        latest.current = { snapshot, play, sight, onTileClick, onError };
     });
 
     const { width, height } = snapshot;
@@ -41,6 +42,7 @@ export function Grid({ snapshot, play, onTileClick, onError }: Props) {
                 created = made;
                 scene.current = made;
                 made.show(latest.current.snapshot, latest.current.play);
+                made.showSight(latest.current.sight);
             },
             (error: unknown) => {
                 if (!cancelled) {
@@ -58,6 +60,10 @@ export function Grid({ snapshot, play, onTileClick, onError }: Props) {
     useEffect(() => {
         scene.current?.show(snapshot, latest.current.play);
     }, [snapshot]);
+
+    useEffect(() => {
+        scene.current?.showSight(sight);
+    }, [sight]);
 
     return <div ref={host} className="grid" />;
 }

@@ -32,9 +32,17 @@ hot reload on port 5173, passing API calls to a `serve` on port 7070.
 `serve` opens the page in your browser. Pick a world or create one, with a seed
 or one drawn from the clock, and it starts with ten rabbits and seven grass on a
 20 by 20 grid. Play, pause, step, change the speed or fast-forward up to 10,000
-days. Pick a species beside the spawn count, then spawn that many or click a
-tile to drop one there. Grass draws under a rabbit standing on it, and a tile's
-number counts its creatures. Worlds start without wolves, so spawn a few to
+days. Pick a species beside the spawn count and spawn that many. Grass draws
+under a rabbit standing on it, and a tile's number counts its creatures.
+
+A click on the grid inspects by default. Switch "Click a tile to" to spawn to
+drop one of the picked species there instead. Inspecting a tile with one thing
+on it selects it, and a tile with more lists them as they stood at the click.
+The selected creature's age, reserve, days to starve and genes follow it live,
+and its view range is tinted on the grid. Grass shows its food value and the
+days it has left. A table under the chart lists every creature, sorts by age or
+reserve, and updates when you press Refresh. A selected creature that dies says
+so in the panel. Worlds start without wolves, so spawn a few to
 watch them hunt. A chart beside the grid follows each species. The address
 holds the world's id, so a reload or a second tab shows the same world.
 

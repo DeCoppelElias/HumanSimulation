@@ -84,15 +84,16 @@ class RabbitTest {
     }
 
     @Test
-    void isBornWithAMetabolismAFertilityAnEaterAndTheScoringBrain() {
+    void isBornWithAMetabolismAFertilityAnEaterALifespanAndTheScoringBrain() {
         Species rabbit = Rabbit.species();
         Spawn spawn = new Spawn(rabbit.baseline(), rabbit, new SettingValues(rabbit.settings()), 4, Optional.empty());
         assertThat(rabbit.brain())
                 .hasValueSatisfying(factory -> assertThat(factory.apply(spawn)).isInstanceOf(ScoringBrain.class));
-        assertThat(rabbit.parts()).hasSize(4);
+        assertThat(rabbit.parts()).hasSize(5);
         assertThat(rabbit.parts().get(0).apply(spawn)).isInstanceOf(Metabolism.class);
         assertThat(rabbit.parts().get(1).apply(spawn).ownView()).isEqualTo(new Fertility.Since(4));
         assertThat(rabbit.parts().get(2).apply(spawn).ownView()).isEqualTo(new Eater.Takes(List.of(Plant.class)));
+        assertThat(rabbit.parts().get(3).apply(spawn)).isInstanceOf(Lifespan.class);
     }
 
     @Test
@@ -104,7 +105,7 @@ class RabbitTest {
         assertThat(settings.declared().scalar("nourishment"))
                 .extracting(Setting.Scalar::min, Setting.Scalar::max)
                 .containsExactly(1.0, 100.0);
-        Component meat = rabbit.parts().get(3).apply(spawn);
+        Component meat = rabbit.parts().get(4).apply(spawn);
         settings.set("nourishment", 20);
         assertThat(meat)
                 .isInstanceOfSatisfying(
@@ -127,5 +128,16 @@ class RabbitTest {
         assertThatThrownBy(() -> new Species("odd", "odd", layout, other, Settings.NONE, Optional.empty(), List.of()))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("odd");
+    }
+
+    @Test
+    void carriesALifespanWithNoLength() {
+        assertThat(Rabbit.species().settings().declares(Lifespan.LIFESPAN)).isFalse();
+        World world = new World(1, 1, 1, List.of(Rabbit.species()));
+        world.submit(new Command.SpawnAt("rabbit", new GridPosition(0, 0)));
+        world.advance();
+        assertThat(world.advance().snapshot().tiles().get(0).entities().get(0).info())
+                .containsEntry("age", 2.0)
+                .doesNotContainKey("daysToLive");
     }
 }

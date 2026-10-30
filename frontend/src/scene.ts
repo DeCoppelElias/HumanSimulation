@@ -20,6 +20,7 @@ const SPRITE_SIZE = TILE * 0.9;
 export class Scene {
     private readonly sprites = new Container();
     private readonly labels = new Container();
+    private readonly sightLayer = new Graphics();
     private readonly pool = new Map<number, Sprite>();
     private readonly textures = new Map<string, Texture>();
     private readonly loading = new Set<string>();
@@ -50,7 +51,7 @@ export class Scene {
             throw error;
         }
         scene.sprites.sortableChildren = true;
-        app.stage.addChild(tileLines(width, height), scene.sprites, scene.labels);
+        app.stage.addChild(tileLines(width, height), scene.sightLayer, scene.sprites, scene.labels);
         app.stage.eventMode = "static";
         app.stage.hitArea = new Rectangle(0, 0, width * TILE, height * TILE);
         app.stage.on("pointertap", (event) => {
@@ -77,6 +78,16 @@ export class Scene {
         this.started = performance.now();
         this.previous = next;
         this.drawCounts(next);
+    }
+
+    showSight(tiles: GridPosition[]): void {
+        this.sightLayer.clear();
+        for (const at of tiles) {
+            this.sightLayer.rect(at.x * TILE, at.y * TILE, TILE, TILE);
+        }
+        if (tiles.length > 0) {
+            this.sightLayer.fill({ color: "#fff7a8", alpha: 0.45 });
+        }
     }
 
     destroy(): void {

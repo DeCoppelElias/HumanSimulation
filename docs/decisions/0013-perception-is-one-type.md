@@ -76,7 +76,9 @@ public interface Parts {
 
 Every component declares what its carrier sees of it and what creatures in range
 see of it, as read-only view records, and neither has a default. `Brain` is the
-one exception, per [0004](0004-creatures-return-intents.md).
+one exception, per [0004](0004-creatures-return-intents.md). What it shows a
+person watching is a third declaration, per
+[0007](0007-state-leaves-as-a-snapshot-commands-go-in.md).
 
 ```java
 // on Component

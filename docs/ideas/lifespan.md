@@ -1,20 +1,21 @@
 # Lifespan
 
 Status: idea. The grass half is built,
-[0024](../decisions/0024-a-part-can-end-its-carrier.md).
+[0024](../decisions/0024-a-part-can-end-its-carrier.md). Rabbits and wolves
+count their age from entry 13, and nothing ends them by it.
 
 ## What it does
 
 A component that counts its carrier's days and ends the carrier when they run
 out, the way `Metabolism` ends a carrier whose reserve falls below zero. A
 species that declares it sets how long its members last with a setting of its
-own. Grass declares it, so grass left uneaten withers. Rabbits could declare it
-too, with a default long enough that it rarely ends one, so their age becomes
-visible.
+own. Grass declares it, so grass left uneaten withers. Rabbits could declare a
+length too, with a default long enough that it rarely ends one.
 
 Entry 8 built the grass half, per
 [0024](../decisions/0024-a-part-can-end-its-carrier.md): a fixed number of days,
-grass only. The rabbit half stays open here.
+grass only. Entry 13 gave rabbits and wolves the part with no length, so it
+counts their age. Ending them by it stays open here.
 
 ## Why it is interesting
 
@@ -29,9 +30,8 @@ Nothing in the documents decides whether a fed creature can live forever. It
 was never asked: starvation arrived in entry 5 as the first thing that removes
 a creature, and nothing since has added a second. A rabbit with a large reserve
 keeps its genome in the population and keeps eating. Whether that happens often
-is unknown, since nothing reports a rabbit's age. Declaring the part on rabbits
-with a long default makes age visible, and runs then show whether the default
-should come down.
+is unknown. The page shows a rabbit's age from entry 13, so watching runs can
+show whether a length is needed and how long it should be.
 
 The same part ends a corpse after some days, a fire that burns out, or water
 that dries up, so the world never needs a system that knows which entity
@@ -49,9 +49,10 @@ measure it.
 
 ## Open questions
 
-Whether rabbits declare it, with what default, and what runs would justify
-lowering it. Making their age visible needs an age field in the census and a
-measure in `compare.py`.
+Whether rabbits set a lifespan, with what default, and what runs would justify
+lowering it. They already carry the part, so this is a setting on the species.
+The page shows a creature's age from entry 13, and measuring it across runs
+still needs an age field in the census and a measure in `compare.py`.
 
 Whether a rabbit's lifespan later becomes a gene, which needs a tradeoff to
 stop it pinning to its upper bound, per

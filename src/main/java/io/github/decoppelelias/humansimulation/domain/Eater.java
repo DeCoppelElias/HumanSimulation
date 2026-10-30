@@ -2,6 +2,7 @@ package io.github.decoppelelias.humansimulation.domain;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -45,5 +46,10 @@ final class Eater implements Component {
     @Override
     public List<Feature> features() {
         return foods.stream().map(Feature::takes).toList();
+    }
+
+    @Override
+    public Map<String, Double> shown() {
+        return Map.of();
     }
 }

@@ -3,6 +3,7 @@ package io.github.decoppelelias.humansimulation.domain;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 class PlantTest {
@@ -27,5 +28,10 @@ class PlantTest {
         Plant grass = new Plant(() -> values.number(Edible.NOURISHMENT));
         values.set(Edible.NOURISHMENT, 20);
         assertThat(grass.amount()).isEqualTo(20);
+    }
+
+    @Test
+    void showsItsAmountToAPerson() {
+        assertThat(new Plant(() -> 15).shown()).isEqualTo(Map.of("amount", 15.0));
     }
 }

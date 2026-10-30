@@ -2,6 +2,7 @@ package io.github.decoppelelias.humansimulation.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 class MeatTest {
@@ -14,5 +15,10 @@ class MeatTest {
         assertThat(meat.amount()).isEqualTo(20);
         assertThat(meat.seenView()).contains(new Edible.Amount(20));
         assertThat(meat.features()).containsExactly(Features.MEAT);
+    }
+
+    @Test
+    void showsItsAmountToAPerson() {
+        assertThat(new Meat(() -> 30).shown()).isEqualTo(Map.of("amount", 30.0));
     }
 }
