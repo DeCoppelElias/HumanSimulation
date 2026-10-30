@@ -2,14 +2,15 @@ package io.github.decoppelelias.humansimulation.domain;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalInt;
 
-/** Counts its carrier's days and ends it when they reach the species' lifespan, read live. */
+/** Counts its carrier's days, and ends it when they reach the species' lifespan, read live, where the species sets one. */
 final class Lifespan implements Component {
     static final String LIFESPAN = "lifespan";
     static final String AGED = "aged";
 
-    /** Days lived, and the ticks it still survives. */
-    record Own(int age, int daysLeft) {}
+    /** Days lived, and the ticks it still survives where the species sets a lifespan. */
+    record Own(int age, OptionalInt daysLeft) {}
 
     private final SettingValues settings;
     private int age;
@@ -29,7 +30,7 @@ final class Lifespan implements Component {
 
     @Override
     public Record ownView() {
-        return new Own(age, Math.max(0, settings.whole(LIFESPAN) - age - 1));
+        return new Own(age, daysLeft());
     }
 
     @Override
@@ -45,6 +46,12 @@ final class Lifespan implements Component {
     @Override
     public Optional<String> tick() {
         age++;
-        return age >= settings.whole(LIFESPAN) ? Optional.of(AGED) : Optional.empty();
+        return settings.declares(LIFESPAN) && age >= settings.whole(LIFESPAN) ? Optional.of(AGED) : Optional.empty();
+    }
+
+    private OptionalInt daysLeft() {
+        return settings.declares(LIFESPAN)
+                ? OptionalInt.of(Math.max(0, settings.whole(LIFESPAN) - age - 1))
+                : OptionalInt.empty();
     }
 }
