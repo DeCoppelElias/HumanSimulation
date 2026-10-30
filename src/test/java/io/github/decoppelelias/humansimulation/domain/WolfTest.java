@@ -27,7 +27,7 @@ class WolfTest {
                         Map.entry("sum.Meat", 0.0),
                         Map.entry("near.Meat", 1.0),
                         Map.entry("hungry.near.Meat", 2.0),
-                        Map.entry("sum.takes.Meat", -0.2));
+                        Map.entry("near.takes.Meat", 0.0));
     }
 
     @Test

@@ -1,0 +1,16 @@
+{
+  "about": "Entry 12's gate: rabbits evolved beside wolves against rabbits evolved without them, tested beside wolves drawn from the evolving arm. Expectations are in docs/roadmap/12-fleeing.md.",
+  "seeds": "1-30",
+  "species": "rabbit",
+  "world": ["--width", "80", "--height", "80", "--set", "world.grassPerDrop=75", "--set", "world.grassDropInterval=2"],
+  "evolve": {"days": 1000, "founders": 160, "exportDays": [], "flags": ["--spawn", "wolf=24"], "mustSurvive": ["wolf"]},
+  "control": {"flags": []},
+  "sample": 10,
+  "test": {
+    "days": 500,
+    "seedOffset": 1000,
+    "world": ["--width", "40", "--height", "40", "--set", "world.grassPerDrop=28", "--set", "world.grassDropInterval=3"],
+    "partners": {"wolf": 4},
+    "watch": {"species": "wolf", "day": 250}
+  }
+}

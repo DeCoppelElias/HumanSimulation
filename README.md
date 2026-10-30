@@ -99,8 +99,9 @@ Each thing in view shows features: `Plant` or `Meat` for the food it is, and
 `takes.Plant` or `takes.Meat` for the food it eats. Each feature has three
 genes: `near.X` pulls toward the nearest one, `hungry.near.X` adds to that pull
 as the creature gets hungry, and `sum.X` pulls by closeness to all of them. A rabbit starts pulled toward grass
-and a little away from other rabbits, a wolf toward rabbits and a little away
-from other wolves. Every pull can go negative, so a rabbit can evolve to walk
+and a little away from other rabbits and from anything that eats meat, a wolf
+toward rabbits and a little away from other wolves. Nothing tells a rabbit that
+a wolf is dangerous, and beside wolves it evolves to keep further away. Every pull can go negative, so a rabbit can evolve to walk
 away from food, and starve for it.
 
 ## Comparing
@@ -116,7 +117,8 @@ A preset in `tools/experiments/` names the seeds, days, shared flags and the
 variants, and flags on the command line override it. `watchable` is the world
 the page starts from. `mutation-ramp` runs mutating rabbits against clones as
 food runs short. `predator` puts 6 wolves among 40 rabbits on a 40 by 40 grid
-for 2000 days.
+for 2000 days. `fleeing` puts 24 wolves among 160 rabbits on an 80 by 80 grid,
+large enough that both usually last the 2000 days.
 
 Per species, the report gives the day each world died out, how far each gene's
 mean moved from day 1, and each cause's share of the species' deaths, such as
@@ -137,6 +139,15 @@ world, how many rabbits each group sustains alone, and where the genes moved.
 Its files stay under `target/ancestor-competition/`, one folder per seed.
 
     python tools/ancestor_competition.py tools/experiments/rabbit-learns-gate.json
+
+A preset with a `control` block evolves a second arm beside the first on other
+flags and compares against its survivors instead of the starting genome. One
+with `test.partners` also spawns that many of another species, drawn from the
+evolving arm's last day, into every test world. `rabbit-flees-gate` evolves
+rabbits with and without wolves, and its report counts the seeds where each
+gene ended below its start and below the control's.
+
+    python tools/ancestor_competition.py tools/experiments/rabbit-flees-gate.json
 
 ## Serving
 

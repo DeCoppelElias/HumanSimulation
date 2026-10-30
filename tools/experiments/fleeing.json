@@ -1,0 +1,13 @@
+{
+  "about": "Entry 12: wolves and fleeing rabbits side by side on a world large enough to keep both. Expectations are in docs/roadmap/12-fleeing.md.",
+  "seeds": "1-30",
+  "days": 2000,
+  "flags": [
+    "--width", "80", "--height", "80",
+    "--set", "world.grassPerDrop=75", "--set", "world.grassDropInterval=2",
+    "--spawn", "rabbit=160", "--spawn", "wolf=24"
+  ],
+  "variants": {
+    "fleeing": []
+  }
+}

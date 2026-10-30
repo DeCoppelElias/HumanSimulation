@@ -207,6 +207,9 @@ and borrows the comparison script's runner. It evolves a world
 per seed with mutation on and exports its survivors, draws a sample of them
 with a seed it records, and then, with mutation off, runs the sample beside the
 genome evolution started from, and each group alone, on a test seed of its own.
+A preset can name a control arm instead, evolved beside the first on other
+flags, whose sampled survivors take the starting genome's place, and partner
+species drawn from the evolving arm's last day, spawned into every test world.
 Mutation off makes every rabbit an exact copy of a founder, so the survivors'
 exported genomes say which group each descends from. It reports the evolved
 share of the shared world, the population each group sustains alone, and the
