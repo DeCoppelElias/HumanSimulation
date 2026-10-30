@@ -97,6 +97,10 @@ def check_apart(sample, other):
         raise ValueError("the two samples share a genome, so the groups cannot be told apart")
 
 
+def partner_survivors(export, partners, day):
+    return {species: on_day(read_genomes(export, species), day) for species in partners}
+
+
 def draw_partners(survivors, partners, label):
     """The other species the evolving arm lived beside, drawn from its last day, so the test meets what it evolved against."""
     drawn = []
@@ -185,11 +189,13 @@ def report(results, original, export_days, sample_seed=None, against="original g
         }
         if controlled:
             genes[gene]["controlMedians"] = _day_medians(results, controlled, "controlGenes", gene, export_days)
-            genes[gene]["belowControl"] = sum(
-                results[seed]["genes"][last][gene] < results[seed]["controlGenes"][last][gene]
+            pairs = [
+                (results[seed]["genes"][last][gene], results[seed]["controlGenes"][last][gene])
                 for seed in controlled
                 if gene in results[seed]["genes"][last] and gene in results[seed]["controlGenes"][last]
-            )
+            ]
+            genes[gene]["belowControl"] = sum(evolved < control for evolved, control in pairs)
+            genes[gene]["belowControlOf"] = len(pairs)
     found = {
         "seeds": len(results),
         "sampleSeed": sample_seed,
@@ -282,7 +288,7 @@ def format_text(one, seconds, per_seed):
         counts = f"{row['up']} of {row['of']}"
         if controlled:
             counts = f"{counts:<{len(f'up on day {days[-1]}')}}  {row['down']} of {row['of']}"
-            counts = f"{counts:<{len(f'up on day {days[-1]}  down on day {days[-1]}')}}  {row['belowControl']} of {row['of']}"
+            counts = f"{counts:<{len(f'up on day {days[-1]}  down on day {days[-1]}')}}  {row['belowControl']} of {row['belowControlOf']}"
         out.append(f"  {gene:<{width}}  {_number(row['original']):>8}  {medians}  {counts}")
     if per_seed:
         out += ["", f"per seed: evolved share in one world, rabbits sustained alone by evolved / {against}"]
@@ -405,9 +411,7 @@ def _prepare(args, preset, seeds, evolved_census, export_days):
             control_genes = None
         partners = test.get("partners", {})
         if partners:
-            survivors_by_species = {
-                one: on_day(read_genomes(folder / "evolve.jsonl", one), evolve["days"]) for one in partners
-            }
+            survivors_by_species = partner_survivors(folder / "evolve.jsonl", partners, evolve["days"])
             drawn = draw_partners(survivors_by_species, partners, f"{args.sample_seed}:{seed}")
             if drawn is None:
                 results[seed] = {"status": "too few", "arm": "partners"}

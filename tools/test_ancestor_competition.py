@@ -351,6 +351,18 @@ class PartnersTest(unittest.TestCase):
     def test_too_few_of_a_partner_draws_nothing(self):
         self.assertIsNone(ac.draw_partners({"wolf": self.WOLVES[:3]}, {"wolf": 4}, "1:7"))
 
+    def test_partners_come_from_the_last_day_of_the_export(self):
+        path = Path(ac.WORK.parent / "partners-test.jsonl")
+        path.parent.mkdir(parents=True, exist_ok=True)
+        lines = [{**genome(1, ORIGINAL, 1), "species": "wolf"}, {**genome(2, ORIGINAL, 1000), "species": "wolf"}]
+        lines.append(genome(3, ORIGINAL, 1000))
+        path.write_text("\n".join(json.dumps(one) for one in lines) + "\n", encoding="utf-8")
+        try:
+            found = ac.partner_survivors(path, {"wolf": 1}, 1000)
+            self.assertEqual({species: [one["id"] for one in ones] for species, ones in found.items()}, {"wolf": [2]})
+        finally:
+            path.unlink()
+
     def test_every_test_world_spawns_the_partners(self):
         sources = ac.sources_of(Path("seed-1"), partners=True)
         for group in ("shared", "evolved", "original"):

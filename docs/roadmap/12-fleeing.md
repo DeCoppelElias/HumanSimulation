@@ -41,7 +41,8 @@ comparison group. A preset without one runs as before, so
   and the control has none.
 - Sample: 10 of each arm's day 1000 survivors that differ from the starting
   genome, and 4 of the evolving arm's day 1000 wolves. A seed is not tested
-  when its wolves died out during evolution or either arm has fewer than 10.
+  when its wolves died out during evolution, either arm has fewer than 10, or
+  fewer than 4 wolves are alive to sample.
 - Test: mutation off, entry 9's test world, 40×40 with 28 grass every 3 days
   for 500 days, plus the 4 sampled wolves spawned on day 1. One world holds 10
   of each group, and each group also runs in a world of its own, all beside the
@@ -68,8 +69,9 @@ Acceptance:
 
 This mark replaced one on the head-to-head share, which wanted the with-wolves
 group above one half of the shared world in 70% of seeds and reached 36% to
-52% over seven tuning runs. It was set after those runs, when the gene drift
-was already known to be lopsided. Where both arms' other `takes.Meat` genes,
+52% over seven tuning runs. Elias changed it after those runs, when the gene
+drift was already known to be lopsided, so the result carries less weight than
+a mark set beforehand. Where both arms' other `takes.Meat` genes,
 both species' `speed` and the head-to-head numbers land is reported with no
 mark, and Elias reads it before the entry is done.
 
@@ -77,9 +79,10 @@ Tuning `fleeing.json` changes only the wolf's settings, the rabbit's
 `nourishment`, the starting counts and the world's food, with a budget of 10
 runs. Tuning the gate changes only the test world's wolf count, length and
 food, the group sizes and the evolution world's food, with a budget of 8 runs
-counted from the switch to sampled wolves.
-Neither changes the marks, the brain, the bounds, the baselines, the wolf's
-speed or stride, or a world's size. Every run uses `--jobs 6`, one at a time,
+counted from the switch to sampled wolves. Neither changes the marks, the
+brain, the bounds, the baselines, the wolf's speed or stride, or a world's
+size; the gate's sampled wolves and its mark changed only on Elias's word.
+Every run uses `--jobs 6`, one at a time,
 and none may take over 30 minutes; measured while grilling, `fleeing.json`
 takes about 4 minutes and the gate about 5. Each run is logged with the symptom
 it addressed. If a budget runs out without a pass, Elias gets the log, the last
