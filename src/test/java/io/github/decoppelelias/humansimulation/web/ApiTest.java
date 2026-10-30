@@ -78,6 +78,23 @@ class ApiTest {
     }
 
     @Test
+    void aSnapshotCarriesWhatAPersonSees() {
+        String id = newWorld();
+        command(id, "{\"type\":\"spawn\",\"species\":\"rabbit\",\"count\":1}");
+        client.post("/worlds/" + id + "/step", "{\"days\":1}");
+        JsonNode rabbit = client.get("/worlds/" + id).json().findValues("entities").stream()
+                .flatMap(JsonNode::valueStream)
+                .filter(entity -> entity.get("species").asString().equals("rabbit"))
+                .findFirst()
+                .orElseThrow();
+        JsonNode info = rabbit.get("info");
+        assertThat(info.get("age").asDouble()).isEqualTo(1.0);
+        assertThat(info.has("reserve")).isTrue();
+        assertThat(info.has("daysToStarve")).isTrue();
+        assertThat(info.has("daysToLive")).isFalse();
+    }
+
+    @Test
     void createTakesASizeAndASeed() {
         JsonNode snapshot = client.post("/worlds", "{\"width\":5,\"height\":4,\"seed\":42}")
                 .json()
