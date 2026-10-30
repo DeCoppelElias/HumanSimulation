@@ -1,6 +1,6 @@
 # 13. Inspecting creatures
 
-Status: not started.
+Status: done.
 
 Looking at one creature closely. The values a person sees come from the
 snapshot, where every component declares what it shows, per
