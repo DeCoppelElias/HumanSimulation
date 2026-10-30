@@ -301,6 +301,21 @@ class ControlGenesTest(unittest.TestCase):
     def test_without_a_control_there_is_no_column(self):
         one = ac.report(ReportTest.RESULTS, {"near.Plant": 0.2}, [500, 1000])
         self.assertNotIn("control day", ac.format_text(one, 1.0, per_seed=False))
+        self.assertNotIn("below control", ac.format_text(one, 1.0, per_seed=False))
+
+    def test_counts_seeds_below_the_start_and_below_their_control(self):
+        def seed(evolved_end, control_end):
+            return {
+                **tested(0.5, 10, 10, {"g": 0.0}, {"g": evolved_end}),
+                "controlGenes": {500: {"g": 0.0}, 1000: {"g": control_end}},
+            }
+
+        results = {1: seed(-1.0, -0.5), 2: seed(-0.6, -0.8), 3: seed(-0.4, -0.3), 4: seed(-0.5, -0.4)}
+        row = ac.report(results, {"g": -0.5}, [500, 1000])["genes"]["g"]
+        self.assertEqual((row["up"], row["down"], row["belowControl"]), (1, 2, 3))
+        text = ac.format_text(ac.report(results, {"g": -0.5}, [500, 1000]), 1.0, per_seed=False)
+        self.assertIn("down on day 1000", text)
+        self.assertIn("below control on day 1000", text)
 
 
 class WatchTest(unittest.TestCase):

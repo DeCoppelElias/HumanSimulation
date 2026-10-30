@@ -180,10 +180,16 @@ def report(results, original, export_days, sample_seed=None, against="original g
             "original": start,
             "medians": _day_medians(results, tested, "genes", gene, export_days),
             "up": sum(value > start for value in ended),
+            "down": sum(value < start for value in ended),
             "of": len(ended),
         }
         if controlled:
             genes[gene]["controlMedians"] = _day_medians(results, controlled, "controlGenes", gene, export_days)
+            genes[gene]["belowControl"] = sum(
+                results[seed]["genes"][last][gene] < results[seed]["controlGenes"][last][gene]
+                for seed in controlled
+                if gene in results[seed]["genes"][last] and gene in results[seed]["controlGenes"][last]
+            )
     found = {
         "seeds": len(results),
         "sampleSeed": sample_seed,
@@ -232,7 +238,8 @@ def format_text(one, seconds, per_seed):
     start = "original genome" if against == "original genome" else "genome both arms started from"
     width = max([12] + [len(gene) for gene in one["genes"]])
     columns = [("medians", f"day {day} median", day) for day in days]
-    if any("controlMedians" in row for row in one["genes"].values()):
+    controlled = any("controlMedians" in row for row in one["genes"].values())
+    if controlled:
         columns += [("controlMedians", f"control day {day} median", day) for day in days]
     out = [
         f"ancestor competition: {one['seeds']} seeds, {tested} tested, sample seed {one['sampleSeed']}",
@@ -265,11 +272,18 @@ def format_text(one, seconds, per_seed):
     out += [
         "",
         f"evolved genes against the {start}, mean of each seed's survivors",
-        f"  {'gene':<{width}}  original  " + "  ".join(title for _, title, _ in columns) + f"  up on day {days[-1]}",
+        f"  {'gene':<{width}}  original  "
+        + "  ".join(title for _, title, _ in columns)
+        + f"  up on day {days[-1]}"
+        + (f"  down on day {days[-1]}  below control on day {days[-1]}" if controlled else ""),
     ]
     for gene, row in one["genes"].items():
         medians = "  ".join(f"{_number(row[key][day]):>{len(title)}}" for key, title, day in columns)
-        out.append(f"  {gene:<{width}}  {_number(row['original']):>8}  {medians}  {row['up']} of {row['of']}")
+        counts = f"{row['up']} of {row['of']}"
+        if controlled:
+            counts = f"{counts:<{len(f'up on day {days[-1]}')}}  {row['down']} of {row['of']}"
+            counts = f"{counts:<{len(f'up on day {days[-1]}  down on day {days[-1]}')}}  {row['belowControl']} of {row['of']}"
+        out.append(f"  {gene:<{width}}  {_number(row['original']):>8}  {medians}  {counts}")
     if per_seed:
         out += ["", f"per seed: evolved share in one world, rabbits sustained alone by evolved / {against}"]
         for seed, result in one["perSeed"].items():

@@ -60,7 +60,11 @@ were tried first, as a fixed opponent that sidesteps the Red Queen problem
 (Cliff and Miller), where both species improving can look like neither
 improving. Both rabbit arms evolve to about twice the baseline wolf's speed, so
 those wolves starved within weeks and the test became a contest for grass, which
-the control won. Measuring the wolves themselves still needs
+the control won. With sampled wolves the share came out near a coin flip,
+since fleeing costs grazing, so entry 12's mark reads the drift of the gene the
+lesson is expected in, and the head-to-head is reported without one. Whether a
+control fed down to the evolving arm's density would make the head-to-head
+readable is open. Measuring the wolves themselves still needs
 day-1000 wolves against day-0 rabbits, and freezing one species while the other
 evolves needs mutation per species rather than per world. With mutation on, a
 group can no longer be read off an exact genome and needs a tag.
