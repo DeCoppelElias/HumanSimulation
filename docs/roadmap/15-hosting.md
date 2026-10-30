@@ -5,7 +5,9 @@ Status: not started.
 The app as a link anyone can open. Each visitor's worlds belong to their
 session, abandoned worlds are cleaned up, and a cap on worlds across sessions
 keeps a spike in traffic from exhausting the machine. A container image and a
-deploy workflow put it on Fly.io.
+deploy workflow put it on Fly.io. The agent building the entry sets up and
+checks the Fly app through Fly's MCP server rather than by hand, which is also a
+first try of that server.
 
 API tests cover that a second session can neither see nor delete the first's
 worlds, that the cap refuses a new world once reached, and that an abandoned
