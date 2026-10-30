@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-03. Revised 2026-10-28.
+Accepted, 2026-09-03. Revised 2026-10-30.
 
 ## Context
 
@@ -73,6 +73,16 @@ and the census. Roadmap entry 13 shows a selected creature's genes on the page,
 which reads snapshots, so the genes would reach the snapshot anyway and the
 query would be a second way to read them.
 
+Entry 13 shows a selected creature's age and reserve, and lists every creature
+sorted by either. An endpoint returning one entity's values would send less,
+and the sorted list needs the values of every creature anyway, so it would need
+a second endpoint and a fetch per day racing the stream. Filling `info` by
+reflecting over every numeric field of every own view would show a new
+component with no work, and it leaks values that mean nothing to a person, such
+as the day a creature last bred, and names its keys from code, so two
+`daysLeft` fields collide. Writing age and reserve in the world's snapshot
+method by hand means editing the world for every new value.
+
 A snapshot returned by applying pending commands while paused could carry the
 number of the day those commands belong to, the next one. The counter on a
 paused page would then jump forward on a click and stay put on a step.
@@ -141,7 +151,19 @@ public record WorldSnapshot(long seed, int day, int width, int height, List<Stri
 
 `genes` holds every gene of the entity's genome by name, and is empty for an
 entity without genes, such as grass. It is kept apart from `info`, which holds
-values for drawing, because an export reads it back as a spawn's genes.
+values worth showing a person, because an export reads it back as a spawn's
+genes.
+
+Every component declares the values it shows a person, by name, with no
+default, beside the views in [0013](0013-perception-is-one-type.md), and `info`
+is those of all its carrier's parts. `Lifespan` shows `age`, and `daysToLive`
+where its species sets a lifespan. `Metabolism` shows `reserve` and
+`daysToStarve`, and `Plant` and `Meat` show `amount`. The rest show nothing.
+
+```java
+// on Component
+Map<String, Double> shown();
+```
 
 Commands are the only way in. Spawning entities, resetting the world, editing a
 setting or restoring its default, and setting an entity alight are all

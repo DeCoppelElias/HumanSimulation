@@ -124,7 +124,8 @@ behaviour.
 A component may update itself once a day from its own state, and it may end
 its carrier, naming the cause. A metabolism ends it as starved when its reserve
 runs out. A lifespan counts its carrier's days and ends it as aged when they
-run out, so grass left uneaten withers. Anything that needs a neighbour or a
+run out, so grass left uneaten withers. Rabbits and wolves carry one with no
+length set, so it counts their age and never ends them. Anything that needs a neighbour or a
 tile is a rule of the world instead.
 
 A genome holds what varies between individuals of a species and what changes
@@ -296,8 +297,8 @@ the core. A run with no browser behaves exactly like a watched one.
 
 State leaves as a snapshot of the whole world each day: the seed, the day
 number, the species the world knows, the grid, and for each tile its fields and
-what stands on it with the values worth drawing, including which of it is a
-creature, and its genes, and the current value of every setting. Commands are the only way in,
+what stands on it with the values worth showing a person, which each component
+declares for itself, including which of it is a creature, and its genes, and the current value of every setting. Commands are the only way in,
 covering spawning, resetting, editing a setting or restoring its default, and
 anything else the interface initiates. They queue and drain at the start of a day. The interface never
 reaches into the model. A command is checked before it changes anything, and a

@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-10-26.
+Accepted, 2026-10-26. Revised 2026-10-30.
 
 ## Context
 
@@ -40,6 +40,11 @@ ends one, so their age became visible. Nothing reports how long rabbits live,
 so the default would be a guess, and age needs a census field and a measure of
 its own. That half waits in `docs/ideas/lifespan.md`.
 
+Entry 13 shows a creature's age, which nothing counted. A separate part that
+only counts days would sit beside `Lifespan` on grass doing half its work. A
+birth day held on the entity would make age the one shown value that no part
+declares, per [0007](0007-state-leaves-as-a-snapshot-commands-go-in.md).
+
 ## Decision
 
 Every part may update itself once a day. `Component` has a `tick` that does
@@ -69,13 +74,15 @@ carrier's days and ends it as `aged` on the day they run out. Its length is a
 setting of the declaring species, `lifespan`, per
 [0017](0017-every-number-is-a-setting-or-a-gene.md). Grass declares it, so a
 grass dropped at the end of one day can be eaten on each of the next `lifespan`
-days and withers in the Tick of the last. Rabbits do not declare it.
+days and withers in the Tick of the last. Rabbits and wolves carry `Lifespan`
+without declaring the setting, so it counts their age and never ends them.
 
 The feed rule ends what it eats as `eaten`. Every removal names its cause, and
 the census counts them, per
 [0007](0007-state-leaves-as-a-snapshot-commands-go-in.md).
 
-`Lifespan`'s own view reports its age and the days left. No brain reads it yet.
+`Lifespan`'s own view reports its age, and the days left where the species sets
+a lifespan. No brain reads it yet.
 
 The brain has its own slot rather than sitting among the parts, per
 [0003](0003-entities-carry-components.md), so Tick does not tick it. A brain
