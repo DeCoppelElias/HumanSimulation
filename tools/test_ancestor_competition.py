@@ -264,6 +264,12 @@ class ControlTest(unittest.TestCase):
         self.assertIn("control", text)
         self.assertNotIn("original genome", text)
 
+    def test_per_seed_rows_name_the_control_and_the_arm_that_failed(self):
+        results = {**ReportTest.RESULTS, 9: {"status": "died out", "arm": "control"}}
+        text = ac.format_text(ac.report(results, {"near.Plant": 0.2}, [500, 1000], against="control"), 1.0, True)
+        self.assertIn("evolved / control", text)
+        self.assertIn("died out in the control", text)
+
 
 class PartnerTest(unittest.TestCase):
     CENSUS = ['{"day":1,"population":{"rabbit":20,"wolf":4}}', '{"day":2,"population":{"rabbit":18,"wolf":0}}']

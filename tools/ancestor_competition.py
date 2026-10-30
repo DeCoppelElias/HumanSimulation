@@ -250,10 +250,11 @@ def format_text(one, seconds, per_seed):
         medians = "  ".join(f"{_number(row[key][day]):>{len(title)}}" for key, title, day in columns)
         out.append(f"  {gene:<{width}}  {_number(row['original']):>8}  {medians}  {row['up']} of {row['of']}")
     if per_seed:
-        out += ["", "per seed: evolved share in one world, rabbits sustained alone by evolved / original"]
+        out += ["", f"per seed: evolved share in one world, rabbits sustained alone by evolved / {against}"]
         for seed, result in one["perSeed"].items():
             if result["status"] != "tested":
-                out.append(f"  {seed:<6} {result['status']}")
+                arm = f" in the {result['arm']}" if "arm" in result else ""
+                out.append(f"  {seed:<6} {result['status']}{arm}")
                 continue
             out.append(
                 f"  {seed:<6} share {_number(result['shared']['share'])}"
@@ -264,7 +265,7 @@ def format_text(one, seconds, per_seed):
 
 def parse_args(argv):
     parser = argparse.ArgumentParser(
-        description="Evolve populations, then set them against the genome they started from."
+        description="Evolve populations, then set them against the genome they started from or a control arm."
     )
     parser.add_argument("preset", help="a JSON preset, such as tools/experiments/rabbit-learns-gate.json")
     parser.add_argument("--seeds", help="an inclusive range such as 1-30")
@@ -353,11 +354,11 @@ def _prepare(args, preset, seeds, evolved_census, export_days):
                 raise ValueError(f"seed {seed}'s control started from another genome than its evolving arm")
             kept = on_day(control, evolve["days"])
             if not kept:
-                results[seed] = {"status": "died out"}
+                results[seed] = {"status": "died out", "arm": "control"}
                 continue
             other = draw_sample(evolved_survivors(kept, original), preset["sample"], f"{args.sample_seed}:{seed}:control")
             if other is None:
-                results[seed] = {"status": "too few"}
+                results[seed] = {"status": "too few", "arm": "control"}
                 continue
             check_apart(sample, other)
             other_lines = [json.dumps(one) for one in other]
