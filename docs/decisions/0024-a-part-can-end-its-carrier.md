@@ -35,10 +35,10 @@ the rule would draw from the shared generator for every carrier every day, and
 a test of it would need dice. A drop's leftovers vanishing together is also the
 sign on the page that food was lost.
 
-Rabbits could declare a lifespan now, with a default long enough that it rarely
-ends one, so their age became visible. Nothing reports how long rabbits live,
-so the default would be a guess, and age needs a census field and a measure of
-its own. That half waits in `docs/ideas/lifespan.md`.
+Rabbits could set a lifespan length now, with a default long enough that it
+rarely ends one. Nothing measures how long rabbits live across runs, so the
+default would be a guess, and measuring it needs a census field and a measure
+of its own. That half waits in `docs/ideas/lifespan.md`.
 
 Entry 13 shows a creature's age, which nothing counted. A separate part that
 only counts days would sit beside `Lifespan` on grass doing half its work. A

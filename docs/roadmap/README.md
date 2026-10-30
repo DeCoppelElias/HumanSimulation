@@ -20,7 +20,7 @@ says what has to come before it. A dropped entry's idea goes back to
 Each entry is built on its own branch and merged into `master` when it is
 finished, per [0002](../decisions/0002-replace-the-model-layer-in-place.md), so
 `master` holds the last finished entry. The 2022 application stays on the
-`v1.0-original-2022` tag. Its inspection features wait for entry 13.
+`v1.0-original-2022` tag.
 
 Each entry lists the 2022 features it brings back and the regression rules it
 carries, as acceptance lines. A 2022 feature left out on purpose is in
