@@ -109,12 +109,25 @@ public final class World {
                         entity.species().name(),
                         entity.species().spriteKey(),
                         entity.brain().isPresent(),
-                        Map.of(),
+                        shown(entity),
                         entity.genome().scalars()));
             }
             tiles.add(new WorldSnapshot.TileView(at, Map.of(), standing));
         }
         return new WorldSnapshot(seed, day, width, height, List.copyOf(species.keySet()), tiles, table.current());
+    }
+
+    /** What every part of the entity shows a person; two parts showing one name is a species bug. */
+    private static Map<String, Double> shown(Entity entity) {
+        Map<String, Double> shown = new TreeMap<>();
+        for (Component part : entity.parts()) {
+            part.shown().forEach((key, value) -> {
+                if (shown.putIfAbsent(key, value) != null) {
+                    throw new IllegalStateException(entity.species().name() + " shows " + key + " twice");
+                }
+            });
+        }
+        return shown;
     }
 
     private List<Decision> decide() {

@@ -34,8 +34,8 @@ final class Animal {
         baseline.putAll(pulls);
         List<Setting> settings = new ArrayList<>(shared(name));
         settings.addAll(ownSettings);
-        List<Function<Spawn, Component>> parts =
-                new ArrayList<>(List.of(Metabolism::of, spawn -> new Fertility(spawn.day()), spawn -> new Eater(diet)));
+        List<Function<Spawn, Component>> parts = new ArrayList<>(
+                List.of(Metabolism::of, spawn -> new Fertility(spawn.day()), spawn -> new Eater(diet), Lifespan::of));
         parts.addAll(carried);
         return new Species(
                 name,
