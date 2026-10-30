@@ -6,7 +6,7 @@ import { Chart } from "./Chart";
 import { Controls } from "./Controls";
 import { CreatureTable } from "./CreatureTable";
 import { Grid } from "./Grid";
-import { inspectTile, resolve, sight, type Picked } from "./inspect";
+import { afterClick, inspectTile, resolve, sightOf, type Picked } from "./inspect";
 import { Inspector } from "./Inspector";
 import { isNewRun } from "./run";
 import { SettingsPanel } from "./SettingsPanel";
@@ -51,11 +51,6 @@ export function WorldView({ api, id, onLeave, onError }: Props) {
         return <p>Connecting…</p>;
     }
     const resolved = resolve(snapshot, picked);
-    const viewRange = resolved.kind === "alive" ? resolved.entity.genes.viewRange : undefined;
-    const seenTiles =
-        resolved.kind === "alive" && resolved.entity.creature && viewRange !== undefined
-            ? sight(resolved.at, viewRange, snapshot.width, snapshot.height)
-            : [];
     return (
         <section className="world">
             <div className="status">
@@ -85,12 +80,12 @@ export function WorldView({ api, id, onLeave, onError }: Props) {
             <Grid
                 snapshot={snapshot}
                 play={play}
-                sight={seenTiles}
+                sight={sightOf(snapshot, resolved)}
                 onTileClick={(at) => {
                     if (mode === "inspect") {
                         const click = inspectTile(snapshot, at);
                         setTile(click.entities);
-                        setPicked(click.entities.length === 0 ? null : (click.select ?? picked));
+                        setPicked(afterClick(picked, click));
                     } else if (spawnAs !== null) {
                         void api
                             .command(id, { type: "spawnAt", species: spawnAs, at })

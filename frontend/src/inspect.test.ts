@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 import {
+    afterClick,
     creatureRows,
     formatValue,
     goneMessage,
@@ -7,6 +8,7 @@ import {
     label,
     resolve,
     sight,
+    sightOf,
     sortRows,
 } from "./inspect";
 import type { EntityView, WorldSnapshot } from "./types";
@@ -76,6 +78,40 @@ describe("inspectTile", () => {
     });
     test("an empty tile has nothing", () => {
         expect(inspectTile(snapshot, { x: 2, y: 0 })).toEqual({ entities: [], select: null });
+    });
+});
+
+describe("afterClick", () => {
+    const before = { id: 4, species: "rabbit" };
+    test("an empty tile clears the selection", () => {
+        expect(afterClick(before, inspectTile(snapshot, { x: 2, y: 0 }))).toBeNull();
+    });
+    test("a crowded tile keeps the selection until a row is picked", () => {
+        expect(afterClick(before, inspectTile(snapshot, { x: 1, y: 0 }))).toEqual(before);
+    });
+    test("a lone entity replaces it", () => {
+        expect(afterClick(null, inspectTile(snapshot, { x: 0, y: 0 }))).toEqual(before);
+    });
+});
+
+describe("sightOf", () => {
+    test("a selected creature sees its circle", () => {
+        expect(sightOf(snapshot, resolve(snapshot, { id: 4, species: "rabbit" }))).toEqual([
+            { x: 0, y: 0 },
+            { x: 1, y: 0 },
+            { x: 2, y: 0 },
+        ]);
+    });
+    test("an entity that is no creature sees nothing, whatever its genes", () => {
+        const seeing = { ...grass(8), genes: { viewRange: 3 } };
+        expect(sightOf(snapshot, { kind: "alive", entity: seeing, at: { x: 1, y: 0 } })).toEqual(
+            [],
+        );
+    });
+    test("a creature without the gene, and no selection, see nothing", () => {
+        const blind = { ...rabbit(4, 9, 2), genes: {} };
+        expect(sightOf(snapshot, { kind: "alive", entity: blind, at: { x: 0, y: 0 } })).toEqual([]);
+        expect(sightOf(snapshot, { kind: "none" })).toEqual([]);
     });
 });
 

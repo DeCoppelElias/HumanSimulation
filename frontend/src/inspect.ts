@@ -35,6 +35,22 @@ export function inspectTile(snapshot: WorldSnapshot, at: GridPosition): TileClic
     };
 }
 
+/** An empty tile deselects; a crowded one keeps the pick until a row of its list is chosen. */
+export function afterClick(previous: Picked | null, click: TileClick): Picked | null {
+    return click.entities.length === 0 ? null : (click.select ?? previous);
+}
+
+/** Only a creature with a view range has a sight circle to draw. */
+export function sightOf(snapshot: WorldSnapshot, resolved: Resolved): GridPosition[] {
+    if (resolved.kind !== "alive" || !resolved.entity.creature) {
+        return [];
+    }
+    const viewRange = resolved.entity.genes.viewRange;
+    return viewRange === undefined
+        ? []
+        : sight(resolved.at, viewRange, snapshot.width, snapshot.height);
+}
+
 /** The grid's circle: the gene rounded, every tile whose squared distance is within its square. */
 export function sight(
     at: GridPosition,
