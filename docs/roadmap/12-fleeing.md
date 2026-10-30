@@ -34,12 +34,18 @@ comparison group. A preset without one runs as before, so
   world and food for 1000 days, mutation on. One has wolves, which co-evolve,
   and the control has none.
 - Sample: 10 of each arm's day 1000 survivors that differ from the starting
-  genome. A seed is not tested when its wolves died out during evolution or
-  either arm has fewer than 10.
+  genome, and 4 of the evolving arm's day 1000 wolves. A seed is not tested
+  when its wolves died out during evolution or either arm has fewer than 10.
 - Test: mutation off, entry 9's test world, 40×40 with 28 grass every 3 days
-  for 500 days, plus 4 wolves at their baseline spawned on day 1. One world
-  holds 10 of each group, and each group also runs in a world of its own. The
-  groups are told apart by exact genome, as in entry 9.
+  for 500 days, plus the 4 sampled wolves spawned on day 1. One world holds 10
+  of each group, and each group also runs in a world of its own, all beside the
+  same wolves. The groups are told apart by exact genome, as in entry 9. Both
+  groups meet the wolves the evolving arm learned against, so the gate shows
+  that rabbits evolved beside wolves fare better against those wolves, which
+  is weaker than beating a fixed opponent. Wolves at their baseline were tried
+  first: both rabbit arms evolve to about twice their speed, so they starved
+  within weeks, the test became a contest for grass, and the control won it in
+  all four tuning runs.
 - Report: as entry 9's, naming the control where it names the original genome,
   plus the test worlds where wolves outlived day 250, and the drift of each
   arm's `takes.Meat` genes.
@@ -64,7 +70,8 @@ with no mark, and Elias reads it before the entry is done.
 Tuning `fleeing.json` changes only the wolf's settings, the rabbit's
 `nourishment`, the starting counts and the world's food, with a budget of 10
 runs. Tuning the gate changes only the test world's wolf count, length and
-food, the group sizes and the evolution world's food, with a budget of 8 runs.
+food, the group sizes and the evolution world's food, with a budget of 8 runs
+counted from the switch to sampled wolves.
 Neither changes the marks, the brain, the bounds, the baselines, the wolf's
 speed or stride, or a world's size. Every run uses `--jobs 6`, one at a time,
 and none may take over 30 minutes; measured while grilling, `fleeing.json`

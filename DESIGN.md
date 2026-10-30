@@ -347,7 +347,7 @@ variants of a world over many seeds and reports how each fared against the
 first, with an effect size and a significance test on every measure, and the roadmap
 entry that runs it says what the report should show. An ancestor competition
 script evolves populations, then sets the evolved genomes against the one they
-started from, together and apart. Together they are the only
+started from, or against a control evolved beside them, together and apart. Together they are the only
 thing that catches a build which compiles, passes every test, and quietly stops
 selecting for anything.
 

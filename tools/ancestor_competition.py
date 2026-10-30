@@ -97,6 +97,27 @@ def check_apart(sample, other):
         raise ValueError("the two samples share a genome, so the groups cannot be told apart")
 
 
+def draw_partners(survivors, partners, label):
+    """The other species the evolving arm lived beside, drawn from its last day, so the test meets what it evolved against."""
+    drawn = []
+    for species, count in sorted(partners.items()):
+        sample = draw_sample(survivors.get(species, []), count, f"{label}:{species}")
+        if sample is None:
+            return None
+        drawn += sample
+    return drawn
+
+
+def sources_of(folder, partners):
+    """The files each test world spawns from. Every world gets the same partners."""
+    extra = [folder / "partners.jsonl"] if partners else []
+    return {
+        "shared": [folder / "evolved.jsonl", folder / "original.jsonl", *extra],
+        "evolved": [folder / "evolved.jsonl", *extra],
+        "original": [folder / "original.jsonl", *extra],
+    }
+
+
 def lost_partners(census, partners):
     """Species the evolving arm needs beside it, such as the wolves that teach it, gone by its last day."""
     last = compare.rows_of(census)[-1]["population"]
@@ -368,14 +389,19 @@ def _prepare(args, preset, seeds, evolved_census, export_days):
             other_lines = original_lines(preset, original)
             others = [original]
             control_genes = None
+        partners = test.get("partners", {})
+        if partners:
+            survivors_by_species = {
+                one: on_day(read_genomes(folder / "evolve.jsonl", one), evolve["days"]) for one in partners
+            }
+            drawn = draw_partners(survivors_by_species, partners, f"{args.sample_seed}:{seed}")
+            if drawn is None:
+                results[seed] = {"status": "too few", "arm": "partners"}
+                continue
+            _write_lines(folder / "partners.jsonl", [json.dumps(one) for one in drawn])
         _write_lines(folder / "evolved.jsonl", [json.dumps(one) for one in sample])
         _write_lines(folder / "original.jsonl", other_lines)
-        sources = {
-            "shared": [folder / "evolved.jsonl", folder / "original.jsonl"],
-            "evolved": [folder / "evolved.jsonl"],
-            "original": [folder / "original.jsonl"],
-        }
-        for group, files in sources.items():
+        for group, files in sources_of(folder, bool(partners)).items():
             flags = test_flags(preset, files, folder / f"test-{group}.jsonl")
             jobs[(seed, group)] = (group, test_seed(preset, seed), test["days"], flags)
         results[seed] = {

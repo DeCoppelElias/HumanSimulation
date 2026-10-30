@@ -319,6 +319,35 @@ class WatchTest(unittest.TestCase):
         self.assertIn("wolf alive on day 250", ac.format_text(one, 1.0, per_seed=False))
 
 
+class PartnersTest(unittest.TestCase):
+    WOLVES = [{**genome(100 + i, {"near.Meat": 1.0 + i / 10}), "species": "wolf"} for i in range(6)]
+
+    def test_each_partner_species_gives_its_count(self):
+        drawn = ac.draw_partners({"wolf": self.WOLVES}, {"wolf": 4}, "1:7")
+        self.assertEqual(len(drawn), 4)
+        self.assertTrue(all(one["species"] == "wolf" for one in drawn))
+
+    def test_the_same_label_draws_the_same_partners(self):
+        self.assertEqual(
+            ac.draw_partners({"wolf": self.WOLVES}, {"wolf": 4}, "1:7"),
+            ac.draw_partners({"wolf": list(reversed(self.WOLVES))}, {"wolf": 4}, "1:7"),
+        )
+
+    def test_too_few_of_a_partner_draws_nothing(self):
+        self.assertIsNone(ac.draw_partners({"wolf": self.WOLVES[:3]}, {"wolf": 4}, "1:7"))
+
+    def test_every_test_world_spawns_the_partners(self):
+        sources = ac.sources_of(Path("seed-1"), partners=True)
+        for group in ("shared", "evolved", "original"):
+            self.assertIn(Path("seed-1") / "partners.jsonl", sources[group])
+        self.assertEqual(sources["evolved"][0], Path("seed-1") / "evolved.jsonl")
+
+    def test_without_partners_no_world_spawns_them(self):
+        sources = ac.sources_of(Path("seed-1"), partners=False)
+        self.assertEqual(sources["shared"], [Path("seed-1") / "evolved.jsonl", Path("seed-1") / "original.jsonl"])
+        self.assertEqual(sources["original"], [Path("seed-1") / "original.jsonl"])
+
+
 GOLDEN_EVOLVE = [
     "--width", "40", "--height", "40", "--set", "world.grassPerDrop=28",
     "--spawn", "rabbit=20",
