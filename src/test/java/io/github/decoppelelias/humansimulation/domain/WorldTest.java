@@ -678,6 +678,11 @@ class WorldTest {
         }
 
         @Override
+        public Map<String, Double> shown() {
+            return Map.of();
+        }
+
+        @Override
         public Optional<String> tick() {
             ticked.add(cause);
             return Optional.of(cause);

@@ -118,4 +118,9 @@ class MetabolismTest {
         assertThat(metabolism(1, 1, 15).seenView()).isEmpty();
         assertThat(metabolism(1, 1, 15).features()).isEmpty();
     }
+
+    @Test
+    void showsItsReserveAndDaysToStarve() {
+        assertThat(metabolism(1, 2, 7).shown()).isEqualTo(Map.of("reserve", 7.0, "daysToStarve", 3.0));
+    }
 }

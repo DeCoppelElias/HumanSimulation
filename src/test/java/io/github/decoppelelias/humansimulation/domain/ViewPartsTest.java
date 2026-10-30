@@ -3,6 +3,7 @@ package io.github.decoppelelias.humansimulation.domain;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
@@ -33,6 +34,11 @@ class ViewPartsTest {
         @Override
         public List<Feature> features() {
             return List.of(Features.TAKES_PLANT);
+        }
+
+        @Override
+        public Map<String, Double> shown() {
+            return Map.of();
         }
     }
 }

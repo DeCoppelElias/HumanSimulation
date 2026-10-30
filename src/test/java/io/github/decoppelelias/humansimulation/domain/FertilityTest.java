@@ -27,4 +27,9 @@ class FertilityTest {
         assertThat(new Fertility(4).seenView()).isEmpty();
         assertThat(new Fertility(4).features()).isEmpty();
     }
+
+    @Test
+    void showsAPersonNothing() {
+        assertThat(new Fertility(4).shown()).isEmpty();
+    }
 }

@@ -1,6 +1,7 @@
 package io.github.decoppelelias.humansimulation.domain;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /** The breeding window: the day of its carrier's birth or last breed, counted in completed days. */
@@ -31,6 +32,11 @@ final class Fertility implements Component {
     @Override
     public List<Feature> features() {
         return List.of();
+    }
+
+    @Override
+    public Map<String, Double> shown() {
+        return Map.of();
     }
 
     boolean open(int today, int interval) {

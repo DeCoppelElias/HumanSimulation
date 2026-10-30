@@ -1,6 +1,7 @@
 package io.github.decoppelelias.humansimulation.domain;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 final class Metabolism implements Component {
@@ -10,6 +11,8 @@ final class Metabolism implements Component {
     static final String SPEED_CHARGE = "speedCharge";
     static final String VIEW_CHARGE = "viewCharge";
     static final String STARVED = "starved";
+    static final String RESERVE = "reserve";
+    static final String DAYS_TO_STARVE = "daysToStarve";
 
     /** The reserve, and the days left at the live charge and interval, genes included. */
     record Own(double reserve, int daysLeft) {}
@@ -51,6 +54,11 @@ final class Metabolism implements Component {
     @Override
     public List<Feature> features() {
         return List.of();
+    }
+
+    @Override
+    public Map<String, Double> shown() {
+        return Map.of(RESERVE, reserve, DAYS_TO_STARVE, (double) daysLeft());
     }
 
     void credit(double amount) {

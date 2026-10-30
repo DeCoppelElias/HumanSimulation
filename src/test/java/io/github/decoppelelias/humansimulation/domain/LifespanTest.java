@@ -3,6 +3,7 @@ package io.github.decoppelelias.humansimulation.domain;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
+import java.util.Map;
 import java.util.OptionalInt;
 import org.junit.jupiter.api.Test;
 
@@ -45,5 +46,15 @@ class LifespanTest {
     void othersSeeNothing() {
         assertThat(new Lifespan(lasting(3)).seenView()).isEmpty();
         assertThat(new Lifespan(lasting(3)).features()).isEmpty();
+    }
+
+    @Test
+    void showsItsAgeAndDaysToLiveOnlyWithALength() {
+        Lifespan grass = new Lifespan(lasting(3));
+        grass.tick();
+        assertThat(grass.shown()).isEqualTo(Map.of("age", 1.0, "daysToLive", 1.0));
+        Lifespan rabbit = new Lifespan(new SettingValues(new Settings(List.of())));
+        rabbit.tick();
+        assertThat(rabbit.shown()).isEqualTo(Map.of("age", 1.0));
     }
 }
