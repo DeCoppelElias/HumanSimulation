@@ -50,9 +50,9 @@ class LifespanTest {
 
     @Test
     void showsItsAgeAndDaysToLiveOnlyWithALength() {
-        Lifespan grass = new Lifespan(lasting(3));
+        Lifespan grass = new Lifespan(lasting(5));
         grass.tick();
-        assertThat(grass.shown()).isEqualTo(Map.of("age", 1.0, "daysToLive", 1.0));
+        assertThat(grass.shown()).isEqualTo(Map.of("age", 1.0, "daysToLive", 3.0));
         Lifespan rabbit = new Lifespan(new SettingValues(new Settings(List.of())));
         rabbit.tick();
         assertThat(rabbit.shown()).isEqualTo(Map.of("age", 1.0));

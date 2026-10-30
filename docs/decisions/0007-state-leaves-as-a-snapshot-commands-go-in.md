@@ -154,9 +154,11 @@ entity without genes, such as grass. It is kept apart from `info`, which holds
 values worth showing a person, because an export reads it back as a spawn's
 genes.
 
-Every component declares the values it shows a person, by name, with no
-default, beside the views in [0013](0013-perception-is-one-type.md), and `info`
-is those of all its carrier's parts. `Lifespan` shows `age`, and `daysToLive`
+Every component declares the values it shows a person, by name, beside the
+views in [0013](0013-perception-is-one-type.md), and `info` is those of all its
+carrier's parts. `Component` gives no default. A brain shows nothing and every
+food shows its amount, so those two contracts give one. Two parts of one
+carrier showing the same name is a species bug, and the snapshot refuses it. `Lifespan` shows `age`, and `daysToLive`
 where its species sets a lifespan. `Metabolism` shows `reserve` and
 `daysToStarve`, and `Plant` and `Meat` show `amount`. The rest show nothing.
 

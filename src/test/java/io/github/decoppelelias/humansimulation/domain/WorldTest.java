@@ -951,6 +951,23 @@ class WorldTest {
     }
 
     @Test
+    void twoPartsShowingOneNameIsRefusedByName() {
+        Species doubled = new Species(
+                "doubled",
+                "doubled",
+                List.of(),
+                new Genome(List.of(), Map.of()),
+                new Settings(List.of()),
+                Optional.empty(),
+                List.of(spawn -> new Plant(() -> 1), spawn -> new Plant(() -> 2)));
+        World world = new World(1, 1, 1, List.of(doubled));
+        world.submit(new Command.SpawnAt("doubled", new GridPosition(0, 0)));
+        assertThatThrownBy(world::applyPending)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("amount");
+    }
+
+    @Test
     void theSnapshotShowsWhatEachPartDeclares() {
         World world = new World(9, 1, 1, List.of(Grass.species(), Rabbit.species()));
         world.submit(new Command.SetSetting("world", "mutation", 0));
