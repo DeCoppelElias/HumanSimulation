@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-03. Revised 2026-10-28.
+Accepted, 2026-09-03. Revised 2026-10-31.
 
 ## Context
 
@@ -102,7 +102,9 @@ so nobody restores it thinking it went missing, as the 2022 food contest has.
 
 Each package is a live test of the claim in `DESIGN.md`.
 
-The rabbit's sprite comes from a CC0 asset pack until a dedicated art pass. The
+The first sprites come from free asset packs, until roadmap entry 14 replaces
+them with art drawn for the project, per
+[0025](0025-the-art-is-pixel-art-drawn-for-the-project.md). The
 project keeps its name while its first species is not a human, and humans wait
 in `docs/ideas/humans.md`.
 

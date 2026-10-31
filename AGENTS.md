@@ -92,6 +92,8 @@ the same jar, and CI runs the tool's tests.
 - `frontend/` the React and TypeScript page, with pure modules in `src/` and a
   Vitest file beside each. Vite builds it into `target/classes/public`, which
   Javalin serves at `/`.
+- `art/` the pixel art. `sprites.py` holds every sprite as a text grid with its
+  palette, and running it rewrites `art/png/`. Edit the grids, never the PNGs.
 
 ## Build and run
 
@@ -101,6 +103,7 @@ the same jar, and CI runs the tool's tests.
     ./mvnw verify -Pskip-frontend    Java only, no page in the jar
     ./mvnw frontend:npm "-Dfrontend.npm.arguments=run format"    format the frontend
     ./mvnw frontend:npm "-Dfrontend.npm.arguments=run dev"       Vite with hot reload, beside a running serve
+    python art/sprites.py    rewrite the sprite PNGs, needs Pillow
 
 The build downloads its own Node into `target/node`, so none is needed on PATH,
 and `frontend:npm` needs a build to have run once since a `clean`. Vitest strips

@@ -20,7 +20,7 @@ The art in `art/sprites.py`, which gains one or two older tufts, and the page,
 which picks a tuft by age. The page needs each grass's age in the snapshot,
 which it may already carry through the entity's info.
 
-Roadmap entry 14 left it out to keep one tuft and a simple page.
+Roadmap entry 14 left it out to keep the tufts and the page simple.
 
 ## Open questions
 
