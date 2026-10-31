@@ -1,4 +1,4 @@
-"""Pixel-art sources: each sprite is a 16 by 16 text grid, drawn at 2x on the page's 32-pixel tiles.
+"""Pixel-art sources: each sprite is a text grid, drawn at 2x on the page's 32-pixel tiles. Rabbits are 16 by 16.
 
 Run `python art/sprites.py` to rewrite every PNG under art/png/. Edit the grids, never the PNGs.
 Needs Pillow.
@@ -114,34 +114,291 @@ RABBIT_FRAMES = {
     "newborn": RABBIT_NEWBORN,
 }
 
-# 'g' fur, 'l' muzzle and chest.
-WOLF_COLOURS = {"o": INK, "g": "#8e96a3", "l": "#e3e6ea"}
+# The wolf is side-on and 24 by 18, so it overhangs its tile. 'g' slate fur, 'm' lighter back and thighs,
+# 'l' muzzle, chest and near paws, 'd' and 'k' far legs and paws, 'p' inner ear.
+WOLF_COLOURS = {"o": INK, "g": "#56607a", "m": "#7e889e", "l": "#d6dae2", "d": "#3c4356", "k": "#9da4b3", "p": PINK}
 
-WOLF_IDLE = [
-    "................",
-    "................",
-    ".....o.....o....",
-    "....ogo...ogo...",
-    "....oggoooggo...",
-    "...ogggggggggo..",
-    "...oggogggoggo..",
-    "...oggllollggo..",
-    "....oglllllgo...",
-    "..oooooolllo....",
-    ".oggggggglllo...",
-    "oggggoggggllo...",
-    "ogggogggggggo...",
-    "ogo.ogggoggo....",
-    "oo..oooooooo....",
-    "................",
+WOLF_STAND = [
+    "........................",
+    "........................",
+    "........................",
+    ".................o..o...",
+    "................ogoogo..",
+    "................ogpogpo.",
+    "...........oooooggggggo.",
+    "......ooooommmmmgggoggo.",
+    "..oooogggggggggggggllllo",
+    "ooggggggggggggggglloooo.",
+    "lggogggggggggggggglo....",
+    "ooo.oggggggggggggggo....",
+    ".....ommmmoooommmmo.....",
+    ".....oggodo..oggodo.....",
+    ".....oggodo..oggodo.....",
+    ".....olloko..olloko.....",
+    "......oooo....oooo......",
+    "........................",
 ]
 
+WOLF_STRIDE = [
+    "........................",
+    "........................",
+    "........................",
+    ".................o..o...",
+    "................ogoogo..",
+    "................ogpogpo.",
+    "...........oooooggggggo.",
+    "......ooooommmmmgggoggo.",
+    "..oooogggggggggggggllllo",
+    "ooggggggggggggggglloooo.",
+    "lggogggggggggggggglo....",
+    "ooo.oggggggggggggggo....",
+    ".....ommmmoooommmmo.....",
+    ".....oggodo..odoggo.....",
+    "....oggooddooddooggoo...",
+    "...ollo..okkokko.oollo..",
+    "....oo....oo.oo....oo...",
+    "........................",
+]
+
+WOLF_GATHER = [
+    "........................",
+    "........................",
+    "........................",
+    "........................",
+    ".................o..o...",
+    "................ogoogo..",
+    "................ogpogpo.",
+    "...........oooooggggggo.",
+    "......ooooommmmmgggoggo.",
+    "..oooogggggggggggggllllo",
+    "ooggggggggggggggglloooo.",
+    "lggogggggggggggggglo....",
+    "ooo.oggggggggggggggo....",
+    ".....ommmmoooommmmo.....",
+    ".....oggodo.odoggo......",
+    "......ollokokollo.......",
+    ".......oooo.oooo........",
+    "........................",
+]
+
+WOLF_TAKEOFF = [
+    "........................",
+    "........................",
+    ".................o..oo..",
+    "................ogoogpo.",
+    "................ogpoggo.",
+    "...............oggggggo.",
+    "...........oooomgggogllo",
+    "..........ommmmgggglloo.",
+    "......ooooggggggglloo...",
+    "....oogggggggggggglo....",
+    "..oogggggggggggggggo....",
+    "oogggggggggggggmmmo.....",
+    "lggoogggggoooomdoggo....",
+    "ooo..ommmmo...ookollo...",
+    "....oogggoo.....oooo....",
+    "...oggoddo..............",
+    "..ooookko...............",
+    ".ollo.oo................",
+]
+
+WOLF_FLIGHT = [
+    "........................",
+    "........................",
+    "........................",
+    ".................o..o...",
+    "................ogoogo..",
+    "................ogpogpo.",
+    "...........oooooggggggo.",
+    "......ooooommmmmgggoggo.",
+    "..oooogggggggggggggllllo",
+    "ooggggggggggggggglloooo.",
+    "lggogggggggggggggglo....",
+    "ooo.oggggggggggggggo....",
+    ".....ommmmoooommmmo.....",
+    "...oogggoo...ooogggoo...",
+    ".ooggooddo..oddooooggoo.",
+    "olloo.okko..okko...oollo",
+    ".oo....oo....oo......oo.",
+    "........................",
+]
+
+WOLF_LAND = [
+    "........................",
+    "........................",
+    "........................",
+    "........................",
+    ".................o..o...",
+    "................ogoogo..",
+    "..oo..oooo.oooo.ogpogo..",
+    "ooggooggggommmmogggggpo.",
+    "lggogggggggggggmgggoggo.",
+    "oooogggggggggggggggllgo.",
+    "....ogggggggggggglloollo",
+    ".....ommmmgggggggglo.oo.",
+    "....oggggooooomggggo....",
+    "...ollookko..odmmmo.....",
+    "....oo..oo....oogggoo...",
+    "..............oddooggo..",
+    "..............okko.olo..",
+    "...............oo...olo.",
+]
+
+WOLF_FRAMES = {
+    "stand": WOLF_STAND,
+    "stride": WOLF_STRIDE,
+    "gather": WOLF_GATHER,
+    "takeoff": WOLF_TAKEOFF,
+    "flight": WOLF_FLIGHT,
+    "land": WOLF_LAND,
+}
+
+
+# Three tufts, picked per tile. 'o' outline, 'd' back blades, 'f' short shaded front blades, 'm' middle blades,
+# 'l' front blades, 'h' tips. 'S' and 'T' shade the ground under the tuft, so it has no outline along the bottom.
+GRASS_COLOURS = {"o": "#1f5a37", "d": "#20813d", "f": "#1a6e36", "m": "#3fae36", "l": "#68d736", "h": "#a6ec5c", "S": "#46a832", "T": "#3d9a2d"}
+
+GRASS_TUFTS = [
+    [
+        "................",
+        "........o.......",
+        ".....o.odo......",
+        "....odoodooo....",
+        "....odooddldo...",
+        "...oldddddmdo...",
+        ".ooomodddmmddoo.",
+        "olmommddhmddomlo",
+        ".ommohddlmddmmo.",
+        "..ommlldlmdhmo..",
+        "..ohffldlmllmo..",
+        "...olfldlfmmlho.",
+        "...olfldlflmlo..",
+        "...SdTdTdTTddS..",
+        ".....STTTTTS....",
+        "................",
+    ],
+    [
+        "................",
+        ".......o........",
+        "......odo.o.....",
+        "....ooodoodo....",
+        "...odlddoodo....",
+        "...odmdddddlo...",
+        ".ooddmmdddomooo.",
+        "olmoddmhddmmomlo",
+        ".ommddmlddhommo.",
+        "..omhdmldllmmo..",
+        "..omllmldlffho..",
+        ".ohlmmfldlflo...",
+        "..olmlfldlflo...",
+        "..SddTTdTdTdS...",
+        "....STTTTTS.....",
+        "................",
+    ],
+    [
+        "................",
+        "................",
+        "................",
+        "................",
+        "................",
+        "......o.........",
+        ".....odoo.o.....",
+        ".....odolodo....",
+        ".....oddmddo....",
+        "....ooodhddoo...",
+        "...olhldlddmlo..",
+        "....omldmdlho...",
+        ".....oldfdlo....",
+        ".....SdTTTdS....",
+        ".......STS......",
+        "................",
+    ],
+]
+
+# Four ground tiles, picked per tile so the marks don't repeat. 'G' ground, 't' blade marks, 's' light flecks.
+GROUND_COLOURS = {"G": "#58c135", "t": "#47aa30", "s": "#6fd046"}
+
+GROUND_TILES = [
+    [
+        "GGGGGGGGGGGGGGGG",
+        "GGGGGGGGGGGGGGGG",
+        "GGGGGGGGGGGGGGGG",
+        "GGGGGGGGGGGGGGGs",
+        "GGGGGGGGGGGGGGGG",
+        "GGGGGGGGGGGGGGGG",
+        "GGGGGGGGGGGGGGGG",
+        "GGGGGGGGGGGGGGGG",
+        "GGGGGGGGGGGGGGGG",
+        "GGGGGGGGGGGGGGGG",
+        "GGGGGGGGGGGGGGGG",
+        "GGGGGGGGGGGGGGGG",
+        "GGGGGGsGGGGGGGGG",
+        "GGGGGGGGtGtstsGG",
+        "GGGGGGGGtGGtGGGG",
+        "GGGGGGGGGGGGGGGG",
+    ],
+    [
+        "GGGGGGGGGGGGGGsG",
+        "GGGGGGGGGGGGGGGG",
+        "GtGGsGGGGGGGGGGG",
+        "GGtGGGGGGGGGGGGG",
+        "GGGGGGGGGGGGGGGG",
+        "GGGGGGGGGGGGGGGG",
+        "GGGGGGGGGGGGsGGG",
+        "GGGGGGtGGsGGGGGG",
+        "GGGGGGGtGGGGGGGG",
+        "GGGGGGGGGGGGGGGG",
+        "GGGGGGGGGGGGGGGG",
+        "GGGGGGGGGGGGGGGG",
+        "GGGGGGGGGGGGGGGG",
+        "GGGGGGGGGGGGGGGG",
+        "GGGGGGGGGGGGGGGG",
+        "GGGGGGGGGGGGGGGG",
+    ],
+    [
+        "GGGGGGGGGGGGGGGG",
+        "GGGGGGGGGGGGGGGG",
+        "GGGGGGGGGGGGGGGG",
+        "GGGGGGGGGGGGGGGG",
+        "GGGGGGGGGGGGGGGG",
+        "GGGGGtGtGGGGGGGG",
+        "GGGGGGtGGGGGGGGG",
+        "GGGGGGGGGGGGGGGG",
+        "GGGGGGGGGGGGGGGG",
+        "GGGGGGGGGGGGGGsG",
+        "GGGGGGGGGGGGGGGG",
+        "GGGGGGGGGGGGGGGG",
+        "GGGGGGGGGGtGssGG",
+        "GGGGGGGGGGGtGGGG",
+        "GGGGGGGGGGGGGGGG",
+        "GGGGGGGGGGGGGGGG",
+    ],
+    [
+        "sGGGGGGGGGGGGGGG",
+        "GGGGGGGGGGGGGGGG",
+        "GGGGGGGGGGGGGGGG",
+        "GGGGGGGGGGGGGGGG",
+        "GGGGGGGGtGtGGGGG",
+        "GGGGGGGstGGGGGGG",
+        "GGGGGGGGGGGGGGGG",
+        "GGGGGGGGGGGGGGGG",
+        "GGGGGGGGGGGGGGGG",
+        "GGGGGGGGGGGGGGGG",
+        "GGGGGGGGGGGGGGGG",
+        "GGGGGGGGGGGGGGGG",
+        "GGGGGGGtGtGGGGGG",
+        "GGGGGGGtGGGGGGGG",
+        "GGGGGGGGGGGGGGGG",
+        "GGGGGGGGGGGGGGGG",
+    ],
+]
 
 def render(rows, colours):
-    image = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    width = len(rows[0])
+    image = Image.new("RGBA", (width, len(rows)), (0, 0, 0, 0))
     for y, row in enumerate(rows):
-        if len(row) != 16:
-            raise ValueError(f"row {y} is {len(row)} wide, not 16: {row}")
+        if len(row) != width:
+            raise ValueError(f"row {y} is {len(row)} wide, not {width}: {row}")
         for x, cell in enumerate(row):
             if cell in colours:
                 hex_ = colours[cell]
@@ -156,9 +413,15 @@ def main():
             path = out / "rabbit" / f"{frame}-{coat}.png"
             path.parent.mkdir(parents=True, exist_ok=True)
             render(rows, {"o": INK, "p": PINK, **colours}).save(path)
-    path = out / "wolf" / "idle.png"
-    path.parent.mkdir(parents=True, exist_ok=True)
-    render(WOLF_IDLE, WOLF_COLOURS).save(path)
+    for frame, rows in WOLF_FRAMES.items():
+        path = out / "wolf" / f"{frame}.png"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        render(rows, WOLF_COLOURS).save(path)
+    (out / "grass").mkdir(parents=True, exist_ok=True)
+    for i, rows in enumerate(GRASS_TUFTS):
+        render(rows, GRASS_COLOURS).save(out / "grass" / f"tuft-{i}.png")
+    for i, rows in enumerate(GROUND_TILES):
+        render(rows, GROUND_COLOURS).save(out / "grass" / f"ground-{i}.png")
 
 
 if __name__ == "__main__":

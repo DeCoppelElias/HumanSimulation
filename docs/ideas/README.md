@@ -84,6 +84,8 @@ that settled it.
   spots, so probes and gates finish sooner.
 - [Shared workflow kit](shared-workflow-kit.md) the generic skills and checks
   in a repository of their own, installed rather than copied.
+- [Showing grass age](showing-grass-age.md) a tuft that yellows over its last
+  days, so food about to wither shows.
 - [Skill review](skill-review.md) checking each project skill still earns its
   place, against upstream skills and the current docs.
 - [Stable references](stable-references.md) roadmap entries named by slug,
