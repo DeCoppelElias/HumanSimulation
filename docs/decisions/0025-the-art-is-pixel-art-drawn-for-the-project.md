@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-10-31.
+Accepted, 2026-10-31. Revised 2026-11-01.
 
 ## Context
 
@@ -31,9 +31,24 @@ proposed markings that follow the whole genome, so relatives and similar
 brains look alike. Small spots were tried first and could not be read at 16
 pixels, so the markings are regions of the coat.
 
+The wolf first took the rabbit's scheme, with regions in six colours of their
+own: cream, rust, charcoal and so on. Elias found spots in a colour unlike the
+coat unrealistic, since a real wolf's variation is shades of one coat: a darker
+saddle, paler cheeks and legs.
+
 Several creatures on one tile were drawn first as one sprite with a count. A
 group of up to three sprites, nudged a few pixels apart, shows the crowd, and the
-count chip shows on every shared tile so a group never hides a fourth.
+count chip shows on every shared tile so a group never hides a fourth. A chip
+that changed the moment a day began announced a crowd before its creatures had
+landed, so it waits for the day's moves.
+
+A flat green meadow was the first ground, and Elias asked for one prettier to
+watch, with an autumn feel. Three ways to vary it were drawn on the live page:
+drifting patches, a low sun warming one corner, and both. A first autumn pass
+with amber and orange patches read as too strong, and the orange as ugly. The
+patches, in shades close to the ground's own green, won.
+
+A hop on the top row rose above the canvas and was cut off.
 
 ## Decision
 
@@ -49,16 +64,23 @@ stays square and sharp.
 
 The style is flat colour with a navy ink outline one pixel wide. Animals are
 drawn side-on, and grass and ground are a bright top-down meadow, with ground
-tiles in a few variants and tufts in a few shapes, each picked per tile.
+tiles in a few variants and tufts in a few shapes, each picked per tile. The
+meadow drifts through slow patches of lush green, the ground's own green, soft
+gold and straw, blended with an ordered dither so every pixel stays crisp. The
+patches are fixed, so the ground never shifts while a world plays. A dimmed tile
+of meadow above the top row keeps a creature hopping there in view.
 
 A creature's markings come from its genes. Each gene is scaled by its range and
 measured from the species' baseline, and fixed blends of those values pick a
 colour, how far a patch spreads and an accent. The page computes them, so the
-model knows nothing about them.
+model knows nothing about them. A rabbit's colour paints its white coat's
+regions. A wolf's colour picks one of six coats, ordered light to dark to warm
+so a founder lands on slate, and the wolf marks in shades of that coat: a darker
+saddle over the tail, back and head, and a paler muzzle or legs.
 
 Up to three creatures on one tile are drawn as a group, with a count chip
-whenever there is more than one. A predator draws in front of its prey, and
-grass stays under both.
+whenever there is more than one, shown once the day's moves have landed. A
+predator draws in front of its prey, and grass stays under both.
 
 ## Consequences
 

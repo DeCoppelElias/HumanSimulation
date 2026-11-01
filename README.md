@@ -34,7 +34,8 @@ or one drawn from the clock, and it starts with ten rabbits and seven grass on a
 20 by 20 grid. Play, pause, step, change the speed or fast-forward up to 10,000
 days. Pick a species beside the spawn count and spawn that many.
 
-The world is pixel art drawn at the largest whole scale the window allows. A
+The world is pixel art drawn at the largest whole scale the window allows, on a
+meadow with soft autumn patches of gold and straw. A
 rabbit crosses each move in one bound, higher the farther it goes. A wolf walks
 a move of one tile and leaps a longer one or a kill. Both blink while they
 stand. A move takes 260 ms plus 160 ms a tile, cut to fit the day, and at 10

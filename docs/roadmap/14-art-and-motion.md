@@ -12,7 +12,9 @@ Entry 15 lays out the page around the world, and entry 16 adds effects.
 The art is already drawn and committed in `art/sprites.py`, which writes the
 PNGs under `art/png/`: the rabbit's frames, the wolf's six frames in profile, the
 three grass tufts and the four ground tiles. The page draws them at the largest
-whole scale its current layout allows, never a fractional one. The wolf is 24 by
+whole scale its current layout allows, never a fractional one. The meadow
+drifts through autumn patches of lush green, gold and straw, and a dimmed tile
+of it above the top row keeps a hop there in view. The wolf is 24 by
 18 and overhangs its tile by 4 pixels on each side, and a click still goes by the
 tile underneath.
 
@@ -25,7 +27,8 @@ move at full length. Across a jump of more than one day nothing moves and the
 fades still run. Both species blink while idle.
 
 Up to three creatures on one tile are drawn, nudged a few pixels apart so they
-overlap as a group, with a count chip whenever more than one is there. A wolf
+overlap as a group, with a count chip whenever more than one is there, shown
+once the day's moves have landed. A wolf
 draws in front of a rabbit, and grass stays under both.
 
 A rabbit's markings come from its genes, so similar genomes look alike. Each
@@ -33,8 +36,9 @@ gene is scaled by its range and measured from the species' baseline, and three
 fixed blends pick a colour, how far a patch spreads (none, tail, tail and
 haunch, or a full dutch coat) and an accent (none, forehead or chest). The page
 computes them, and needs each species' gene ranges and baseline genome for it,
-which the API does not send yet. The wolf gets the same
-on its slate coat, drawn and shown to Elias before it is built. The rabbit's
+which the API does not send yet. The wolf marks in shades of
+one of six coats, a darker saddle and a paler muzzle or legs, shown to Elias
+before it was built. The rabbit's
 grids gain a letter per marking region in place of the single second coat
 colour.
 
@@ -45,8 +49,8 @@ left. Nothing in the model changes, so seeded runs, the gates and the sample in
 
 Vitest covers the move timing and its cap, the switch to a glide, the hop's
 phases by distance, the wolf's walk or leap, the shared-tile offsets and chip,
-and the marking blends against fixed genomes, all as pure modules under
-`frontend/src/`.
+when the chip shows, the meadow's patches and dither, and the marking blends
+against fixed genomes, all as pure modules under `frontend/src/`.
 
 On the page: rabbits bound and wolves walk and leap across the meadow in the
 new art, a crowded tile shows its group and count, rabbits with similar genes
