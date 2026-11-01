@@ -68,6 +68,9 @@ public final class Api {
             config.routes.get(
                     "/worlds/{id}/settings",
                     ctx -> ctx.json(worlds.get(ctx.pathParam("id")).declarations()));
+            config.routes.get(
+                    "/worlds/{id}/genes",
+                    ctx -> ctx.json(worlds.get(ctx.pathParam("id")).genes()));
             config.routes.delete("/worlds/{id}", ctx -> {
                 worlds.delete(ctx.pathParam("id"));
                 ctx.status(204);

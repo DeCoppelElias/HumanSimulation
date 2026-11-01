@@ -487,6 +487,18 @@ class ApiTest {
     }
 
     @Test
+    void genesListEachSpeciesRangesAndBaseline() {
+        String id = newWorld();
+        JsonNode genes = client.get("/worlds/" + id + "/genes").json();
+        JsonNode first = genes.get("rabbit").get(0);
+        assertThat(first.get("key").asString()).isEqualTo("viewRange");
+        assertThat(first.get("min").asDouble()).isEqualTo(1.0);
+        assertThat(first.get("max").asDouble()).isEqualTo(10.0);
+        assertThat(first.get("baseline").asDouble()).isEqualTo(3.0);
+        assertThat(genes.get("grass").isEmpty()).isTrue();
+    }
+
+    @Test
     void settingsListsTheDeclarationsWorldFirst() {
         String id = newWorld();
         JsonNode declarations = client.get("/worlds/" + id + "/settings").json();
