@@ -2,6 +2,7 @@ import type {
     CensusRow,
     Command,
     DayReport,
+    GeneRanges,
     PlayState,
     SettingDeclaration,
     WorldSnapshot,
@@ -59,6 +60,7 @@ export function createApi(fetchFn: typeof fetch = (input, init) => fetch(input, 
         census: (id: string, from: number) =>
             json<CensusRow[]>("GET", `${world(id)}/census?from=${from}`),
         settings: (id: string) => json<SettingDeclaration[]>("GET", `${world(id)}/settings`),
+        genes: (id: string) => json<GeneRanges>("GET", `${world(id)}/genes`),
         resetCensus: async (id: string) => {
             await request("DELETE", `${world(id)}/census`);
         },
