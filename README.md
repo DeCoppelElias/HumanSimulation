@@ -32,8 +32,18 @@ hot reload on port 5173, passing API calls to a `serve` on port 7070.
 `serve` opens the page in your browser. Pick a world or create one, with a seed
 or one drawn from the clock, and it starts with ten rabbits and seven grass on a
 20 by 20 grid. Play, pause, step, change the speed or fast-forward up to 10,000
-days. Pick a species beside the spawn count and spawn that many. Grass draws
-under a rabbit standing on it, and a tile's number counts its creatures.
+days. Pick a species beside the spawn count and spawn that many.
+
+The world is pixel art drawn at the largest whole scale the window allows. A
+rabbit crosses each move in one bound, higher the farther it goes. A wolf walks
+a move of one tile and leaps a longer one or a kill. Both blink while they
+stand. A move takes 260 ms plus 160 ms a tile, cut to fit the day, and at 10
+days a second everything glides instead. A tile draws up to three creatures,
+nudged apart, with a wolf in front of a rabbit and grass underneath, and a chip
+counts them whenever more than one is there. A creature's markings follow its
+genes, so relatives and creatures that evolved alike look alike: a rabbit's
+patch and its colour, and a wolf's coat, its darker saddle and paler muzzle or
+legs.
 
 A click on the grid inspects by default. Switch "Click a tile to" to spawn to
 drop one of the picked species there instead. Inspecting a tile with one thing
@@ -56,11 +66,7 @@ world. An edited setting is marked in bold, its ↺ button puts the default back
 with a `mutation` checkbox. Untick it and children and new spawns become exact
 copies, so the world stops evolving.
 
-The rabbit and grass sprites are from [Kenney](https://kenney.nl), CC0: the
-rabbit from Animal Pack Remastered and the grass from Foliage Pack. The wolf is
-the wolf face from [Twemoji](https://github.com/jdecked/twemoji), by Twitter,
-Inc and other contributors, under
-[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+The art is drawn for the project and lives as text grids in `art/sprites.py`.
 
 ## Running
 
@@ -178,7 +184,9 @@ read it back:
 `GET /worlds/ID` is the current snapshot, `POST .../play` and `.../pause` run
 it on a timer, and `GET .../events` streams each day. `docs/roadmap/02-serving-worlds-over-http.md`
 lists the first routes. `GET .../settings` lists every declared setting with its
-bounds, step and default, and the snapshot carries the current values. Two
+bounds, step and default, and the snapshot carries the current values.
+`GET .../genes` lists each species' genes with their ranges and baseline, which
+the page measures markings against. Two
 commands change them:
 
     curl -X POST localhost:63214/worlds/ID/commands -d '{"type":"setSetting","owner":"rabbit","key":"breedingLoss","value":20}'
