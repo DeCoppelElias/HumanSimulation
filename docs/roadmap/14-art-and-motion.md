@@ -1,6 +1,6 @@
 # 14. Art and motion
 
-Status: not started.
+Status: done.
 
 The first of three entries that serve the first goal in `DESIGN.md`. Pixel art
 drawn for the project replaces the placeholder asset packs for every species and

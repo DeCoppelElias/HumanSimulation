@@ -1,7 +1,6 @@
 # Drawing a stacked tile
 
-Status: planned, roadmap entry 14 draws a group of up to three with a count, per
-[0025](../decisions/0025-the-art-is-pixel-art-drawn-for-the-project.md).
+Status: built, [0025](../decisions/0025-the-art-is-pixel-art-drawn-for-the-project.md).
 
 ## What it does
 
