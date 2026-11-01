@@ -148,6 +148,11 @@ export function transition(
     return { from, to, timing: time, moves, facing };
 }
 
+/** When every move of the day has landed, so what the day changed on a tile can show. */
+export function settledMs(transition: Transition): number {
+    return Math.max(0, ...[...transition.moves.values()].map((move) => move.ms));
+}
+
 export function frameAt(transition: Transition, elapsedMs: number, nowMs: number): Drawn[] {
     const { from, to, moves, facing } = transition;
     const fade = progress(elapsedMs, transition.timing.fadeMs);

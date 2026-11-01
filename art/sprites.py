@@ -410,6 +410,18 @@ GRASS_TUFTS = [
 # Four ground tiles, picked per tile so the marks don't repeat. 'G' ground, 't' blade marks, 's' light flecks.
 GROUND_COLOURS = {"G": "#58c135", "t": "#47aa30", "s": "#6fd046"}
 
+# The meadow's shades for an early autumn field, from lush green through today's green to gold and straw.
+# The second is GROUND_COLOURS itself.
+GROUND_LUSH = "#2e7a3c"
+GROUND_GOLD = "#d2b03c"
+GROUND_STRAW = "#c4a95a"
+GROUND_SHADES = [
+    {letter: mix(colour, GROUND_LUSH, 0.18) for letter, colour in GROUND_COLOURS.items()},
+    GROUND_COLOURS,
+    {letter: mix(colour, GROUND_GOLD, 0.26) for letter, colour in GROUND_COLOURS.items()},
+    {letter: mix(colour, GROUND_STRAW, 0.4) for letter, colour in GROUND_COLOURS.items()},
+]
+
 GROUND_TILES = [
     [
         "GGGGGGGGGGGGGGGG",
@@ -530,7 +542,7 @@ def main():
         "rabbit": {"palette": RABBIT_COLOURS, "marks": RABBIT_MARKS, "frames": RABBIT_FRAMES},
         "wolf": {"palette": WOLF_COLOURS, "marks": WOLF_MARKS, "frames": WOLF_FRAMES},
         "grass": {"palette": GRASS_COLOURS, "tufts": GRASS_TUFTS},
-        "ground": {"palette": GROUND_COLOURS, "tiles": GROUND_TILES},
+        "ground": {"palette": GROUND_COLOURS, "shades": GROUND_SHADES, "tiles": GROUND_TILES},
     }
     page = Path(__file__).parent.parent / "frontend" / "src" / "sprites.json"
     page.write_text(json.dumps(sheet, indent=1) + "\n", encoding="utf-8", newline="\n")

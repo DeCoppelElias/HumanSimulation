@@ -18,4 +18,10 @@ describe("the world's scale", () => {
             expect(Number.isInteger(wholeScale(17, 11, width, width * 0.7))).toBe(true);
         }
     });
+
+    test("leaves a tile of headroom above the world for a hop on the top row", () => {
+        // 21 tiles of 16 art pixels at 3x is 1008, so 180 + 1008 high fits 3x and one less does not.
+        expect(wholeScale(20, 20, 3000, 180 + 1008)).toBe(3);
+        expect(wholeScale(20, 20, 3000, 180 + 1007)).toBe(2);
+    });
 });

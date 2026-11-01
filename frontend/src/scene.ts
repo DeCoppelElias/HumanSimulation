@@ -9,12 +9,13 @@ import {
 } from "pixi.js";
 import { chip } from "./chip";
 import { marking, markedPalette, type Marking, type Marks } from "./markings";
-import { frameAt, transition, type Drawn, type Moment, type Transition } from "./motion";
+import { frameAt, settledMs, transition, type Drawn, type Moment, type Transition } from "./motion";
 import { rasterize, type Palette } from "./pixels";
 import { isNewRun } from "./run";
-import { ART_TILE } from "./scale";
+import { meadow } from "./meadow";
+import { ART_TILE, HEADROOM } from "./scale";
 import sheet from "./sprites.json";
-import { depth, drawn, groundVariant, placements, stacks, tuftOf } from "./tiles";
+import { depth, drawn, placements, stacks, tuftOf } from "./tiles";
 import type { EntityView, GeneRanges, GridPosition, PlayState, WorldSnapshot } from "./types";
 
 type Kind = { palette: Palette; marks: Marks; frames: Partial<Record<string, string[]>> };
@@ -40,6 +41,8 @@ export class Scene {
     private started = 0;
     private previous: WorldSnapshot | null = null;
     private moment: Moment | null = null;
+    /** The day whose chips wait for its moves to land. */
+    private unsettled: WorldSnapshot | null = null;
 
     private constructor(
         private readonly app: Application,
@@ -59,7 +62,7 @@ export class Scene {
         const app = new Application();
         await app.init({
             width: width * ART_TILE * scale,
-            height: height * ART_TILE * scale,
+            height: (height * ART_TILE + HEADROOM) * scale,
             background: sheet.ground.palette.G,
             antialias: false,
             roundPixels: true,
@@ -67,17 +70,16 @@ export class Scene {
         const scene = new Scene(app, width, height, onError);
         scene.creatures.sortableChildren = true;
         app.stage.scale.set(scale);
-        app.stage.addChild(
-            new Sprite(scene.groundTexture()),
-            scene.cover,
-            scene.sightLayer,
-            scene.creatures,
-            scene.chips,
-        );
-        app.stage.eventMode = "static";
-        app.stage.hitArea = new Rectangle(0, 0, width * ART_TILE, height * ART_TILE);
-        app.stage.on("pointertap", (event) => {
-            const at = event.getLocalPosition(app.stage);
+        const ground = new Sprite(scene.groundTexture());
+        ground.y = -HEADROOM;
+        const world = new Container();
+        world.y = HEADROOM;
+        world.addChild(ground, scene.cover, scene.sightLayer, scene.creatures, scene.chips);
+        app.stage.addChild(world);
+        world.eventMode = "static";
+        world.hitArea = new Rectangle(0, 0, width * ART_TILE, height * ART_TILE);
+        world.on("pointertap", (event) => {
+            const at = event.getLocalPosition(world);
             onTileClick({ x: Math.floor(at.x / ART_TILE), y: Math.floor(at.y / ART_TILE) });
         });
         app.ticker.add(() => scene.draw());
@@ -86,7 +88,10 @@ export class Scene {
     }
 
     setScale(scale: number): void {
-        this.app.renderer.resize(this.width * ART_TILE * scale, this.height * ART_TILE * scale);
+        this.app.renderer.resize(
+            this.width * ART_TILE * scale,
+            (this.height * ART_TILE + HEADROOM) * scale,
+        );
         this.app.stage.scale.set(scale);
     }
 
@@ -116,7 +121,8 @@ export class Scene {
         this.started = performance.now();
         this.previous = next;
         this.moment = to;
-        this.drawChips(next);
+        this.unsettled = next;
+        if (!sameRun) this.settle();
     }
 
     showSight(tiles: GridPosition[]): void {
@@ -140,6 +146,9 @@ export class Scene {
             return;
         }
         const now = performance.now();
+        if (this.unsettled !== null && now - this.started >= settledMs(transition)) {
+            this.settle();
+        }
         const seen = new Set<number>();
         for (const placed of frameAt(transition, now - this.started, now)) {
             const texture = this.textureOf(placed);
@@ -169,6 +178,11 @@ export class Scene {
                 this.pool.delete(id);
             }
         }
+    }
+
+    private settle(): void {
+        if (this.unsettled !== null) this.drawChips(this.unsettled);
+        this.unsettled = null;
     }
 
     private drawChips(snapshot: WorldSnapshot): void {
@@ -233,23 +247,15 @@ export class Scene {
         return texture;
     }
 
-    /** The meadow is drawn once: a variant of the ground tile on every tile. */
+    /** The meadow is drawn once, with its headroom. */
     private groundTexture(): Texture {
+        const pixels = meadow(this.width, this.height);
         const canvas = document.createElement("canvas");
-        canvas.width = this.width * ART_TILE;
-        canvas.height = this.height * ART_TILE;
-        const context = canvas.getContext("2d");
-        const tiles = sheet.ground.tiles.map((grid) => rasterize(grid, sheet.ground.palette));
-        for (let x = 0; x < this.width; x++) {
-            for (let y = 0; y < this.height; y++) {
-                const tile = tiles[groundVariant(x, y)];
-                context?.putImageData(
-                    new ImageData(tile.data, tile.width, tile.height),
-                    x * ART_TILE,
-                    y * ART_TILE,
-                );
-            }
-        }
+        canvas.width = pixels.width;
+        canvas.height = pixels.height;
+        canvas
+            .getContext("2d")
+            ?.putImageData(new ImageData(pixels.data, pixels.width, pixels.height), 0, 0);
         const texture = new Texture({
             source: new CanvasSource({ resource: canvas, scaleMode: "nearest" }),
         });

@@ -5,6 +5,7 @@ import {
     moveMs,
     pose,
     pounced,
+    settledMs,
     strideOf,
     timing,
     transition,
@@ -328,5 +329,29 @@ describe("a frame", () => {
         expect(frame.find((s) => s.id === 5)).toMatchObject({ alpha: 0.5 });
         expect(frame.find((s) => s.id === 2)).toMatchObject({ alpha: 0.5 });
         expect(frameAt(pushed, 300, open).map((s) => s.id)).toEqual([2, 3, 4]);
+    });
+});
+
+describe("settling", () => {
+    const snap = (day: number, ...placed: Placed[]): Moment => ({
+        day,
+        placed: new Map(placed.map((p) => [p.id, p])),
+        drawn: new Set(placed.map((p) => p.id)),
+    });
+    const paused = { playing: false, daysPerSecond: 1 };
+
+    test("comes when the longest move of the day has landed", () => {
+        const day = transition(
+            snap(1, rabbit(1, 0), rabbit(2, 0)),
+            snap(2, rabbit(1, 1), rabbit(2, 3)),
+            paused,
+            new Map(),
+        );
+        expect(settledMs(day)).toBe(740);
+    });
+
+    test("is at once when nothing moves", () => {
+        const still = transition(snap(1, rabbit(1, 0)), snap(2, rabbit(1, 0)), paused, new Map());
+        expect(settledMs(still)).toBe(0);
     });
 });
