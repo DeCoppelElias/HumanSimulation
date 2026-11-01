@@ -1,4 +1,4 @@
-export type Pixels = { width: number; height: number; data: Uint8ClampedArray };
+export type Pixels = { width: number; height: number; data: Uint8ClampedArray<ArrayBuffer> };
 export type Palette = Readonly<Record<string, string>>;
 
 /** A grid of palette letters as RGBA, with `.` left clear. */

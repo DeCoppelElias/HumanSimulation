@@ -1,25 +1,38 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { messageOf } from "./messages";
+import { wholeScale } from "./scale";
 import { Scene } from "./scene";
-import type { GridPosition, PlayState, WorldSnapshot } from "./types";
+import type { GeneRanges, GridPosition, PlayState, WorldSnapshot } from "./types";
 
 type Props = {
     snapshot: WorldSnapshot;
     play: PlayState;
     sight: GridPosition[];
+    genes: GeneRanges | null;
     onTileClick(at: GridPosition): void;
     onError(message: string): void;
 };
 
-export function Grid({ snapshot, play, sight, onTileClick, onError }: Props) {
+export function Grid({ snapshot, play, sight, genes, onTileClick, onError }: Props) {
+    const { width, height } = snapshot;
     const host = useRef<HTMLDivElement>(null);
     const scene = useRef<Scene | null>(null);
-    const latest = useRef({ snapshot, play, sight, onTileClick, onError });
+    const [scale, setScale] = useState(() =>
+        wholeScale(width, height, window.innerWidth, window.innerHeight),
+    );
+    const latest = useRef({ snapshot, play, sight, genes, scale, onTileClick, onError });
     useEffect(() => {
-        latest.current = { snapshot, play, sight, onTileClick, onError };
+        latest.current = { snapshot, play, sight, genes, scale, onTileClick, onError };
     });
 
-    const { width, height } = snapshot;
+    useEffect(() => {
+        const resized = () =>
+            setScale(wholeScale(width, height, window.innerWidth, window.innerHeight));
+        resized();
+        window.addEventListener("resize", resized);
+        return () => window.removeEventListener("resize", resized);
+    }, [width, height]);
+
     useEffect(() => {
         const element = host.current;
         if (element === null) {
@@ -31,6 +44,7 @@ export function Grid({ snapshot, play, sight, onTileClick, onError }: Props) {
             element,
             width,
             height,
+            latest.current.scale,
             (at) => latest.current.onTileClick(at),
             (message) => latest.current.onError(message),
         ).then(
@@ -41,6 +55,8 @@ export function Grid({ snapshot, play, sight, onTileClick, onError }: Props) {
                 }
                 created = made;
                 scene.current = made;
+                made.setScale(latest.current.scale);
+                made.setGenes(latest.current.genes);
                 made.show(latest.current.snapshot, latest.current.play);
                 made.showSight(latest.current.sight);
             },
@@ -64,6 +80,14 @@ export function Grid({ snapshot, play, sight, onTileClick, onError }: Props) {
     useEffect(() => {
         scene.current?.showSight(sight);
     }, [sight]);
+
+    useEffect(() => {
+        scene.current?.setScale(scale);
+    }, [scale]);
+
+    useEffect(() => {
+        scene.current?.setGenes(genes);
+    }, [genes]);
 
     return <div ref={host} className="grid" />;
 }
