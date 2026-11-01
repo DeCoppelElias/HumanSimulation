@@ -104,6 +104,9 @@ export class Scene {
         const previous = this.previous;
         const sameRun = previous !== null && !isNewRun(previous, next);
         if (!sameRun) {
+            // A new run reuses ids across species, so no sprite or marking carries over.
+            for (const sprite of this.pool.values()) sprite.destroy();
+            this.pool.clear();
             this.markings.clear();
             this.facing = new Map();
         }
@@ -116,7 +119,10 @@ export class Scene {
         this.facing = this.transition.facing;
         this.entities = new Map([...(sameRun ? this.entities : []), ...entitiesOf(next)]);
         for (const id of this.entities.keys()) {
-            if (!from.placed.has(id) && !to.placed.has(id)) this.entities.delete(id);
+            if (!from.placed.has(id) && !to.placed.has(id)) {
+                this.entities.delete(id);
+                this.markings.delete(id);
+            }
         }
         this.started = performance.now();
         this.previous = next;
