@@ -1,9 +1,11 @@
 """Pixel-art sources: each sprite is a text grid with its palette and marking regions. Tiles are 16 by 16 art pixels.
 
-Run `python art/sprites.py` to rewrite every PNG under art/png/. Edit the grids, never the PNGs.
+Run `python art/sprites.py` to rewrite every PNG under art/png/ and frontend/src/sprites.json, which the page
+draws from. Edit the grids, never the outputs.
 Needs Pillow.
 """
 
+import json
 from pathlib import Path
 
 from PIL import Image
@@ -524,6 +526,14 @@ def main():
         render(rows, GRASS_COLOURS).save(out / "grass" / f"tuft-{i}.png")
     for i, rows in enumerate(GROUND_TILES):
         render(rows, GROUND_COLOURS).save(out / "grass" / f"ground-{i}.png")
+    sheet = {
+        "rabbit": {"palette": RABBIT_COLOURS, "marks": RABBIT_MARKS, "frames": RABBIT_FRAMES},
+        "wolf": {"palette": WOLF_COLOURS, "marks": WOLF_MARKS, "frames": WOLF_FRAMES},
+        "grass": {"palette": GRASS_COLOURS, "tufts": GRASS_TUFTS},
+        "ground": {"palette": GROUND_COLOURS, "tiles": GROUND_TILES},
+    }
+    page = Path(__file__).parent.parent / "frontend" / "src" / "sprites.json"
+    page.write_text(json.dumps(sheet, indent=1) + "\n", encoding="utf-8", newline="\n")
 
 
 if __name__ == "__main__":
