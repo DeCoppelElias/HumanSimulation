@@ -55,7 +55,7 @@ export function strideOf(
     return tiles > 1 || pounce ? "leap" : "walk";
 }
 
-/** Read off the snapshots until the day's report carries a kill. */
+/** A kill read off two snapshots: the creature ends where one of another species stood, now gone. */
 export function pounced(from: Map<number, Placed>, to: Map<number, Placed>, id: number): boolean {
     const end = to.get(id);
     if (end === undefined) return false;
@@ -131,12 +131,19 @@ export function transition(
         if (!moving) continue;
         const tiles = Math.max(Math.abs(end.x - start.x), Math.abs(end.y - start.y));
         if (tiles === 0 && start.ox === end.ox && start.oy === end.oy) continue;
-        const pounce = pounced(from.placed, to.placed, id);
+        // A nudge within its own tile, as a neighbour comes or goes, is a slide and never a kill.
+        const stride =
+            tiles === 0
+                ? "glide"
+                : strideOf(end.spriteKey, tiles, pounced(from.placed, to.placed, id), time.glide);
         moves.set(id, {
-            stride: strideOf(end.spriteKey, tiles, pounce, time.glide),
+            stride,
             tiles,
             ms: moveMs(time, Math.max(1, tiles)),
         });
+    }
+    for (const id of from.placed.keys()) {
+        if (!to.placed.has(id)) facing.set(id, facings.get(id) ?? false);
     }
     return { from, to, timing: time, moves, facing };
 }
@@ -156,14 +163,22 @@ export function frameAt(transition: Transition, elapsedMs: number, nowMs: number
         }
         const move = moves.get(id);
         const t = move === undefined ? 1 : progress(elapsedMs, move.ms);
-        // A creature moving into a crowd it ends up hidden in stays drawn until it lands.
-        const covering = from.drawn.has(id) && t < 1;
-        if (!to.drawn.has(id) && !covering) continue;
+        const wasDrawn = from.drawn.has(id);
+        const isDrawn = to.drawn.has(id);
+        let alpha = 1;
+        if (move === undefined) {
+            // Joining or leaving the three a tile shows fades like appearing or going.
+            if (!isDrawn && (!wasDrawn || fade >= 1)) continue;
+            if (wasDrawn !== isDrawn) alpha = isDrawn ? fade : 1 - fade;
+        } else if (!isDrawn && !(wasDrawn && t < 1)) {
+            // A creature moving into a crowd it ends up hidden in stays drawn until it lands.
+            continue;
+        }
         const now =
             move === undefined
                 ? pose("glide", 0, 1)
                 : pose(move.stride, Math.max(1, move.tiles), t);
-        const blinks = now.frame === "stand" && end.creature && blinking(id, nowMs);
+        const blinks = t >= 1 && end.creature && blinking(id, nowMs);
         sprites.push({
             ...end,
             x: lerp(start.x, end.x, now.along),
@@ -173,7 +188,7 @@ export function frameAt(transition: Transition, elapsedMs: number, nowMs: number
             frame: blinks ? "blink" : now.frame,
             lift: now.lift,
             flipped,
-            alpha: 1,
+            alpha,
         });
     }
     for (const [id, start] of from.placed) {
