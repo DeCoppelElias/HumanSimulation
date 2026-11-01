@@ -489,6 +489,17 @@ class WorldTest {
     }
 
     @Test
+    void genesListEachSpeciesRangesAndBaseline() {
+        World world = new World(3, 3, 1, List.of(Rabbit.species(), Grass.species()), List.of(new FoodDrop("grass")));
+        assertThat(world.genes()).containsOnlyKeys("grass", "rabbit");
+        assertThat(world.genes().get("grass")).isEmpty();
+        List<GeneRange> rabbit = world.genes().get("rabbit");
+        assertThat(rabbit.getFirst()).isEqualTo(new GeneRange("viewRange", 1, 10, 3.0));
+        assertThat(rabbit.getLast()).isEqualTo(new GeneRange("speed", 0, 1, 0.5));
+        assertThat(rabbit).extracting(GeneRange::key).doesNotHaveDuplicates().contains("whim", "breedPull");
+    }
+
+    @Test
     void aBadSettingCommandChangesNothing() {
         World world = new World(3, 3, 1, RABBITS);
         WorldSnapshot before = world.applyPending();

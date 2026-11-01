@@ -94,6 +94,24 @@ public final class World {
         return table.declarations();
     }
 
+    /** Each species' genes in layout order. They never change for a world. */
+    public Map<String, List<GeneRange>> genes() {
+        SortedMap<String, List<GeneRange>> bySpecies = new TreeMap<>();
+        species.forEach((name, kind) -> bySpecies.put(
+                name,
+                kind.geneLayout().stream()
+                        .map(spec -> switch (spec) {
+                            case GeneSpec.Scalar scalar ->
+                                new GeneRange(
+                                        scalar.key(),
+                                        scalar.min(),
+                                        scalar.max(),
+                                        kind.baseline().scalars().get(scalar.key()));
+                        })
+                        .toList()));
+        return Collections.unmodifiableSortedMap(bySpecies);
+    }
+
     public List<LoggedCommand> log() {
         return List.copyOf(log);
     }
