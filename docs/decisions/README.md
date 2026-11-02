@@ -60,7 +60,8 @@ costs, and what the concrete type shapes are.
   are skills, invariants are scripts, and promoting an idea or changing an
   accepted decision waits for Elias.
 - [0020](0020-the-interface-is-a-web-page.md) The interface is a web page over
-  a Java core: Javalin, React and PixiJS, one thread per world, local first.
+  a Java core: Javalin, React and PixiJS, one thread per world, local first,
+  with creatures that hop and leap between consecutive days.
 - [0021](0021-agents-drive-worlds-over-http-and-run.md) Agents drive worlds over
   the HTTP API with no browser, and through a `run` command printing JSON
   Lines.
@@ -73,3 +74,6 @@ costs, and what the concrete type shapes are.
 - [0024](0024-a-part-can-end-its-carrier.md) Every part updates itself once a
   day and may end its carrier with a cause, which the census counts; grass has
   a lifespan and withers.
+- [0025](0025-the-art-is-pixel-art-drawn-for-the-project.md) The art is pixel
+  art drawn for the project from Elias's references, 16-pixel tiles scaled by
+  whole numbers, with markings from genes and shared tiles drawn as a group.

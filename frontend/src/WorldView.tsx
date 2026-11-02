@@ -10,7 +10,7 @@ import { afterClick, inspectTile, resolve, sightOf, type Picked } from "./inspec
 import { Inspector } from "./Inspector";
 import { isNewRun } from "./run";
 import { SettingsPanel } from "./SettingsPanel";
-import type { EntityView, WorldSnapshot } from "./types";
+import type { EntityView, GeneRanges, WorldSnapshot } from "./types";
 import { useWorld } from "./useWorld";
 
 type Props = {
@@ -28,6 +28,7 @@ export function WorldView({ api, id, onLeave, onError }: Props) {
     const [tile, setTile] = useState<EntityView[]>([]);
     const [run, setRun] = useState(0);
     const [seen, setSeen] = useState<WorldSnapshot | null>(null);
+    const [genes, setGenes] = useState<GeneRanges | null>(null);
     // A new run reuses ids, so whatever was picked belonged to the old one.
     if (snapshot !== null && snapshot !== seen) {
         if (seen !== null && isNewRun(seen, snapshot)) {
@@ -40,6 +41,21 @@ export function WorldView({ api, id, onLeave, onError }: Props) {
     const species = snapshot?.species ?? [];
     const spawnAs =
         selected !== null && species.includes(selected) ? selected : defaultSpecies(species);
+
+    useEffect(() => {
+        let current = true;
+        api.genes(id).then(
+            (ranges) => {
+                if (current) setGenes(ranges);
+            },
+            (error: unknown) => {
+                if (current) onError(`Markings are off: ${messageOf(error)}`);
+            },
+        );
+        return () => {
+            current = false;
+        };
+    }, [api, id, onError]);
 
     useEffect(() => {
         if (gone) {
@@ -81,6 +97,7 @@ export function WorldView({ api, id, onLeave, onError }: Props) {
                 snapshot={snapshot}
                 play={play}
                 sight={sightOf(snapshot, resolved)}
+                genes={genes}
                 onTileClick={(at) => {
                     if (mode === "inspect") {
                         const click = inspectTile(snapshot, at);

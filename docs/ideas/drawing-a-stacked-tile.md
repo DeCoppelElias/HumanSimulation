@@ -1,6 +1,6 @@
 # Drawing a stacked tile
 
-Status: idea.
+Status: built, [0025](../decisions/0025-the-art-is-pixel-art-drawn-for-the-project.md).
 
 ## What it does
 

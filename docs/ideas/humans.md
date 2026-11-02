@@ -17,7 +17,8 @@ system that rabbits and wolves can meet too.
 
 ## What it would touch
 
-A species value and a sprite, from the same asset pack as the rabbit. The 2022
+A species value and a sprite, drawn like the rabbit's per
+[0025](../decisions/0025-the-art-is-pixel-art-drawn-for-the-project.md). The 2022
 `Human.png` leaves the tree in roadmap entry 1 and stays in git history. Past
 that it depends on what a human can do that the other species cannot.
 

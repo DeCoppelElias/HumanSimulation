@@ -1,36 +1,47 @@
 import {
     Application,
-    Assets,
+    CanvasSource,
     Container,
     Graphics,
     Rectangle,
     Sprite,
-    Text,
     Texture,
 } from "pixi.js";
-import { finished, frameAt, timing, type Transition } from "./motion";
-import { isNewRun } from "./run";
-import { drawn, placements, stacks } from "./tiles";
-import type { GridPosition, PlayState, WorldSnapshot } from "./types";
+import { chip } from "./chip";
+import { lookOf } from "./looks";
+import { marking, type Marking } from "./markings";
+import { meadow } from "./meadow";
+import { frameAt, settledMs, type Drawn, type Transition } from "./motion";
+import { advance, START, type Playback } from "./playback";
+import { rasterize, type Palette, type Pixels } from "./pixels";
+import { ART_TILE, HEADROOM } from "./scale";
+import sheet from "./sprites.json";
+import { depth, stacks } from "./tiles";
+import type { GeneRanges, GridPosition, PlayState, WorldSnapshot } from "./types";
 
-export const TILE = 32;
-const SPRITE_SIZE = TILE * 0.9;
+const CHIP_COLOURS = { o: "#1a1f2b", w: "#ffffff" };
 
-/** The PixiJS side of the grid, drawn imperatively; React only hands it snapshots. */
+/** The PixiJS side of the grid, drawn imperatively in art pixels on a stage scaled by a whole number. */
 export class Scene {
-    private readonly sprites = new Container();
-    private readonly labels = new Container();
+    private readonly cover = new Container();
     private readonly sightLayer = new Graphics();
+    private readonly creatures = new Container();
+    private readonly chips = new Container();
     private readonly pool = new Map<number, Sprite>();
     private readonly textures = new Map<string, Texture>();
-    private readonly loading = new Set<string>();
-    private readonly failed = new Set<string>();
+    private readonly markings = new Map<number, Marking | null>();
+    private readonly reported = new Set<string>();
+    private playback: Playback = START;
+    private genes: GeneRanges | null = null;
     private transition: Transition | null = null;
     private started = 0;
-    private previous: WorldSnapshot | null = null;
+    /** The day whose chips wait for its moves to land. */
+    private unsettled: WorldSnapshot | null = null;
 
     private constructor(
         private readonly app: Application,
+        private readonly width: number,
+        private readonly height: number,
         private readonly onError: (message: string) => void,
     ) {}
 
@@ -38,52 +49,70 @@ export class Scene {
         host: HTMLElement,
         width: number,
         height: number,
+        scale: number,
         onTileClick: (at: GridPosition) => void,
         onError: (message: string) => void,
     ): Promise<Scene> {
         const app = new Application();
-        await app.init({ width: width * TILE, height: height * TILE, background: "#84c669" });
-        const scene = new Scene(app, onError);
-        try {
-            scene.textures.set("rabbit", await Assets.load<Texture>("/sprites/rabbit.png"));
-        } catch (error) {
-            scene.destroy();
-            throw error;
-        }
-        scene.sprites.sortableChildren = true;
-        app.stage.addChild(tileLines(width, height), scene.sightLayer, scene.sprites, scene.labels);
-        app.stage.eventMode = "static";
-        app.stage.hitArea = new Rectangle(0, 0, width * TILE, height * TILE);
-        app.stage.on("pointertap", (event) => {
-            onTileClick({
-                x: Math.floor(event.global.x / TILE),
-                y: Math.floor(event.global.y / TILE),
-            });
+        await app.init({
+            width: width * ART_TILE * scale,
+            height: (height * ART_TILE + HEADROOM) * scale,
+            background: sheet.ground.palette.G,
+            antialias: false,
+            roundPixels: true,
+        });
+        const scene = new Scene(app, width, height, onError);
+        scene.creatures.sortableChildren = true;
+        app.stage.scale.set(scale);
+        const ground = new Sprite(scene.groundTexture());
+        ground.y = -HEADROOM;
+        const world = new Container();
+        world.y = HEADROOM;
+        world.addChild(ground, scene.cover, scene.sightLayer, scene.creatures, scene.chips);
+        app.stage.addChild(world);
+        world.eventMode = "static";
+        world.hitArea = new Rectangle(0, 0, width * ART_TILE, height * ART_TILE);
+        world.on("pointertap", (event) => {
+            const at = event.getLocalPosition(world);
+            onTileClick({ x: Math.floor(at.x / ART_TILE), y: Math.floor(at.y / ART_TILE) });
         });
         app.ticker.add(() => scene.draw());
         host.appendChild(app.canvas);
         return scene;
     }
 
+    setScale(scale: number): void {
+        this.app.renderer.resize(
+            this.width * ART_TILE * scale,
+            (this.height * ART_TILE + HEADROOM) * scale,
+        );
+        this.app.stage.scale.set(scale);
+    }
+
+    setGenes(genes: GeneRanges | null): void {
+        this.genes = genes;
+        this.markings.clear();
+    }
+
     show(next: WorldSnapshot, play: PlayState): void {
-        const previous = this.previous;
-        const sameRun = previous !== null && !isNewRun(previous, next);
-        this.transition = {
-            from: sameRun ? placements(previous) : new Map(),
-            to: placements(next),
-            fromDrawn: sameRun ? drawn(previous) : new Set(),
-            toDrawn: drawn(next),
-            timing: timing(sameRun ? next.day - previous.day : 0, play),
-        };
+        const step = advance(this.playback, next, play);
+        if (step.newRun) {
+            for (const sprite of this.pool.values()) sprite.destroy();
+            this.pool.clear();
+            this.markings.clear();
+        }
+        for (const id of step.gone) this.markings.delete(id);
+        this.playback = step.state;
+        this.transition = step.transition;
         this.started = performance.now();
-        this.previous = next;
-        this.drawCounts(next);
+        this.unsettled = next;
+        if (step.newRun) this.settle();
     }
 
     showSight(tiles: GridPosition[]): void {
         this.sightLayer.clear();
         for (const at of tiles) {
-            this.sightLayer.rect(at.x * TILE, at.y * TILE, TILE, TILE);
+            this.sightLayer.rect(at.x * ART_TILE, at.y * ART_TILE, ART_TILE, ART_TILE);
         }
         if (tiles.length > 0) {
             this.sightLayer.fill({ color: "#fff7a8", alpha: 0.45 });
@@ -92,6 +121,7 @@ export class Scene {
 
     destroy(): void {
         this.app.destroy(true, { children: true });
+        for (const texture of this.textures.values()) texture.destroy(true);
     }
 
     private draw(): void {
@@ -99,26 +129,30 @@ export class Scene {
         if (transition === null) {
             return;
         }
-        const elapsed = performance.now() - this.started;
-        const frame = frameAt(transition, elapsed);
+        const now = performance.now();
+        if (this.unsettled !== null && now - this.started >= settledMs(transition)) {
+            this.settle();
+        }
         const seen = new Set<number>();
-        let waiting = false;
-        for (const placed of frame) {
-            const texture = this.texture(placed.spriteKey);
+        for (const placed of frameAt(transition, now - this.started, now)) {
+            const texture = this.textureOf(placed);
             if (texture === null) {
-                waiting ||= !this.failed.has(placed.spriteKey);
                 continue;
             }
             let sprite = this.pool.get(placed.id);
             if (sprite === undefined) {
                 sprite = new Sprite(texture);
-                sprite.anchor.set(0.5);
-                sprite.scale.set(SPRITE_SIZE / Math.max(texture.width, texture.height));
-                sprite.zIndex = placed.creature ? 1 : 0;
+                sprite.anchor.set(0.5, 1);
                 this.pool.set(placed.id, sprite);
-                this.sprites.addChild(sprite);
+                (placed.creature ? this.creatures : this.cover).addChild(sprite);
             }
-            sprite.position.set((placed.x + 0.5) * TILE, (placed.y + 0.5) * TILE);
+            sprite.texture = texture;
+            sprite.position.set(
+                Math.round(placed.x * ART_TILE + ART_TILE / 2 + placed.ox),
+                Math.round(placed.y * ART_TILE + ART_TILE + placed.oy - placed.lift),
+            );
+            sprite.scale.x = placed.flipped ? -1 : 1;
+            sprite.zIndex = depth(placed);
             sprite.alpha = placed.alpha;
             seen.add(placed.id);
         }
@@ -128,59 +162,70 @@ export class Scene {
                 this.pool.delete(id);
             }
         }
-        // A sprite whose texture is still loading keeps the frame alive until it can be drawn.
-        if (finished(transition, elapsed) && !waiting) {
-            this.transition = null;
-        }
     }
 
-    private drawCounts(snapshot: WorldSnapshot): void {
-        this.labels.removeChildren().forEach((child) => child.destroy());
+    private settle(): void {
+        if (this.unsettled !== null) this.drawChips(this.unsettled);
+        this.unsettled = null;
+    }
+
+    private drawChips(snapshot: WorldSnapshot): void {
+        this.chips.removeChildren().forEach((child) => child.destroy());
         for (const stack of stacks(snapshot)) {
-            if (stack.creatures > 1) {
-                const label = new Text({
-                    text: String(stack.creatures),
-                    style: {
-                        fontSize: 12,
-                        fontWeight: "bold",
-                        fill: "#ffffff",
-                        stroke: { color: "#000000", width: 3 },
-                    },
-                });
-                label.anchor.set(1, 0);
-                label.position.set((stack.x + 1) * TILE - 2, stack.y * TILE + 1);
-                this.labels.addChild(label);
-            }
+            const grid = chip(stack.creatures);
+            if (grid === null) continue;
+            const sprite = new Sprite(this.texture(`chip/${stack.creatures}`, grid, CHIP_COLOURS));
+            sprite.position.set((stack.x + 1) * ART_TILE - grid[0].length, stack.y * ART_TILE);
+            this.chips.addChild(sprite);
         }
     }
 
-    /** A texture loads once, on first sight of its key; until then, or if it fails, that species is not drawn. */
-    private texture(key: string): Texture | null {
-        const loaded = this.textures.get(key);
-        if (loaded !== undefined) {
-            return loaded;
+    private textureOf(placed: Drawn): Texture | null {
+        const look = lookOf(placed, placed.creature ? this.markingOf(placed.id) : null);
+        if (look === null) {
+            if (!this.reported.has(placed.spriteKey)) {
+                this.reported.add(placed.spriteKey);
+                this.onError(`There is no sprite for ${placed.spriteKey}, so it is not drawn.`);
+            }
+            return null;
         }
-        if (!this.loading.has(key)) {
-            this.loading.add(key);
-            Assets.load<Texture>(`/sprites/${key}.png`).then(
-                (texture) => this.textures.set(key, texture),
-                () => {
-                    this.failed.add(key);
-                    this.onError(`There is no sprite for ${key}, so it is not drawn.`);
-                },
-            );
-        }
-        return null;
+        return this.texture(look.key, look.grid, look.palette);
+    }
+
+    /** Computed once per creature, since its genes never change; unmarked until the ranges arrive. */
+    private markingOf(id: number): Marking | null {
+        const cached = this.markings.get(id);
+        if (cached !== undefined) return cached;
+        const entity = this.playback.entities.get(id);
+        const ranges = entity === undefined ? undefined : this.genes?.[entity.species];
+        if (entity === undefined || ranges === undefined) return null;
+        const chosen = marking(entity.species, entity.genes, ranges);
+        this.markings.set(id, chosen);
+        return chosen;
+    }
+
+    private texture(key: string, grid: readonly string[], palette: Palette): Texture {
+        const made = this.textures.get(key);
+        if (made !== undefined) return made;
+        const texture = textureFrom(rasterize(grid, palette));
+        this.textures.set(key, texture);
+        return texture;
+    }
+
+    /** The meadow is drawn once, with its headroom. */
+    private groundTexture(): Texture {
+        const texture = textureFrom(meadow(this.width, this.height));
+        this.textures.set("ground", texture);
+        return texture;
     }
 }
 
-function tileLines(width: number, height: number): Graphics {
-    const lines = new Graphics();
-    for (let x = 1; x < width; x++) {
-        lines.moveTo(x * TILE, 0).lineTo(x * TILE, height * TILE);
-    }
-    for (let y = 1; y < height; y++) {
-        lines.moveTo(0, y * TILE).lineTo(width * TILE, y * TILE);
-    }
-    return lines.stroke({ color: "#000000", width: 1, alpha: 0.08 });
+function textureFrom(pixels: Pixels): Texture {
+    const canvas = document.createElement("canvas");
+    canvas.width = pixels.width;
+    canvas.height = pixels.height;
+    canvas
+        .getContext("2d")
+        ?.putImageData(new ImageData(pixels.data, pixels.width, pixels.height), 0, 0);
+    return new Texture({ source: new CanvasSource({ resource: canvas, scaleMode: "nearest" }) });
 }

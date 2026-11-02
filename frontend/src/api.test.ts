@@ -53,6 +53,15 @@ describe("the API client", () => {
         expect(calls[0].init?.body).toBe("{}");
     });
 
+    test("fetches each species' gene ranges, with the id escaped", async () => {
+        const calls: Call[] = [];
+        const genes = { rabbit: [{ key: "speed", min: 0, max: 1, baseline: 0.5 }] };
+        const api = createApi(fakeFetch(Response.json(genes), calls));
+        expect(await api.genes("a b")).toEqual(genes);
+        expect(calls[0].url).toBe("/worlds/a%20b/genes");
+        expect(calls[0].init?.method).toBe("GET");
+    });
+
     test("fetches a world's setting declarations", async () => {
         const calls: Call[] = [];
         const api = createApi(fakeFetch(Response.json([]), calls));

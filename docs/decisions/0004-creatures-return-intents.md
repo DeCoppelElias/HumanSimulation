@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-09-03. Revised 2026-10-29.
+Accepted, 2026-09-03. Revised 2026-10-31.
 
 ## Context
 
@@ -203,8 +203,9 @@ where the 2022 code rerolls and often stands still, so seeded runs do not match
 the old ones step for step.
 
 Many creatures on one tile is normal, so the interface has to show a stack
-rather than one sprite. Roadmap entry 3 draws one with a count, and anything
-richer is `docs/ideas/drawing-a-stacked-tile.md`. A
+rather than one sprite. Roadmap entry 3 draws one with a count, and entry 14
+a group of up to three, per
+[0025](0025-the-art-is-pixel-art-drawn-for-the-project.md). A
 child is always born somewhere, since a tile cannot be full.
 
 Nothing dead acts, so once creatures can kill each other, being early in the

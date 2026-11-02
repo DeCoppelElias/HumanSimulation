@@ -36,6 +36,9 @@ export type CensusRow = {
 };
 export type DayReport = { snapshot: WorldSnapshot; census: CensusRow };
 export type PlayState = { playing: boolean; daysPerSecond: number };
+export type GeneRange = { key: string; min: number; max: number; baseline: number };
+/** Each species' genes in layout order. */
+export type GeneRanges = Partial<Record<string, GeneRange[]>>;
 export type WorldSummary = {
     id: string;
     width: number;

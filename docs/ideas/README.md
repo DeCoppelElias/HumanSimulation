@@ -40,6 +40,8 @@ that settled it.
   package by topic once it grows hard to navigate.
 - [Drawing a stacked tile](drawing-a-stacked-tile.md) a way to show every
   occupant of a shared tile.
+- [Drawing sprites skill](drawing-sprites-skill.md) a project skill for
+  drawing or changing a sprite in `art/sprites.py`.
 - [Error Prone](error-prone.md) failing the build on bug patterns javac does
   not warn about.
 - [Founder benchmark](founder-benchmark.md) scoring one genome by the
@@ -68,6 +70,8 @@ that settled it.
   to tell selection from drift.
 - [Network brain](network-brain.md) the second brain, warm-started from the
   fixed rules.
+- [Page frame rate](page-frame-rate.md) checking the page holds 60 frames a
+  second in a busy world, and fixing what slows it.
 - [Patchy food](patchy-food.md) food arriving near food, so herding has
   something to gain.
 - [Process budget](process-budget.md) retrospectives that remove rules as
@@ -84,6 +88,8 @@ that settled it.
   spots, so probes and gates finish sooner.
 - [Shared workflow kit](shared-workflow-kit.md) the generic skills and checks
   in a repository of their own, installed rather than copied.
+- [Showing grass age](showing-grass-age.md) a tuft that yellows over its last
+  days, so food about to wither shows.
 - [Skill review](skill-review.md) checking each project skill still earns its
   place, against upstream skills and the current docs.
 - [Stable references](stable-references.md) roadmap entries named by slug,

@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted, 2026-10-01. Revised 2026-10-20.
+Accepted, 2026-10-01. Revised 2026-10-31.
 
 ## Context
 
@@ -72,6 +72,15 @@ Gliding on every snapshot looks smoothest, and across a gap it draws a path
 that never happened. A slow viewer skips days, a fast-forward jumps thousands,
 and a tab shown again jumps however long it was hidden.
 
+A glide that lasts the whole day was the first motion. Roadmap entry 14
+replaced it with a hop, the way a rabbit moves. A hop per tile was weighed
+against one bound over the whole move, and Elias picked the bound by eye as the
+nicer of the two. A wolf that walked every move
+and leapt only the last tile of a kill made the kill stand out, and lost to a
+leap over any move longer than a tile, which matches the rabbit. Squeezing the
+hop into a short day was tried as well: at 10 days a second a day lasts 100 ms,
+and a hop gets about five frames. Side by side, Elias preferred the glide.
+
 A browser opens at most six connections to one origin over HTTP/1.1, shared by
 every tab, so six pages each holding a stream make a seventh hang without an
 error. HTTP/2 lifts the limit, and browsers speak it only over TLS, which on
@@ -105,11 +114,15 @@ controls, the chart and the generated settings panel around it.
 resources, so `./mvnw verify` builds and tests both halves.
 
 The browser animates between snapshots. It diffs consecutive snapshots by
-entity id, glides a moved entity between its two tiles, fades in an id that
-appears and fades out one that is gone. A glide happens only when the day went
-up by exactly one, and lasts one day at the playback rate. Across a bigger jump
-entities snap to their tiles, and the fades still run. Effects that need more
-than a diff can see arrive as events on the day's report.
+entity id, moves a moved entity between its two tiles, fades in an id that
+appears and fades out one that is gone. A rabbit covers its move in one bound
+whose arc rises with distance. A wolf walks a move of one tile and leaps a
+longer one or a kill. A move takes 260 ms plus 160 ms a tile, cut to 90% of the
+day at the playback rate, and when that leaves under 150 ms the entity glides
+in its standing pose instead. A paused single step plays the move at full
+length. Motion happens only when the day went up by exactly one. Across a bigger
+jump entities snap to their tiles, and the fades still run. Effects that need
+more than a diff can see arrive as events on the day's report.
 
 Each world has one executor thread that owns it. A timer on that thread
 advances the world at the playback rate, and request handlers only hand work to
@@ -137,7 +150,7 @@ runs. There is no endpoint that stops the process. The server listens on
 `127.0.0.1` unless told otherwise.
 
 `java -jar` runs the server locally and opens the browser. Hosting it is roadmap
-entry 15, which adds sessions, ownership, clean-up of abandoned worlds and a
+entry 17, which adds sessions, ownership, clean-up of abandoned worlds and a
 deploy to Fly.io.
 
 ## Consequences
@@ -159,10 +172,12 @@ JFreeChart, the Swing panels and the icons at the classpath root go with the
 If traffic ever makes server costs matter, the `java.base`-only core keeps
 compiling it to the browser with TeaVM available.
 
-Smooth movement needs no change to the domain, because snapshots already carry
-ids. It is smooth for every day a viewer sees, and a stretch the viewer skipped
-shows as its end state. A hop animation or a death effect wants events, which
-are an additive field on the report rather than a new channel.
+Movement needs no change to the domain, because snapshots already carry ids. Hops,
+walks and leaps play for every day a viewer sees, and a stretch the viewer
+skipped shows as its end state. A kill is read off two snapshots, as a wolf
+landing where a creature of another species stood and is gone. A death effect,
+or knowing which wolf killed which rabbit, wants events, which are an additive
+field on the report rather than a new channel.
 
 Only visible tabs hold a connection, so the six-connection limit binds only
 with six pages on screen. A world left playing in a tab hidden for the idle
