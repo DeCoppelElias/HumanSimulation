@@ -8,20 +8,17 @@ import {
     Texture,
 } from "pixi.js";
 import { chip } from "./chip";
-import { marking, markedPalette, type Marking, type Marks } from "./markings";
-import { frameAt, settledMs, transition, type Drawn, type Moment, type Transition } from "./motion";
-import { rasterize, type Palette } from "./pixels";
-import { isNewRun } from "./run";
+import { lookOf } from "./looks";
+import { marking, type Marking } from "./markings";
 import { meadow } from "./meadow";
+import { frameAt, settledMs, type Drawn, type Transition } from "./motion";
+import { advance, START, type Playback } from "./playback";
+import { rasterize, type Palette, type Pixels } from "./pixels";
 import { ART_TILE, HEADROOM } from "./scale";
 import sheet from "./sprites.json";
-import { depth, drawn, placements, stacks, tuftOf } from "./tiles";
-import type { EntityView, GeneRanges, GridPosition, PlayState, WorldSnapshot } from "./types";
+import { depth, stacks } from "./tiles";
+import type { GeneRanges, GridPosition, PlayState, WorldSnapshot } from "./types";
 
-type Kind = { palette: Palette; marks: Marks; frames: Partial<Record<string, string[]>> };
-
-const KINDS: Partial<Record<string, Kind>> = { rabbit: sheet.rabbit, wolf: sheet.wolf };
-const GROUND_COVER: Partial<Record<string, string[][]>> = { grass: sheet.grass.tufts };
 const CHIP_COLOURS = { o: "#1a1f2b", w: "#ffffff" };
 
 /** The PixiJS side of the grid, drawn imperatively in art pixels on a stage scaled by a whole number. */
@@ -34,13 +31,10 @@ export class Scene {
     private readonly textures = new Map<string, Texture>();
     private readonly markings = new Map<number, Marking | null>();
     private readonly reported = new Set<string>();
-    private entities = new Map<number, EntityView>();
+    private playback: Playback = START;
     private genes: GeneRanges | null = null;
     private transition: Transition | null = null;
-    private facing = new Map<number, boolean>();
     private started = 0;
-    private previous: WorldSnapshot | null = null;
-    private moment: Moment | null = null;
     /** The day whose chips wait for its moves to land. */
     private unsettled: WorldSnapshot | null = null;
 
@@ -101,34 +95,18 @@ export class Scene {
     }
 
     show(next: WorldSnapshot, play: PlayState): void {
-        const previous = this.previous;
-        const sameRun = previous !== null && !isNewRun(previous, next);
-        if (!sameRun) {
-            // A new run reuses ids across species, so no sprite or marking carries over.
+        const step = advance(this.playback, next, play);
+        if (step.newRun) {
             for (const sprite of this.pool.values()) sprite.destroy();
             this.pool.clear();
             this.markings.clear();
-            this.facing = new Map();
         }
-        const to: Moment = { day: next.day, placed: placements(next), drawn: drawn(next) };
-        const from: Moment =
-            sameRun && this.moment !== null
-                ? this.moment
-                : { day: next.day, placed: new Map(), drawn: new Set() };
-        this.transition = transition(from, to, play, this.facing);
-        this.facing = this.transition.facing;
-        this.entities = new Map([...(sameRun ? this.entities : []), ...entitiesOf(next)]);
-        for (const id of this.entities.keys()) {
-            if (!from.placed.has(id) && !to.placed.has(id)) {
-                this.entities.delete(id);
-                this.markings.delete(id);
-            }
-        }
+        for (const id of step.gone) this.markings.delete(id);
+        this.playback = step.state;
+        this.transition = step.transition;
         this.started = performance.now();
-        this.previous = next;
-        this.moment = to;
         this.unsettled = next;
-        if (!sameRun) this.settle();
+        if (step.newRun) this.settle();
     }
 
     showSight(tiles: GridPosition[]): void {
@@ -203,32 +181,22 @@ export class Scene {
     }
 
     private textureOf(placed: Drawn): Texture | null {
-        if (!placed.creature) {
-            const tufts = GROUND_COVER[placed.spriteKey];
-            if (tufts === undefined) return this.missing(placed.spriteKey);
-            const tuft = tuftOf(placed.id) % tufts.length;
-            return this.texture(`${placed.spriteKey}/${tuft}`, tufts[tuft], sheet.grass.palette);
+        const look = lookOf(placed, placed.creature ? this.markingOf(placed.id) : null);
+        if (look === null) {
+            if (!this.reported.has(placed.spriteKey)) {
+                this.reported.add(placed.spriteKey);
+                this.onError(`There is no sprite for ${placed.spriteKey}, so it is not drawn.`);
+            }
+            return null;
         }
-        const kind = KINDS[placed.spriteKey];
-        if (kind === undefined) return this.missing(placed.spriteKey);
-        const frame = kind.frames[placed.frame] !== undefined ? placed.frame : "stand";
-        const grid = kind.frames[frame];
-        if (grid === undefined) return this.missing(placed.spriteKey);
-        const chosen = this.markingOf(placed.id);
-        const key =
-            chosen === null ? "plain" : `${chosen.colour}.${chosen.extent}.${chosen.accent}`;
-        return this.texture(
-            `${placed.spriteKey}/${frame}/${key}`,
-            grid,
-            chosen === null ? kind.palette : markedPalette(kind, chosen),
-        );
+        return this.texture(look.key, look.grid, look.palette);
     }
 
     /** Computed once per creature, since its genes never change; unmarked until the ranges arrive. */
     private markingOf(id: number): Marking | null {
         const cached = this.markings.get(id);
         if (cached !== undefined) return cached;
-        const entity = this.entities.get(id);
+        const entity = this.playback.entities.get(id);
         const ranges = entity === undefined ? undefined : this.genes?.[entity.species];
         if (entity === undefined || ranges === undefined) return null;
         const chosen = marking(entity.species, entity.genes, ranges);
@@ -239,47 +207,25 @@ export class Scene {
     private texture(key: string, grid: readonly string[], palette: Palette): Texture {
         const made = this.textures.get(key);
         if (made !== undefined) return made;
-        const pixels = rasterize(grid, palette);
-        const canvas = document.createElement("canvas");
-        canvas.width = pixels.width;
-        canvas.height = pixels.height;
-        canvas
-            .getContext("2d")
-            ?.putImageData(new ImageData(pixels.data, pixels.width, pixels.height), 0, 0);
-        const texture = new Texture({
-            source: new CanvasSource({ resource: canvas, scaleMode: "nearest" }),
-        });
+        const texture = textureFrom(rasterize(grid, palette));
         this.textures.set(key, texture);
         return texture;
     }
 
     /** The meadow is drawn once, with its headroom. */
     private groundTexture(): Texture {
-        const pixels = meadow(this.width, this.height);
-        const canvas = document.createElement("canvas");
-        canvas.width = pixels.width;
-        canvas.height = pixels.height;
-        canvas
-            .getContext("2d")
-            ?.putImageData(new ImageData(pixels.data, pixels.width, pixels.height), 0, 0);
-        const texture = new Texture({
-            source: new CanvasSource({ resource: canvas, scaleMode: "nearest" }),
-        });
+        const texture = textureFrom(meadow(this.width, this.height));
         this.textures.set("ground", texture);
         return texture;
     }
-
-    private missing(spriteKey: string): null {
-        if (!this.reported.has(spriteKey)) {
-            this.reported.add(spriteKey);
-            this.onError(`There is no sprite for ${spriteKey}, so it is not drawn.`);
-        }
-        return null;
-    }
 }
 
-function entitiesOf(snapshot: WorldSnapshot): [number, EntityView][] {
-    return snapshot.tiles.flatMap((tile) =>
-        tile.entities.map((entity): [number, EntityView] => [entity.id, entity]),
-    );
+function textureFrom(pixels: Pixels): Texture {
+    const canvas = document.createElement("canvas");
+    canvas.width = pixels.width;
+    canvas.height = pixels.height;
+    canvas
+        .getContext("2d")
+        ?.putImageData(new ImageData(pixels.data, pixels.width, pixels.height), 0, 0);
+    return new Texture({ source: new CanvasSource({ resource: canvas, scaleMode: "nearest" }) });
 }
